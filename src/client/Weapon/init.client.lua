@@ -18,7 +18,6 @@ end
 
 local function Cast()
 	local Result: RaycastResult = Caster:Cast(Camera.CFrame.Position, Camera.CFrame.LookVector * 1024)
-	print(Result)
 
 	if not Result then
 		return
@@ -26,10 +25,8 @@ local function Cast()
 
 	CreatePair(Camera.CFrame.Position, Result.Position)
 
-	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Camera.CFrame.Position + (Camera.CFrame.LookVector * 512), -Camera.CFrame.LookVector * 512)
-	print(PartDepth)
-	print(HitPosition)
-	CreatePair(Camera.CFrame.Position + (Camera.CFrame.LookVector * 512), HitPosition)
+	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Camera.CFrame.Position + (Camera.CFrame.LookVector * 64), -Camera.CFrame.LookVector * 64)
+	CreatePair(Camera.CFrame.Position + (Camera.CFrame.LookVector * 64), HitPosition)
 
 	if not PartDepth then
 		return
