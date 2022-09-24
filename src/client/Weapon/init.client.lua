@@ -8,22 +8,24 @@ local Gameplay = Assets:WaitForChild("Gameplay")
 local Environment = Gameplay:WaitForChild("Environment")
 
 local Camera = workspace.CurrentCamera
-local Viewmodel = ReplicatedStorage:WaitForChild("v_UMP45"):Clone()
 
 local Caster = require(script.Caster)
 local CastEffects = require(script.CastEffects)
+local Viewmodel = require(script.Viewmodel)
+
+local CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 
 local function WeaponFire(Origin: Vector3, Direction: Vector3)
 	local Result: RaycastResult = Caster:Cast(Origin, Direction * 1024)
 	
 	if not Result then
-		CastEffects:CreateFakeTracer(Viewmodel["UMP-45"].Handle.Exit.WorldPosition, Origin + (Direction * 1024))
+		CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, Origin + (Direction * 1024))
 		return
 	end
 
 	CastEffects:NewBulletHole(Result.Position, Result.Normal)
 	-- CastEffects:CreateFakeTracer(Origin, Result.Position)
-	CastEffects:CreateFakeTracer(Viewmodel["UMP-45"].Handle.Exit.WorldPosition, Result.Position)
+	CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, Result.Position)
 
 	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (Direction * 64), -Direction * 64)
 
@@ -44,6 +46,5 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 end)
 
 RunService.RenderStepped:Connect(function(deltaTime)
-	Viewmodel.Parent = Camera
-	Viewmodel:SetPrimaryPartCFrame(Camera.CFrame)
+	CurrentViewmodel:SetCFrame(Camera.CFrame)
 end)
