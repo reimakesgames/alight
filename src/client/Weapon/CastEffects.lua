@@ -32,10 +32,18 @@ local _TracersList = {}
 
 local CastEffects = {}
 
-function CastEffects:NewBulletHole(HitPosition: Vector3, HitNormal: Vector3)
-	local _BulletHole = Environment.BulletHole:Clone()
-	_BulletHole.CFrame = CFrame.new(HitPosition, HitPosition + HitNormal)
-	_BulletHole.Parent = Camera:FindFirstChild("Effects") or QuickInstance("Folder", {Name = "Effects", Parent = Camera})
+function CastEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3)
+	local bulletHole = Environment.BulletHole:Clone()
+	bulletHole.CFrame = CFrame.new(hitPosition, hitPosition + hitNormal)
+	bulletHole.Parent = Camera:FindFirstChild("Effects") or QuickInstance("Folder", {Name = "Effects", Parent = Camera})
+	task.delay(0.1, function()
+		for _, object in bulletHole.Emitters:GetChildren() do
+			object.Enabled = false
+		end
+	end)
+	task.delay(1, function()
+		bulletHole.Emitters:Destroy()
+	end)
 end
 
 function CastEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vector3)
@@ -53,16 +61,16 @@ function CastEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vecto
 	})
 end
 
-function CastEffects:CreateRaycastDebug(Origin, Stop)
-	local Start = Environment.Start:Clone()
-	local End = Environment.End:Clone()
+function CastEffects:CreateRaycastDebug(origin, goal)
+	local startPart = Environment.Start:Clone()
+	local endPart = Environment.End:Clone()
 
-	Start.Position = Origin
-	End.Position = Stop
+	startPart.Position = origin
+	endPart.Position = goal
 
-	Start.Parent = workspace
-	End.Parent = workspace
-	Start.Attachment.Beam.Attachment1 = End.Attachment
+	startPart.Parent = workspace
+	endPart.Parent = workspace
+	startPart.Attachment.Beam.Attachment1 = endPart.Attachment
 end
 
 RunService:BindToRenderStep("HC_TracerUpdate", Enum.RenderPriority.Input.Value - 25, function(deltaTime)
