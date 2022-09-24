@@ -15,11 +15,11 @@ local Viewmodel = require(script.Viewmodel)
 
 local CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 
-local function WeaponFire(Origin: Vector3, Direction: Vector3)
-	local Result: RaycastResult = Caster:Cast(Origin, Direction * 1024)
+local function WeaponFire(origin: Vector3, direction: Vector3)
+	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
 	
 	if not Result then
-		CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, Origin + (Direction * 1024))
+		CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, origin + (direction * 1024))
 		return
 	end
 
@@ -27,7 +27,7 @@ local function WeaponFire(Origin: Vector3, Direction: Vector3)
 	-- CastEffects:CreateFakeTracer(Origin, Result.Position)
 	CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, Result.Position)
 
-	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (Direction * 64), -Direction * 64)
+	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
 
 	if not PartDepth then
 		return
