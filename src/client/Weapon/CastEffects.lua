@@ -8,7 +8,7 @@ type Tracer = {
 	StartPosition: Vector3;
 	EndPosition: Vector3;
 	Magnitude: number;
-	Ready: boolean;
+	_ready: boolean;
 }
 
 local function QuickInstance(ClassName: string, Properties: {[string]: any})
@@ -49,7 +49,7 @@ function CastEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vecto
 		StartPosition = StartPosition;
 		EndPosition = EndPosition;
 		Magnitude = (StartPosition - EndPosition).Magnitude;
-		Ready = false;
+		_ready = false;
 	})
 end
 
@@ -67,11 +67,11 @@ end
 
 RunService:BindToRenderStep("HC_TracerUpdate", Enum.RenderPriority.Input.Value - 25, function(deltaTime)
 	for Index, Tracer: Tracer in _TracersList do
-		if not Tracer.Ready then
-			Tracer.Ready = true
+		if not Tracer._ready then
+			Tracer._ready = true
 			continue
 		end
-		Tracer.Object.CFrame = Tracer.Object.CFrame + (Tracer.Object.CFrame.LookVector * (deltaTime * 256))
+		Tracer.Object.CFrame = Tracer.Object.CFrame + (Tracer.Object.CFrame.LookVector * (deltaTime * 512))
 		if (Tracer.StartPosition - Tracer.Object.Position).Magnitude > Tracer.Magnitude then
 			Tracer.Object:Destroy()
 			table.remove(_TracersList, Index)
