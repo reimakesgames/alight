@@ -1,3 +1,7 @@
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local Utility = ReplicatedFirst.Utility
+local Spring = require(Utility.Spring)
+
 local Camera = workspace.CurrentCamera
 
 local function QuickInstance(ClassName: string, Properties: {[string]: any})
@@ -14,6 +18,8 @@ type DefaultArms = {
 	["Left Arm"]: Part;
 	["Right Arm"]: Part;
 	HumanoidRootPart: Part;
+	WeaponModel: Model;
+	Camera: Part;
 }
 
 export type Viewmodel = {
@@ -23,6 +29,7 @@ export type Viewmodel = {
 
 	Model: Model | DefaultArms;
 	Culled: boolean;
+	Springs: {[number]: Spring.Spring};
 }
 
 local Viewmodel = {}
@@ -30,7 +37,10 @@ Viewmodel.__index = Viewmodel
 
 function Viewmodel.new(model: Model): Viewmodel
 	local self = setmetatable({
-		Culled = true
+		Culled = true;
+		Springs = {
+			Sway = Spring.new()
+		}
 	}, Viewmodel)
 
 	local newModel: Model | DefaultArms = model:Clone()
