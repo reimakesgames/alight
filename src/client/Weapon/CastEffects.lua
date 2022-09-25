@@ -20,6 +20,10 @@ local function QuickInstance(ClassName: string, Properties: {[string]: any})
 	return Object
 end
 
+local function EffectsFolder()
+	return Camera:FindFirstChild("Effects") or QuickInstance("Folder", {Name = "Effects", Parent = Camera})
+end
+
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 -- local Packages = ReplicatedStorage:WaitForChild("Packages")
 
@@ -29,13 +33,14 @@ local Environment = Gameplay:WaitForChild("Environment")
 -- local Janitor = require(Packages:WaitForChild("janitor"))
 
 local _TracersList = {}
+local BeamUpdates = {}
 
 local CastEffects = {}
 
 function CastEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3)
 	local bulletHole = Environment.BulletHole:Clone()
 	bulletHole.CFrame = CFrame.new(hitPosition, hitPosition + hitNormal)
-	bulletHole.Parent = Camera:FindFirstChild("Effects") or QuickInstance("Folder", {Name = "Effects", Parent = Camera})
+	bulletHole.Parent = EffectsFolder()
 	task.delay(0.1, function()
 		for _, object in bulletHole.Emitters:GetChildren() do
 			object.Enabled = false
@@ -46,11 +51,25 @@ function CastEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3)
 	end)
 end
 
+function CastEffects:NewBulletSmoke(startPosition, endPosition)
+	local bulletSmoke = Environment.Smoke:Clone()
+	-- bulletSmoke.Start.WorldPosition = startPosition
+	-- bulletSmoke.End.WorldPosition = endPosition
+	bulletSmoke.CFrame = CFrame.new(startPosition, endPosition)
+
+	table.insert(BeamUpdates, bulletSmoke)
+
+	bulletSmoke.Parent = EffectsFolder()
+	task.delay(1, function()
+		bulletSmoke:Destroy()
+	end)
+end
+
 function CastEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vector3)
 	local _Tracer = Environment.Tracer:Clone()
 
 	_Tracer.CFrame = CFrame.new(StartPosition, StartPosition + (EndPosition - StartPosition).Unit)
-	_Tracer.Parent = Camera:FindFirstChild("Effects") or QuickInstance("Folder", {Name = "Effects", Parent = Camera})
+	_Tracer.Parent = EffectsFolder()
 
 	table.insert(_TracersList, {
 		Object = _Tracer;
@@ -74,6 +93,17 @@ function CastEffects:CreateRaycastDebug(origin, goal)
 end
 
 RunService:BindToRenderStep("HC_TracerUpdate", Enum.RenderPriority.Input.Value - 25, function(deltaTime)
+	for Index, Beam in BeamUpdates do
+		if Beam.Parent == nil then
+			table.remove(BeamUpdates, Index)
+			continue
+		end
+		Beam.Beam.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0, Beam.Beam.Transparency.Keypoints[1].Value + deltaTime),
+			NumberSequenceKeypoint.new(1, 1)
+		}
+	end
+
 	for Index, Tracer: Tracer in _TracersList do
 		if not Tracer._ready then
 			Tracer._ready = true

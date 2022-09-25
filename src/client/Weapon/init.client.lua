@@ -17,13 +17,15 @@ local CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 
 local function WeaponFire(origin: Vector3, direction: Vector3)
 	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
-	
+
 	if not Result then
+		CastEffects:NewBulletSmoke(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, origin + (direction * 1024))
 		CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, origin + (direction * 1024))
 		return
 	end
 
 	CastEffects:NewBulletHole(Result.Position, Result.Normal)
+	CastEffects:NewBulletSmoke(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, Result.Position)
 	-- CastEffects:CreateFakeTracer(Origin, Result.Position)
 	CastEffects:CreateFakeTracer(CurrentViewmodel.Model["UMP-45"].Handle.Exit.WorldPosition, Result.Position)
 
@@ -40,6 +42,9 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		local OriginPosition: Vector3 = Camera.CFrame.Position
 		local LookVector: Vector3 = Camera.CFrame.LookVector
+
+		workspace.FireSounds.fire:Play()
+		workspace.FireSounds.distant:Play()
 
 		WeaponFire(OriginPosition, LookVector)
 	end
