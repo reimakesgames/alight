@@ -14,7 +14,7 @@ local function QuickInstance(ClassName: string, Properties: {[string]: any})
 end
 
 type DefaultArms = {
-	Animator: Animator;
+	AnimationController: AnimationController;
 	["Left Arm"]: Part;
 	["Right Arm"]: Part;
 	HumanoidRootPart: Part;
@@ -39,7 +39,10 @@ function Viewmodel.new(model: Model): Viewmodel
 	local self = setmetatable({
 		Culled = true;
 		Springs = {
-			Sway = Spring.new()
+			Sway = Spring.new(5, 50, 4, 4);
+			WalkCycle = Spring.new(5, 50, 4, 4);
+			Recoil = Spring.new(5, 25, 3, 16);
+			RecoilNoise = Spring.new(5, 50, 2, 8)
 		}
 	}, Viewmodel)
 
