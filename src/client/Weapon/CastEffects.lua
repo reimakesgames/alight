@@ -53,13 +53,13 @@ end
 
 function CastEffects:NewBulletSmoke(startPosition, endPosition)
 	local bulletSmoke = Environment.Smoke:Clone()
-	-- bulletSmoke.Start.WorldPosition = startPosition
-	-- bulletSmoke.End.WorldPosition = endPosition
 	bulletSmoke.CFrame = CFrame.new(startPosition, endPosition)
+	-- bulletSmoke.Start.WorldPosition = startPosition
+	bulletSmoke.End.WorldPosition = endPosition
+	bulletSmoke.Parent = EffectsFolder()
 
 	table.insert(BeamUpdates, bulletSmoke)
 
-	bulletSmoke.Parent = EffectsFolder()
 	task.delay(1, function()
 		bulletSmoke:Destroy()
 	end)
@@ -98,9 +98,13 @@ RunService:BindToRenderStep("HC_TracerUpdate", Enum.RenderPriority.Input.Value -
 			table.remove(BeamUpdates, Index)
 			continue
 		end
+		local Percentage = math.clamp((Beam.Start.WorldPosition - Beam.End.WorldPosition).Magnitude / 16, 0, 1)
+
+		local TheValue = Beam.Beam.Transparency.Keypoints[1].Value + deltaTime
+		local TheOtherValue = TheValue + ((1 - TheValue) * Percentage)
 		Beam.Beam.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0, Beam.Beam.Transparency.Keypoints[1].Value + deltaTime),
-			NumberSequenceKeypoint.new(1, 1)
+			NumberSequenceKeypoint.new(0, TheValue),
+			NumberSequenceKeypoint.new(1, TheOtherValue)
 		}
 	end
 
