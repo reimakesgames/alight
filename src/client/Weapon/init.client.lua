@@ -22,6 +22,11 @@ local Spring = require(Utility.Spring)
 local CurrentViewmodel
 local Anim = Instance.new("Animation")
 Anim.AnimationId = "rbxassetid://11060004291"
+local Anim2 = Instance.new("Animation")
+Anim2.AnimationId = "rbxassetid://11086817696"
+local Anim3 = Instance.new("Animation")
+Anim3.AnimationId = "rbxassetid://11087239261"
+local reloadAnimation, emptyReloadAnimation
 
 local Player = Players.LocalPlayer
 
@@ -32,6 +37,7 @@ local CharacterVelocityMagnitude = 0
 local SprintingModifier = 0
 local FiringModifier = 0
 local WalkSpeedModifier = 1
+local CamX, CamY, CamZ = 0, 0, 0
 
 local ViewmodelCFrame = CFrame.new()
 local ShiftButtonDown = false
@@ -80,6 +86,10 @@ local function UpdateViewmodel(deltaTime)
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
 
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
+	local RootCameraCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.Camera.CFrame)
+	local x, y, z = RootCameraCFrame:ToEulerAnglesYXZ()
+	CamX, CamY, CamZ = LinearInterpolate(CamX, x, deltaTime * 4), LinearInterpolate(CamY, y, deltaTime * 4), LinearInterpolate(CamZ, z, deltaTime * 4)
+	local RootCameraAngles = CFrame.Angles(CamX, CamY, CamZ)
 
 	if Aiming then
 		ViewmodelCFrame = ViewmodelCFrame:Lerp(AimCFrame:Inverse(), deltaTime * 12)
@@ -129,6 +139,7 @@ local function UpdateViewmodel(deltaTime)
 		0
 	)
 
+	Camera.CFrame = Camera.CFrame * RootCameraAngles
 	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset)
 end
 
@@ -173,6 +184,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 		ShiftButtonDown = true
 		Sprinting = true
+	elseif input.KeyCode == Enum.KeyCode.R then
+		reloadAnimation:Play()
 	end
 end)
 
@@ -196,6 +209,8 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 	CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
 	CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim):Play()
+	reloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim2)
+	emptyReloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim3)
 end)
 
 LocalPlayer.CharacterRemoving:Connect(function(character)
