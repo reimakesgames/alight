@@ -31,11 +31,15 @@ end
 local CharacterVelocityMagnitude = 0
 local SprintingModifier = 0
 local FiringModifier = 0
+local WalkSpeedModifier = 1
 
 local ViewmodelCFrame = CFrame.new()
+local ShiftButtonDown = false
 local Mouse1Down = false
 local Mouse2Down = false
+local Sprinting = false
 local Firing = false
+local Aiming = false
 
 local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.Recoil:ApplyForce(Vector3.new(0, 0, math.random(32, 40)))
@@ -73,11 +77,11 @@ local function UpdateViewmodel(deltaTime)
 	SprintingModifier = LinearInterpolate(SprintingModifier, PastMinVelocity, deltaTime * 16)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
-	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20), math.sin(time() * 10), 0))
+	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
 
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
 
-	if Mouse2Down then
+	if Aiming then
 		ViewmodelCFrame = ViewmodelCFrame:Lerp(AimCFrame:Inverse(), deltaTime * 12)
 	else
 		ViewmodelCFrame = ViewmodelCFrame:Lerp(CFrame.new(0, 0, 0), deltaTime * 12)
@@ -121,11 +125,21 @@ local function UpdateViewmodel(deltaTime)
 
 	local SprintingShift = CFrame.Angles(
 		0,
-		(SprintingModifier * (1 - PercentageToGoal)) * FiringModifier,
+		(SprintingModifier * (1 - PercentageToGoal)) * FiringModifier * ((WalkSpeedModifier - 1) * 4),
 		0
 	)
 
 	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset)
+end
+
+local function UpdateCharacterWalkSpeed(deltaTime)
+	if Sprinting then
+		WalkSpeedModifier = LinearInterpolate(WalkSpeedModifier, 1.25, (deltaTime * 16))
+	else
+		WalkSpeedModifier = LinearInterpolate(WalkSpeedModifier, 1, (deltaTime * 16))
+	end
+
+	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
 end
 
 UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
@@ -134,6 +148,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		if Firing then return end
 
+		Sprinting = false
 		Mouse1Down = true
 		repeat
 			Firing = true
@@ -148,8 +163,16 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			Firing = false
 		until not Mouse1Down
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+		Sprinting = false
 		Mouse2Down = true
-		UserInputService.MouseIconEnabled = false
+		Aiming = true
+	end
+
+	if input.KeyCode == Enum.KeyCode.LeftShift then
+		Aiming = false
+
+		ShiftButtonDown = true
+		Sprinting = true
 	end
 end)
 
@@ -160,7 +183,12 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 		Mouse1Down = false
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 		Mouse2Down = false
-		UserInputService.MouseIconEnabled = true
+		Aiming = false
+	end
+
+	if input.KeyCode == Enum.KeyCode.LeftShift then
+		ShiftButtonDown = false
+		Sprinting = false
 	end
 end)
 
@@ -177,4 +205,7 @@ end)
 
 RunService.RenderStepped:Connect(function(deltaTime)
 	UpdateViewmodel(deltaTime)
+	UpdateCharacterWalkSpeed(deltaTime)
+
+	UserInputService.MouseIconEnabled = not Aiming
 end)
