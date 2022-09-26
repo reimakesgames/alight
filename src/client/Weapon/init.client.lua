@@ -161,7 +161,7 @@ local function UpdateCharacterWalkSpeed(deltaTime)
 end
 
 local function AmmunitionLogic()
-	if Ammo >= MaxAmmo then
+	if Ammo >= MaxAmmo + 1 then
 		return
 	elseif Ammo > 0 then
 		reloadAnimation:Play()
