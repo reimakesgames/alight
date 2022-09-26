@@ -47,6 +47,13 @@ local Sprinting = false
 local Firing = false
 local Aiming = false
 
+local MaxAmmo = 30
+local Ammo = 30
+
+local function UpdateHUD()
+	LocalPlayer.PlayerGui.HUD.Ammo.Text = Ammo .. " /" .. MaxAmmo
+end
+
 local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.Recoil:ApplyForce(Vector3.new(0, 0, math.random(32, 40)))
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
@@ -153,11 +160,29 @@ local function UpdateCharacterWalkSpeed(deltaTime)
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
 end
 
+local function AmmunitionLogic()
+	if Ammo >= MaxAmmo then
+		return
+	elseif Ammo > 0 then
+		reloadAnimation:Play()
+		reloadAnimation.Stopped:Once(function()
+			Ammo = MaxAmmo + 1
+			UpdateHUD()
+		end)
+	elseif Ammo == 0 then
+		emptyReloadAnimation:Play()
+		emptyReloadAnimation.Stopped:Once(function()
+			Ammo = MaxAmmo
+			UpdateHUD()
+		end)
+	end
+end
+
 UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
 	if gameProcessedEvent then return end
 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		if Firing then return end
+		if Firing or Ammo == 0 then return end
 
 		Sprinting = false
 		Mouse1Down = true
@@ -170,9 +195,11 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			workspace.FireSounds.distant:Play()
 
 			WeaponFire(OriginPosition, LookVector)
+			Ammo = Ammo - 1
+			UpdateHUD()
 			task.wait(0.1)
 			Firing = false
-		until not Mouse1Down
+		until not Mouse1Down or Ammo == 0
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 		Sprinting = false
 		Mouse2Down = true
@@ -185,7 +212,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		ShiftButtonDown = true
 		Sprinting = true
 	elseif input.KeyCode == Enum.KeyCode.R then
-		reloadAnimation:Play()
+		AmmunitionLogic()
 	end
 end)
 
@@ -219,7 +246,9 @@ LocalPlayer.CharacterRemoving:Connect(function(character)
 end)
 
 RunService.RenderStepped:Connect(function(deltaTime)
-	UpdateViewmodel(deltaTime)
+	if CurrentViewmodel then
+		UpdateViewmodel(deltaTime)
+	end
 	UpdateCharacterWalkSpeed(deltaTime)
 
 	UserInputService.MouseIconEnabled = not Aiming
