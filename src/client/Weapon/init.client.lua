@@ -103,13 +103,13 @@ local function UpdateViewmodel(deltaTime)
 		(RecoilNoise.Z / 32) * PercentageToGoal
 	)
 
-	local WalkCycle = CFrame.Angles(
+	local WalkCycleAngles = CFrame.Angles(
 		(WalkCycle.X / 512) * CharacterVelocityMagnitude * (0.1 + ((1 - PercentageToGoal) * 0.9)),
 		(WalkCycle.Y / 512) * CharacterVelocityMagnitude * (0.1 + ((1 - PercentageToGoal) * 0.9)),
 		0
 	)
 
-	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycle * ViewmodelCFrame * RecoilOffset)
+	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycleAngles * ViewmodelCFrame * RecoilOffset)
 end
 
 UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
