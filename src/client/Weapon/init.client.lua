@@ -11,6 +11,7 @@ local Gameplay = Assets:WaitForChild("Gameplay")
 local Environment = Gameplay:WaitForChild("Environment")
 
 local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
 local Caster = require(script.Caster)
 local CastEffects = require(script.CastEffects)
@@ -18,10 +19,9 @@ local SoundEffects = require(script.SoundEffects)
 local Viewmodel = require(script.Viewmodel)
 local Spring = require(Utility.Spring)
 
-local CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
+local CurrentViewmodel
 local Anim = Instance.new("Animation")
 Anim.AnimationId = "rbxassetid://11060004291"
-CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim):Play()
 
 local Player = Players.LocalPlayer
 
@@ -29,6 +29,8 @@ local function LinearInterpolate(x: number, y: number, alpha: number)
 	return x * (1 - alpha) + y * alpha
 end
 local CharacterVelocityMagnitude = 0
+local SprintingModifier = 0
+local FiringModifier = 0
 
 local ViewmodelCFrame = CFrame.new()
 local Mouse1Down = false
@@ -66,6 +68,10 @@ local function UpdateViewmodel(deltaTime)
 	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = Player.Character.HumanoidRootPart:GetVelocityAtPosition(Player.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, deltaTime * 8)
+	local PastMinVelocity = Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude > 8 and 1 or 0
+	FiringModifier = Firing and 0 or LinearInterpolate(FiringModifier, 1, deltaTime * 16)
+	SprintingModifier = LinearInterpolate(SprintingModifier, PastMinVelocity, deltaTime * 16)
+
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20), math.sin(time() * 10), 0))
 
@@ -113,7 +119,13 @@ local function UpdateViewmodel(deltaTime)
 		0
 	)
 
-	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycleAngles * ViewmodelCFrame * RecoilOffset)
+	local SprintingShift = CFrame.Angles(
+		0,
+		(SprintingModifier * (1 - PercentageToGoal)) * FiringModifier,
+		0
+	)
+
+	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset)
 end
 
 UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
@@ -150,6 +162,17 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 		Mouse2Down = false
 		UserInputService.MouseIconEnabled = true
 	end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(character)
+	CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
+	CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
+	CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim):Play()
+end)
+
+LocalPlayer.CharacterRemoving:Connect(function(character)
+	CurrentViewmodel:CleanUp()
+	CurrentViewmodel = nil
 end)
 
 RunService.RenderStepped:Connect(function(deltaTime)
