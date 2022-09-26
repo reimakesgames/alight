@@ -14,6 +14,7 @@ local Camera = workspace.CurrentCamera
 
 local Caster = require(script.Caster)
 local CastEffects = require(script.CastEffects)
+local SoundEffects = require(script.SoundEffects)
 local Viewmodel = require(script.Viewmodel)
 local Spring = require(Utility.Spring)
 
@@ -39,6 +40,7 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
 	CastEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.Exit)
+	SoundEffects:PlaySound(workspace.FireSounds.fire)
 
 	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
 
