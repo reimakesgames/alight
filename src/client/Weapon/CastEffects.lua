@@ -37,6 +37,18 @@ local BeamUpdates = {}
 
 local CastEffects = {}
 
+function CastEffects:EmitParticlesFrom(attachment: Attachment)
+	for _, object: ParticleEmitter in attachment:GetChildren() do
+		if not object:IsA("ParticleEmitter") then continue end
+
+		if object.Name == "Flash" or object.Name == "Shockwave" then
+			object:Emit(1)
+		elseif object.Name == "Smoke" then
+			object:Emit(8)
+		end
+	end
+end
+
 function CastEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3)
 	local bulletHole = Environment.BulletHole:Clone()
 	bulletHole.CFrame = CFrame.new(hitPosition, hitPosition + hitNormal)

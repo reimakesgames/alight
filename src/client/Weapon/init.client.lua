@@ -38,6 +38,8 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.Recoil:ApplyForce(Vector3.new(0, 0, math.random(32, 40)))
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
+	CastEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.Exit)
+
 	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
 
 	if not Result then
