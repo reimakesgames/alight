@@ -65,16 +65,17 @@ end
 function Viewmodel:Decorate(model: Model)
 	local newModel = model:Clone()
 
-	local leftArmMotor: Motor6D = QuickInstance("Motor6D", {
+	QuickInstance("Motor6D", {
 		Part0 = newModel["Left Arm"];
 		Part1 = self.Model["Left Arm"];
+		Parent = newModel["Left Arm"]
 	})
-	leftArmMotor.Parent = newModel["Left Arm"]
-	local rightArmMotor: Motor6D = QuickInstance("Motor6D", {
+
+	QuickInstance("Motor6D", {
 		Part0 = newModel["Right Arm"];
 		Part1 = self.Model["Right Arm"];
+		Parent = newModel["Right Arm"]
 	})
-	rightArmMotor.Parent = newModel["Right Arm"]
 
 	LocalPlayer.Character:WaitForChild("Body Colors"):Clone().Parent = newModel
 	LocalPlayer.Character:WaitForChild("Shirt"):Clone().Parent = newModel
