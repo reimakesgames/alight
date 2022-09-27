@@ -1,6 +1,8 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
+local CurrentCamera = workspace.CurrentCamera
+
 export type Caster = {
 	FindThickness: (object: Instance, hitPosition: Vector3, startPosition: Vector3, rayDirection: Vector3) -> (number | nil);
 	Cast: (startPosition: Vector3, rayDirection: Vector3) -> (RaycastResult | nil, Vector3)
@@ -24,7 +26,7 @@ end
 
 function Caster:Cast(startPosition: Vector3, endPosition: Vector3): (RaycastResult | nil)
 	local RaycastParameter = RaycastParams.new()
-	RaycastParameter.FilterDescendantsInstances = {LocalPlayer.Character}
+	RaycastParameter.FilterDescendantsInstances = {LocalPlayer.Character, CurrentCamera}
 	RaycastParameter.FilterType = Enum.RaycastFilterType.Blacklist
 
 	local RaycastResult = workspace:Raycast(startPosition, endPosition, RaycastParameter)
