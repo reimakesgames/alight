@@ -48,8 +48,8 @@ local Firing = false
 local Reloading = false
 local Aiming = false
 
-local MaxAmmo = 30
-local Ammo = 30
+local MaxAmmo = 25
+local Ammo = 25
 
 local function UpdateHUD()
 	LocalPlayer.PlayerGui.HUD.Ammo.Text = Ammo .. " /" .. MaxAmmo
