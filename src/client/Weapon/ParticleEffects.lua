@@ -1,3 +1,4 @@
+local Debris = game:GetService("Debris")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -70,6 +71,22 @@ function CastEffects:NewBulletSmoke(startPosition, endPosition)
 
 	task.delay(1, function()
 		bulletSmoke:Destroy()
+	end)
+end
+
+function CastEffects:NewBulletShell(startCFrame)
+	local bulletShell = Environment.Shell:Clone()
+	bulletShell.CFrame = startCFrame
+	bulletShell.Parent = EffectsFolder()
+	bulletShell:ApplyImpulse(bulletShell.CFrame.LookVector * 0.05)
+	bulletShell:ApplyAngularImpulse(Vector3.new(0, 0.001, 0))
+
+	bulletShell.Touched:Once(function(otherPart)
+		Debris:AddItem(bulletShell.Impact, bulletShell.Impact.TimeLength)
+		local Velocity = bulletShell:GetVelocityAtPosition(bulletShell.Position)
+		bulletShell.Impact.PlaybackSpeed = 1 + ((math.random() * 0.2) - 0.1)
+		bulletShell.Impact.Volume = math.clamp(Velocity.Magnitude / 128, 0, 1)
+		bulletShell.Impact:Play()
 	end)
 end
 

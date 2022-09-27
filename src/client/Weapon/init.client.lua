@@ -60,7 +60,10 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
 	ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle)
-	ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
+	task.delay(0.02, function()
+		ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
+		ParticleEffects:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
+	end)
 	SoundEffects:PlaySound(workspace.FireSounds.fire)
 
 	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
