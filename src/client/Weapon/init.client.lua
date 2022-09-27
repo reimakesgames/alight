@@ -37,6 +37,7 @@ local SprintingModifier = 0
 local FiringModifier = 0
 local ReloadingModifier = 0
 local WalkSpeedModifier = 1
+local MovingModifier = 0
 local CamX, CamY, CamZ = 0, 0, 0
 
 local ViewmodelCFrame = CFrame.new()
@@ -101,6 +102,7 @@ local function UpdateViewmodel(deltaTime)
 	FiringModifier = Firing and 0 or LinearInterpolate(FiringModifier, 1, deltaTime * 16)
 	SprintingModifier = LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, deltaTime * 16)
 	ReloadingModifier = LinearInterpolate(ReloadingModifier, Reloading and 1 or 0.25, deltaTime * 8)
+	MovingModifier = LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), deltaTime * 16)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
@@ -155,7 +157,7 @@ local function UpdateViewmodel(deltaTime)
 
 	local SprintingShift = CFrame.Angles(
 		0,
-		(SprintingModifier * (1 - PercentageToGoal)) * FiringModifier * ((WalkSpeedModifier - 1) * 4),
+		(SprintingModifier * (1 - PercentageToGoal)) * FiringModifier * ((WalkSpeedModifier - 1) * 4) * MovingModifier,
 		0
 	)
 
