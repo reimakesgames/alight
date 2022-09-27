@@ -2,19 +2,12 @@ local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
 local Utility = ReplicatedFirst.Utility
-local Spring = require(Utility.Spring)
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-local function QuickInstance(ClassName: string, Properties: {[string]: any})
-	local Object = Instance.new(ClassName)
-	for Property, Value in Properties do
-		Object[Property] = Value
-	end
-
-	return Object
-end
+local Spring = require(Utility.Spring)
+local QuickInstance = require(Utility.QuickInstance)
 
 local function ViewmodelsFolder()
 	return Camera:FindFirstChild("Viewmodels") or QuickInstance("Folder", {Name = "Viewmodels", Parent = Camera})

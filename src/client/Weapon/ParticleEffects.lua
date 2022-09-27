@@ -1,7 +1,12 @@
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local Utility = ReplicatedFirst.Utility
+
 local Camera = workspace.CurrentCamera
+
+local QuickInstance = require(Utility.QuickInstance)
 
 type Tracer = {
 	Object: Part;
@@ -10,15 +15,6 @@ type Tracer = {
 	Magnitude: number;
 	_ready: boolean;
 }
-
-local function QuickInstance(ClassName: string, Properties: {[string]: any})
-	local Object = Instance.new(ClassName)
-	for Property, Value in Properties do
-		Object[Property] = Value
-	end
-
-	return Object
-end
 
 local function EffectsFolder()
 	return Camera:FindFirstChild("Effects") or QuickInstance("Folder", {Name = "Effects", Parent = Camera})

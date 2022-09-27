@@ -13,11 +13,12 @@ local Environment = Gameplay:WaitForChild("Environment")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
+local Spring = require(Utility.Spring)
+
 local Caster = require(script.Caster)
 local ParticleEffects = require(script.ParticleEffects)
 local SoundEffects = require(script.SoundEffects)
 local Viewmodel = require(script.Viewmodel)
-local Spring = require(Utility.Spring)
 
 local CurrentViewmodel
 local Anim = Instance.new("Animation")

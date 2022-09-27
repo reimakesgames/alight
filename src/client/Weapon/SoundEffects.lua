@@ -1,13 +1,9 @@
 local Debris = game:GetService("Debris")
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 
-local function QuickInstance<Class>(ClassName: Class, Properties: {[string]: any}): Class
-	local Object = Instance.new(ClassName)
-	for Property, Value in Properties do
-		Object[Property] = Value
-	end
+local Utility = ReplicatedFirst.Utility
 
-	return Object
-end
+local QuickInstance = require(Utility.QuickInstance)
 
 local function ActiveSoundsFolder()
 	return workspace:FindFirstChild("ActiveSoundsFolder") or QuickInstance("Folder", {Name = "ActiveSoundsFolder", Parent = workspace})
