@@ -29,8 +29,6 @@ local Anim3 = Instance.new("Animation")
 Anim3.AnimationId = "rbxassetid://11087239261"
 local reloadAnimation, emptyReloadAnimation
 
-local Player = Players.LocalPlayer
-
 local function LinearInterpolate(x: number, y: number, alpha: number)
 	return x * (1 - alpha) + y * alpha
 end
@@ -87,7 +85,7 @@ end
 
 local function UpdateViewmodel(deltaTime)
 	local MouseDelta = UserInputService:GetMouseDelta()
-	local CharacterVelocity = Player.Character.HumanoidRootPart:GetVelocityAtPosition(Player.Character.HumanoidRootPart.Position)
+	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, deltaTime * 8)
 	FiringModifier = Firing and 0 or LinearInterpolate(FiringModifier, 1, deltaTime * 16)
 	SprintingModifier = LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, deltaTime * 16)
