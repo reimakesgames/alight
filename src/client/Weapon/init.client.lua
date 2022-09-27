@@ -46,6 +46,7 @@ local Mouse1Down = false
 local Mouse2Down = false
 local Sprinting = false
 local Firing = false
+local Reloading = false
 local Aiming = false
 
 local MaxAmmo = 30
@@ -163,19 +164,21 @@ local function UpdateCharacterWalkSpeed(deltaTime)
 end
 
 local function AmmunitionLogic()
-	if Ammo >= MaxAmmo + 1 then
-		return
-	elseif Ammo > 0 then
+	if Ammo > 0 then
 		reloadAnimation:Play()
+		Reloading = true
 		reloadAnimation.Stopped:Once(function()
 			Ammo = MaxAmmo + 1
 			UpdateHUD()
+			Reloading = false
 		end)
 	elseif Ammo == 0 then
 		emptyReloadAnimation:Play()
+		Reloading = true
 		emptyReloadAnimation.Stopped:Once(function()
 			Ammo = MaxAmmo
 			UpdateHUD()
+			Reloading = false
 		end)
 	end
 end
@@ -184,7 +187,9 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if gameProcessedEvent then return end
 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		if Firing or Ammo == 0 then return end
+		if Firing then return end
+		if Ammo == 0 then return end
+		if Reloading then return end
 
 		Sprinting = false
 		Mouse1Down = true
@@ -209,11 +214,16 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	end
 
 	if input.KeyCode == Enum.KeyCode.LeftShift then
+		if Reloading then return end
 		Aiming = false
 
 		ShiftButtonDown = true
 		Sprinting = true
 	elseif input.KeyCode == Enum.KeyCode.R then
+		if Firing then return end
+		if Ammo >= MaxAmmo + 1 then return end
+		if Reloading then return end
+
 		AmmunitionLogic()
 	end
 end)
