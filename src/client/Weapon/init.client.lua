@@ -37,6 +37,7 @@ end
 local CharacterVelocityMagnitude = 0
 local SprintingModifier = 0
 local FiringModifier = 0
+local ReloadingModifier = 0
 local WalkSpeedModifier = 1
 local CamX, CamY, CamZ = 0, 0, 0
 
@@ -88,9 +89,9 @@ local function UpdateViewmodel(deltaTime)
 	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = Player.Character.HumanoidRootPart:GetVelocityAtPosition(Player.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, deltaTime * 8)
-	local PastMinVelocity = Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude > 8 and 1 or 0
 	FiringModifier = Firing and 0 or LinearInterpolate(FiringModifier, 1, deltaTime * 16)
-	SprintingModifier = LinearInterpolate(SprintingModifier, PastMinVelocity, deltaTime * 16)
+	SprintingModifier = LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, deltaTime * 16)
+	ReloadingModifier = LinearInterpolate(ReloadingModifier, Reloading and 1 or 0.25, deltaTime * 8)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
@@ -98,7 +99,7 @@ local function UpdateViewmodel(deltaTime)
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
 	local RootCameraCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.Camera.CFrame)
 	local x, y, z = RootCameraCFrame:ToEulerAnglesYXZ()
-	CamX, CamY, CamZ = LinearInterpolate(CamX, x, deltaTime * 4), LinearInterpolate(CamY, y, deltaTime * 4), LinearInterpolate(CamZ, z, deltaTime * 4)
+	CamX, CamY, CamZ = LinearInterpolate(CamX, x, deltaTime * 16), LinearInterpolate(CamY, y, deltaTime * 16), LinearInterpolate(CamZ, z, deltaTime * 16)
 	local RootCameraAngles = CFrame.Angles(CamX, CamY, CamZ)
 
 	if Aiming then
@@ -119,8 +120,8 @@ local function UpdateViewmodel(deltaTime)
 	local PercentageToGoal = ViewmodelCFrame.Position.Magnitude / AimCFrame.Position.Magnitude
 
 	local SwayAngles = CFrame.Angles(
-		-Sway.Y * (0.1 + ((1 - PercentageToGoal) * 0.9)), -- Up and down
-		-Sway.X * (1 - PercentageToGoal), -- Left and right
+		-Sway.Y * (0.1 + ((1 - PercentageToGoal) * 0.9)) * (1 - SprintingModifier), -- Up and down
+		-Sway.X * (1 - PercentageToGoal) * (1 - SprintingModifier), -- Left and right
 		-- -Sway.X,
 		(-Sway.X * 0.5) * PercentageToGoal -- tilt left and right on zoom
 	)
@@ -131,15 +132,15 @@ local function UpdateViewmodel(deltaTime)
 		Recoil.Z / 32
 	)
 
-	local RecoilNoise = CFrame.Angles(
+	local RecoilNoiseAngles = CFrame.Angles(
 		0,
 		0,
 		(RecoilNoise.Z / 32) * PercentageToGoal
 	)
 
 	local WalkCycleAngles = CFrame.Angles(
-		(WalkCycle.X / 512) * CharacterVelocityMagnitude * (0.1 + ((1 - PercentageToGoal) * 0.9)),
-		(WalkCycle.Y / 512) * CharacterVelocityMagnitude * (0.1 + ((1 - PercentageToGoal) * 0.9)),
+		(WalkCycle.X / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * ReloadingModifier * (1 + SprintingModifier),
+		(WalkCycle.Y / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * ReloadingModifier * (1 + SprintingModifier),
 		0
 	)
 
@@ -150,7 +151,7 @@ local function UpdateViewmodel(deltaTime)
 	)
 
 	Camera.CFrame = Camera.CFrame * RootCameraAngles
-	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoise * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset)
+	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoiseAngles * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset)
 end
 
 local function UpdateCharacterWalkSpeed(deltaTime)
@@ -214,6 +215,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	end
 
 	if input.KeyCode == Enum.KeyCode.LeftShift then
+		if Firing then return end
 		if Reloading then return end
 		Aiming = false
 
