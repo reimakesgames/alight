@@ -32,9 +32,9 @@ local Environment = Gameplay:WaitForChild("Environment")
 local _TracersList = {}
 local BeamUpdates = {}
 
-local CastEffects = {}
+local ParticleEffects = {}
 
-function CastEffects:EmitParticlesFrom(attachment: Attachment)
+function ParticleEffects:EmitParticlesFrom(attachment: Attachment)
 	for _, object: ParticleEmitter in attachment:GetChildren() do
 		if not object:IsA("ParticleEmitter") then continue end
 
@@ -46,9 +46,13 @@ function CastEffects:EmitParticlesFrom(attachment: Attachment)
 	end
 end
 
-function CastEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3)
+function ParticleEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3, hitObject: BasePart)
 	local bulletHole = Environment.BulletHole:Clone()
 	bulletHole.CFrame = CFrame.new(hitPosition, hitPosition + hitNormal)
+	local Weld = QuickInstance("WeldConstraint")
+	Weld.Part0 = bulletHole
+	Weld.Part1 = hitObject
+	Weld.Parent = bulletHole
 	bulletHole.Parent = EffectsFolder()
 	task.delay(0.1, function()
 		for _, object in bulletHole.Emitters:GetChildren() do
@@ -60,7 +64,7 @@ function CastEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3)
 	end)
 end
 
-function CastEffects:NewBulletSmoke(startPosition, endPosition)
+function ParticleEffects:NewBulletSmoke(startPosition, endPosition)
 	local bulletSmoke = Environment.Smoke:Clone()
 	bulletSmoke.CFrame = CFrame.new(startPosition, endPosition)
 	-- bulletSmoke.Start.WorldPosition = startPosition
@@ -74,7 +78,7 @@ function CastEffects:NewBulletSmoke(startPosition, endPosition)
 	end)
 end
 
-function CastEffects:NewBulletShell(startCFrame)
+function ParticleEffects:NewBulletShell(startCFrame)
 	local bulletShell = Environment.Shell:Clone()
 	bulletShell.CFrame = startCFrame
 	bulletShell.Parent = EffectsFolder()
@@ -90,7 +94,7 @@ function CastEffects:NewBulletShell(startCFrame)
 	end)
 end
 
-function CastEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vector3)
+function ParticleEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vector3)
 	local _Tracer = Environment.Tracer:Clone()
 
 	_Tracer.CFrame = CFrame.new(StartPosition, StartPosition + (EndPosition - StartPosition).Unit)
@@ -105,7 +109,7 @@ function CastEffects:CreateFakeTracer(StartPosition: Vector3, EndPosition: Vecto
 	})
 end
 
-function CastEffects:CreateRaycastDebug(origin, goal)
+function ParticleEffects:CreateRaycastDebug(origin, goal)
 	local startPart = Environment.Start:Clone()
 	local endPart = Environment.End:Clone()
 
@@ -147,4 +151,4 @@ RunService:BindToRenderStep("HC_TracerUpdate", Enum.RenderPriority.Input.Value -
 	end
 end)
 
-return CastEffects
+return ParticleEffects
