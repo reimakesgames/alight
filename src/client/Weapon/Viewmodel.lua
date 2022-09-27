@@ -21,12 +21,18 @@ local function ViewmodelsFolder()
 end
 
 type DefaultArms = {
-	AnimationController: AnimationController;
+	AnimationController: AnimationController | {
+		Animator: Animator
+	};
+	HumanoidRootPart: Part;
+	Camera: Part;
+	WeaponModel: Model | {
+		AimPoint: Attachment;
+		Muzzle: Attachment;
+		EjectionPort: Attachment;
+	};
 	["Left Arm"]: Part;
 	["Right Arm"]: Part;
-	HumanoidRootPart: Part;
-	WeaponModel: Model;
-	Camera: Part;
 }
 
 export type Viewmodel = {
@@ -38,7 +44,7 @@ export type Viewmodel = {
 
 	Model: Model | DefaultArms;
 	Culled: boolean;
-	Springs: {[number]: Spring.Spring};
+	Springs: {[string]: Spring.Spring};
 	Decoration: Model;
 }
 

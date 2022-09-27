@@ -14,7 +14,7 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local Caster = require(script.Caster)
-local CastEffects = require(script.CastEffects)
+local ParticleEffects = require(script.ParticleEffects)
 local SoundEffects = require(script.SoundEffects)
 local Viewmodel = require(script.Viewmodel)
 local Spring = require(Utility.Spring)
@@ -58,21 +58,22 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.Recoil:ApplyForce(Vector3.new(0, 0, math.random(32, 40)))
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
-	CastEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.Exit)
+	ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle)
+	ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
 	SoundEffects:PlaySound(workspace.FireSounds.fire)
 
 	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
 
 	if not Result then
-		CastEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Exit.WorldPosition, origin + (direction * 1024))
-		CastEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Exit.WorldPosition, origin + (direction * 1024))
+		ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 1024))
+		ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 1024))
 		return
 	end
 
-	CastEffects:NewBulletHole(Result.Position, Result.Normal)
-	CastEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Exit.WorldPosition, Result.Position)
+	ParticleEffects:NewBulletHole(Result.Position, Result.Normal)
+	ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 	-- CastEffects:CreateFakeTracer(Origin, Result.Position)
-	CastEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Exit.WorldPosition, Result.Position)
+	ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 
 	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
 
