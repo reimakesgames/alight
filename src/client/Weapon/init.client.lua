@@ -74,10 +74,18 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 		return
 	end
 
-	ParticleEffects:NewBulletHole(Result.Position, Result.Normal)
+	ParticleEffects:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
 	ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 	-- CastEffects:CreateFakeTracer(Origin, Result.Position)
 	ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
+
+	local Model = Result.Instance:FindFirstAncestorWhichIsA("Model")
+	if Model then
+		local Humanoid = Model:FindFirstChildWhichIsA("Humanoid")
+		if Humanoid then
+			Humanoid.Health = Humanoid.Health - 28
+		end
+	end
 
 	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
 
