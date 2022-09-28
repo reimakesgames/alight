@@ -14,6 +14,7 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local Spring = require(Utility.Spring)
+local LerpTools = require(Utility.LerpTools)
 
 local Caster = require(script.Caster)
 local ParticleEffects = require(script.ParticleEffects)
@@ -29,9 +30,6 @@ local Anim3 = Instance.new("Animation")
 Anim3.AnimationId = "rbxassetid://11087239261"
 local reloadAnimation, emptyReloadAnimation
 
-local function LinearInterpolate(x: number, y: number, alpha: number)
-	return x * (1 - alpha) + y * alpha
-end
 local CharacterVelocityMagnitude = 0
 local SprintingModifier = 0
 local FiringModifier = 0
@@ -96,13 +94,15 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 end
 
 local function UpdateViewmodel(deltaTime)
+	LerpTools.DeltaTime = deltaTime
+
 	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
-	CharacterVelocityMagnitude = LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, deltaTime * 8)
-	FiringModifier = Firing and 0 or LinearInterpolate(FiringModifier, 1, deltaTime * 16)
-	SprintingModifier = LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, deltaTime * 16)
-	ReloadingModifier = LinearInterpolate(ReloadingModifier, Reloading and 1 or 0.25, deltaTime * 8)
-	MovingModifier = LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), deltaTime * 16)
+	CharacterVelocityMagnitude = LerpTools:LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, 8)
+	FiringModifier = Firing and 0 or LerpTools:LinearInterpolate(FiringModifier, 1, 16)
+	SprintingModifier = LerpTools:LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, 16)
+	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0.25, 8)
+	MovingModifier = LerpTools:LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), 16)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
@@ -110,13 +110,13 @@ local function UpdateViewmodel(deltaTime)
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
 	local RootCameraCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.Camera.CFrame)
 	local x, y, z = RootCameraCFrame:ToEulerAnglesYXZ()
-	CamX, CamY, CamZ = LinearInterpolate(CamX, x, deltaTime * 16), LinearInterpolate(CamY, y, deltaTime * 16), LinearInterpolate(CamZ, z, deltaTime * 16)
+	CamX, CamY, CamZ = LerpTools:LinearInterpolate(CamX, x, 16), LerpTools:LinearInterpolate(CamY, y, 16), LerpTools:LinearInterpolate(CamZ, z, 16)
 	local RootCameraAngles = CFrame.Angles(CamX, CamY, CamZ)
 
 	if Aiming then
-		ViewmodelCFrame = ViewmodelCFrame:Lerp(AimCFrame:Inverse(), deltaTime * 12)
+		ViewmodelCFrame = ViewmodelCFrame:Lerp(AimCFrame:Inverse(), LerpTools:CreateFramerateIndependentAlpha(12))
 	else
-		ViewmodelCFrame = ViewmodelCFrame:Lerp(CFrame.new(0, 0, 0), deltaTime * 12)
+		ViewmodelCFrame = ViewmodelCFrame:Lerp(CFrame.new(0, 0, 0), LerpTools:CreateFramerateIndependentAlpha(12))
 	end
 
 	for _, spring: Spring.Spring in CurrentViewmodel.Springs do
@@ -145,7 +145,7 @@ local function UpdateViewmodel(deltaTime)
 
 	local RecoilNoiseAngles = CFrame.Angles(
 		0,
-		0,
+		RecoilNoise.Z / 512,
 		(RecoilNoise.Z / 32) * PercentageToGoal
 	)
 
@@ -166,10 +166,12 @@ local function UpdateViewmodel(deltaTime)
 end
 
 local function UpdateCharacterWalkSpeed(deltaTime)
+	LerpTools.DeltaTime = deltaTime
+
 	if Sprinting then
-		WalkSpeedModifier = LinearInterpolate(WalkSpeedModifier, 1.25, (deltaTime * 16))
+		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1.25, 16)
 	else
-		WalkSpeedModifier = LinearInterpolate(WalkSpeedModifier, 1, (deltaTime * 16))
+		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1, 16)
 	end
 
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
