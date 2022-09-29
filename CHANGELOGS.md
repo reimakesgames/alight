@@ -1,10 +1,8 @@
 # v0.0.7
 added this
 ## Changes
-Added changelog ui
-Added github pull module
-## Fixes
-Nothing
+Added a Changelog List UI
+Added a module that lets you read files from github
 
 
 
@@ -13,9 +11,10 @@ Nothing
 
 
 # v0.0.6
-idk anymore
+dopamine
 ## Changes
-Fixed bullet hole methods from parts to attachments
+Optimized bullet hole methods from parts to attachments
+Tweaked spring values to reflect on states
 ## Fixes
 Fixed LinearInterpolate to be framerate independent
 
@@ -23,20 +22,23 @@ Fixed LinearInterpolate to be framerate independent
 even more visual effects fixes
 ## Changes
 Added bullet shells
-Expanded reloading into better ones
+Added more checks to the reload function
+Renamed instance references in scripts
+Moved LinearInterpolate into its own module
 ## Fixes
 Fixed bullet hole to weld onto part instead of anchored
 Fixed caster not ignoring camera children
 Fixed broken sprinting offsets
-Renamed instances
-Moved LinearInterpolate into its own module
+Fixed weapon states
+Tweaked spring values to reflect on states
 
 # v0.0.4
 Visual effects fixes
 ## Changes
-Added aiming and basic reloading
+Added aiming and basic reloading animations alongside states
+Added reloading camera shake
 Added viewmodel decorations
-Added walkcycles, recoil, sprinting, and camerashake, this gets interrupted
+Added walkcycles, recoil and sprinting states and springs
 Added emit particles method
 Added sound effects module
 ## Fixes
