@@ -10,7 +10,7 @@ export type Caster = {
 
 local Caster = {}
 
-function Caster:FindThickness(object: Instance, hitPosition: Vector3, startPosition: Vector3, endPosition: Vector3): (number | nil, Vector3 | nil)
+function Caster:FindThickness(object: Instance, hitPosition: Vector3, startPosition: Vector3, endPosition: Vector3): (number | nil, RaycastResult | nil)
 	local RaycastParameter = RaycastParams.new()
 	RaycastParameter.FilterDescendantsInstances = {object}
 	RaycastParameter.FilterType = Enum.RaycastFilterType.Whitelist
@@ -21,7 +21,7 @@ function Caster:FindThickness(object: Instance, hitPosition: Vector3, startPosit
 	end
 
 	local TravelDistance = (RaycastResult.Position - hitPosition).Magnitude
-	return TravelDistance :: number, RaycastResult.Position :: Vector3
+	return TravelDistance :: number, RaycastResult :: RaycastResult
 end
 
 function Caster:Cast(startPosition: Vector3, endPosition: Vector3): (RaycastResult | nil)

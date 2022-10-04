@@ -1,6 +1,10 @@
 # v0.0.8
 ## Changes
 Added Pivot Rotating for Viewmodel
+Added Wallbanging
+Added Bullet exit method for particle effects
+Changed Particle Emit type from Time to Emit
+Changed FindThickness returning Vector3 instead of RaycastResult
 ## Fixes
 Fixed Reloading modifier being broken for viewmodel sway
 Fixed WalkCycle not being seamless when sprinting and walking

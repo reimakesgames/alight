@@ -80,13 +80,39 @@ function ParticleEffects:NewBulletHole(hitPosition: Vector3, hitNormal: Vector3,
 	attachment0.WorldCFrame = CFrame.new(hitPosition + emitterAttachment.WorldCFrame.RightVector * 0.25, hitPosition + emitterAttachment.WorldCFrame.RightVector * 0.25 + hitNormal)
 	attachment1.WorldCFrame = CFrame.new(hitPosition + emitterAttachment.WorldCFrame.RightVector * -0.25, hitPosition + emitterAttachment.WorldCFrame.RightVector * -0.25 + hitNormal)
 
-	task.delay(0.1, function()
-		for _, object in emitterAttachment:GetChildren() do
-			if object:IsA("ParticleEmitter") then
-				object.Enabled = false
-			end
+	for _, object in emitterAttachment:GetChildren() do
+		if object:IsA("ParticleEmitter") then
+			object:Emit(8)
 		end
+	end
+
+	task.delay(1, function()
+		emitterAttachment:Destroy()
 	end)
+end
+
+function ParticleEffects:NewBulletExit(hitPosition: Vector3, hitNormal: Vector3, hitObject: BasePart, tracePath: Vector3)
+	local emitterAttachment = Environment.NewBulletHole.Main:Clone()
+	local attachment0 = Environment.NewBulletHole.Attachment0:Clone()
+	local attachment1 = Environment.NewBulletHole.Attachment1:Clone()
+
+	attachment0.Beam.Attachment0 = attachment0
+	attachment0.Beam.Attachment1 = attachment1
+
+	emitterAttachment.Parent = hitObject
+	attachment0.Parent = hitObject
+	attachment1.Parent = hitObject
+
+	emitterAttachment.WorldCFrame = CFrame.new(hitPosition, hitPosition + hitNormal)
+	attachment0.WorldCFrame = CFrame.new(hitPosition + emitterAttachment.WorldCFrame.RightVector * 0.25, hitPosition + emitterAttachment.WorldCFrame.RightVector * 0.25 + hitNormal)
+	attachment1.WorldCFrame = CFrame.new(hitPosition + emitterAttachment.WorldCFrame.RightVector * -0.25, hitPosition + emitterAttachment.WorldCFrame.RightVector * -0.25 + hitNormal)
+	emitterAttachment.WorldCFrame = CFrame.new(hitPosition, hitPosition + tracePath)
+
+	for _, object in emitterAttachment:GetChildren() do
+		if object:IsA("ParticleEmitter") then
+			object:Emit(8)
+		end
+	end
 
 	task.delay(1, function()
 		emitterAttachment:Destroy()

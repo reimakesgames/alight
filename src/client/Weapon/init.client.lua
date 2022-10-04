@@ -56,6 +56,24 @@ local function UpdateHUD()
 	LocalPlayer.PlayerGui.HUD.Ammo.Text = Ammo .. " /" .. MaxAmmo
 end
 
+local function FindHumanoidAndDamage(Result)
+	local Model = Result.Instance:FindFirstAncestorWhichIsA("Model")
+	if Model then
+		local Humanoid = Model:FindFirstChildWhichIsA("Humanoid")
+		if Humanoid then
+			Humanoid.Health = Humanoid.Health - 28
+		end
+	end
+end
+
+local function AddNoiseOnLookVector(PartDepth, origin, direction)
+	local RadiusModifier = (math.random() / 0.25) * (PartDepth * 2)
+	local AngleModifier = math.random(0, 360)
+	local x = RadiusModifier * math.sin(math.rad(AngleModifier));
+	local y = RadiusModifier * math.cos(math.rad(AngleModifier));
+	return CFrame.new(origin, origin + direction) * CFrame.Angles(math.rad(y), math.rad(x), 0)
+end
+
 local function WeaponFire(origin: Vector3, direction: Vector3)
 	CurrentViewmodel.Springs.Recoil:ApplyForce(Vector3.new(0, 0, math.random(32, 40)))
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
@@ -67,32 +85,58 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	end)
 	SoundEffects:PlaySound(workspace.FireSounds.fire)
 
-	local Result: RaycastResult = Caster:Cast(origin, direction * 1024)
+	-- normal raycast
 
+	local PenetrationPower = 4
+	print(PenetrationPower)
+
+	local Result = Caster:Cast(origin, direction * 1024)
 	if not Result then
-		ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 1024))
+		ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
+		ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 16))
 		ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 1024))
 		return
 	end
-
+	ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, Result.Position)
 	ParticleEffects:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
 	ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
-	-- CastEffects:CreateFakeTracer(Origin, Result.Position)
 	ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 
-	local Model = Result.Instance:FindFirstAncestorWhichIsA("Model")
-	if Model then
-		local Humanoid = Model:FindFirstChildWhichIsA("Humanoid")
-		if Humanoid then
-			Humanoid.Health = Humanoid.Health - 28
-		end
-	end
+	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+	print(PenetrationPower)
+	FindHumanoidAndDamage(Result)
 
-	local PartDepth, HitPosition = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
+	-- finding part thickness
 
-	if not PartDepth then
+	local PartDepth, ThicknessResult: RaycastResult = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
+	if not ThicknessResult then
 		return
 	end
+	ParticleEffects:NewBulletExit(ThicknessResult.Position, ThicknessResult.Normal, ThicknessResult.Instance, direction)
+
+	PenetrationPower = PenetrationPower - PartDepth
+	print(PenetrationPower)
+
+	-- wall bang thing
+
+	local WallbangDirection = AddNoiseOnLookVector(PartDepth, origin, direction)
+	local RemainingDistanceLookVector = (WallbangDirection.LookVector * (1024 - (origin - ThicknessResult.Position).Magnitude))
+	local WallbangResult: RaycastResult = Caster:Cast(ThicknessResult.Position, RemainingDistanceLookVector)
+
+	if not WallbangResult then
+		ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
+		ParticleEffects:NewBulletSmoke(ThicknessResult.Position, ThicknessResult.Position + (direction * 16))
+		return
+	end
+
+	ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, WallbangResult.Position)
+	ParticleEffects:NewBulletHole(WallbangResult.Position, WallbangResult.Normal, WallbangResult.Instance)
+	ParticleEffects:NewBulletSmoke(ThicknessResult.Position, WallbangResult.Position)
+
+	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+	print(PenetrationPower)
+
+	FindHumanoidAndDamage(WallbangResult)
 end
 
 local function UpdateViewmodel(deltaTime)
