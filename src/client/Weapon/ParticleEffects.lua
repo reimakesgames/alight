@@ -111,7 +111,7 @@ function ParticleEffects:NewBulletShell(startCFrame)
 	local bulletShell = Environment.Shell:Clone()
 	bulletShell.CFrame = startCFrame
 	bulletShell.Parent = EffectsFolder()
-	bulletShell:ApplyImpulse(bulletShell.CFrame.LookVector * 0.05)
+	bulletShell:ApplyImpulse(bulletShell.CFrame.LookVector * 0.15)
 	bulletShell:ApplyAngularImpulse(Vector3.new(0, 0.001, 0))
 
 	bulletShell.Touched:Once(function(otherPart)
