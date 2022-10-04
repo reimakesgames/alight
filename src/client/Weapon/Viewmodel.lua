@@ -49,6 +49,7 @@ function Viewmodel.new(model: Model): Viewmodel
 		Culled = true;
 		Springs = {
 			Sway = Spring.new(5, 50, 4, 4);
+			SwayPivot = Spring.new(5, 50, 2, 8);
 			WalkCycle = Spring.new(5, 50, 4, 4);
 			Recoil = Spring.new(5, 25, 3, 16);
 			RecoilNoise = Spring.new(5, 50, 2, 8)

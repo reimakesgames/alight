@@ -1,3 +1,9 @@
+# v0.0.8
+## Changes
+Added Pivot Rotating for Viewmodel
+## Fixes
+Fixed Reloading modifier being broken for viewmodel sway
+
 # v0.0.7 patch 1
 ## Changes
 Added loading circle in changelogs

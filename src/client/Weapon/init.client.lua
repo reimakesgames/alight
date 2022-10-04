@@ -101,10 +101,11 @@ local function UpdateViewmodel(deltaTime)
 	CharacterVelocityMagnitude = LerpTools:LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, 8)
 	FiringModifier = Firing and 0 or LerpTools:LinearInterpolate(FiringModifier, 1, 16)
 	SprintingModifier = LerpTools:LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, 16)
-	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0.25, 8)
+	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0, 8)
 	MovingModifier = LerpTools:LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), 16)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
+	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
 
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
@@ -119,11 +120,14 @@ local function UpdateViewmodel(deltaTime)
 		ViewmodelCFrame = ViewmodelCFrame:Lerp(CFrame.new(0, 0, 0), LerpTools:CreateFramerateIndependentAlpha(12))
 	end
 
+	local PivotPointCFrame = (CurrentViewmodel.Model.HumanoidRootPart.CFrame * ViewmodelCFrame:Inverse()):ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.PivotPoint.WorldCFrame)
+
 	for _, spring: Spring.Spring in CurrentViewmodel.Springs do
 		spring:Step(deltaTime)
 	end
 
 	local Sway = CurrentViewmodel.Springs.Sway.Position
+	local SwayPivot = CurrentViewmodel.Springs.Sway.Position
 	local WalkCycle = CurrentViewmodel.Springs.WalkCycle.Position
 	local Recoil = CurrentViewmodel.Springs.Recoil.Position
 	local RecoilNoise = CurrentViewmodel.Springs.RecoilNoise.Position
@@ -150,8 +154,8 @@ local function UpdateViewmodel(deltaTime)
 	)
 
 	local WalkCycleAngles = CFrame.Angles(
-		(WalkCycle.X / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * ReloadingModifier * (1 + SprintingModifier),
-		(WalkCycle.Y / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * ReloadingModifier * (1 + SprintingModifier),
+		(WalkCycle.X / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * (1 - ReloadingModifier) * (1 + (SprintingModifier * 4)),
+		(WalkCycle.Y / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * (1 - ReloadingModifier) * (1 + (SprintingModifier * 8)),
 		0
 	)
 
@@ -161,8 +165,17 @@ local function UpdateViewmodel(deltaTime)
 		0
 	)
 
+	local PivotPointAngles = CFrame.Angles(
+		-Recoil.Z / 512,
+		SwayPivot.X / 16 * PercentageToGoal,
+		RecoilNoise.Z / 256
+	)
+
 	Camera.CFrame = Camera.CFrame * RootCameraAngles
-	CurrentViewmodel:SetCFrame(Camera.CFrame * RecoilNoiseAngles * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset)
+	local BaseCFrame = RecoilNoiseAngles * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset
+	local RotatedCFrame = (PivotPointCFrame * PivotPointAngles):ToObjectSpace(BaseCFrame)
+	local RevertedRotatedCFrame = Camera.CFrame * PivotPointCFrame:ToWorldSpace(RotatedCFrame)
+	CurrentViewmodel:SetCFrame(RevertedRotatedCFrame)
 end
 
 local function UpdateCharacterWalkSpeed(deltaTime)
@@ -238,6 +251,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if Firing then return end
 		if Ammo >= MaxAmmo + 1 then return end
 		if Reloading then return end
+		Sprinting = false
 
 		AmmunitionLogic()
 	end
