@@ -30,6 +30,8 @@ local Anim3 = Instance.new("Animation")
 Anim3.AnimationId = "rbxassetid://11087239261"
 local reloadAnimation, emptyReloadAnimation
 
+local WalkCycleX = 0
+local WalkCycleY = 0
 local CharacterVelocityMagnitude = 0
 local SprintingModifier = 0
 local FiringModifier = 0
@@ -95,6 +97,8 @@ end
 
 local function UpdateViewmodel(deltaTime)
 	LerpTools.DeltaTime = deltaTime
+	WalkCycleX = WalkCycleX + (deltaTime * 20 * WalkSpeedModifier)
+	WalkCycleY = WalkCycleY + (deltaTime * 10 * WalkSpeedModifier)
 
 	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
@@ -106,7 +110,7 @@ local function UpdateViewmodel(deltaTime)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
-	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(time() * 20 * WalkSpeedModifier), math.sin(time() * 10 * WalkSpeedModifier), 0))
+	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(WalkCycleX) * (deltaTime * 32), math.sin(WalkCycleY) * (deltaTime * 32), 0))
 
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
 	local RootCameraCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.Camera.CFrame)
@@ -174,7 +178,10 @@ local function UpdateViewmodel(deltaTime)
 	Camera.CFrame = Camera.CFrame * RootCameraAngles
 	local BaseCFrame = RecoilNoiseAngles * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset
 	local RotatedCFrame = (PivotPointCFrame * PivotPointAngles):ToObjectSpace(BaseCFrame)
-	local RevertedRotatedCFrame = Camera.CFrame * PivotPointCFrame:ToWorldSpace(RotatedCFrame)
+	local RevertedRotatedCFrame:CFrame = Camera.CFrame * PivotPointCFrame:ToWorldSpace(RotatedCFrame)
+	if RunService:IsStudio() then
+		workspace.T.CFrame = Camera.CFrame + (RevertedRotatedCFrame.LookVector * 32)
+	end
 	CurrentViewmodel:SetCFrame(RevertedRotatedCFrame)
 end
 

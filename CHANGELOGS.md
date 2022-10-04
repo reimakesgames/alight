@@ -3,6 +3,7 @@
 Added Pivot Rotating for Viewmodel
 ## Fixes
 Fixed Reloading modifier being broken for viewmodel sway
+Fixed WalkCycle not being seamless when sprinting and walking
 
 # v0.0.7 patch 1
 ## Changes
