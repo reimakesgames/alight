@@ -42,7 +42,7 @@ HydrateChangelogs.Event:Connect(function(theString)
 			list.list.Text = list.list.Text .. Text .. "\n"
 			continue
 		elseif isText then
-			list.list.Text = list.list.Text .. string.gsub(Text, "^## ", "") .. "	• " .. Text .. "\n"
+			list.list.Text = list.list.Text .. "    • " .. string.gsub(Text, "^- ", "") .. "\n"
 			continue
 		end
 	end

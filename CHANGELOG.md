@@ -1,6 +1,6 @@
 # [v0.0.8.p1] - 2022-10-05
 ### Changed
-- Made Changelog follow the https://keepachangelog.com/en/1.0.0/ style
+- Made Changelog follow the KeepAChangelog style
 - Changed Header2 in Changelogs client to Header3
 - Renamed CHANGELOGS.md to CHANGELOG.md because i am dumb
 - Changed file pointer in Changelogs server reflecting this change
