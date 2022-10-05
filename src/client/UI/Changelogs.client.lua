@@ -28,20 +28,21 @@ HydrateChangelogs.Event:Connect(function(theString)
 	print(stuffConvertedToTable)
 	for _, Text in stuffConvertedToTable do
 		local isHeader1 = string.match(Text, "^# ")
-		local isHeader2 = string.match(Text, "^## ")
+		local isHeader3 = string.match(Text, "^### ")
+		local isText = string.match(Text, "^- ")
 		local isSpace = string.len(Text) == 0
 
 		if isHeader1 then
 			list.list.Text = list.list.Text .. '<font size="32"><b>' .. string.gsub(Text, "^# ", "") .. "</b></font>" .. "\n"
 			continue
-		elseif isHeader2 then
+		elseif isHeader3 then
 			list.list.Text = list.list.Text .. '<font size="24"><b>' .. string.gsub(Text, "^## ", "") .. "</b></font>" .. "\n"
 			continue
 		elseif isSpace then
 			list.list.Text = list.list.Text .. Text .. "\n"
 			continue
-		else
-			list.list.Text = list.list.Text .. Text .. "\n"
+		elseif isText then
+			list.list.Text = list.list.Text .. string.gsub(Text, "^## ", "") .. "  • " .. Text .. "\n"
 			continue
 		end
 	end

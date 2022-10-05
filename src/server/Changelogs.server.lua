@@ -8,7 +8,7 @@ local Link = require(Packages.link)
 local GithubPuller = require(script.Parent.GithubPuller)
 
 
-local File = "https://raw.githubusercontent.com/reimakesgames/hybrid-conflict/main/CHANGELOGS.md"
+local File = "https://raw.githubusercontent.com/reimakesgames/hybrid-conflict/main/CHANGELOG.md"
 
 
 local HydrateChangelogs = Link.CreateEvent("HydrateChangelogs")

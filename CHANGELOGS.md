@@ -1,84 +1,94 @@
-# v0.0.8
-## Changes
-Added Pivot Rotating for Viewmodel
-Added Wallbanging
-Added Bullet exit method for particle effects
-Changed Particle Emit type from Time to Emit
-Changed FindThickness returning Vector3 instead of RaycastResult
-## Fixes
-Fixed Reloading modifier being broken for viewmodel sway
-Fixed WalkCycle not being seamless when sprinting and walking
+# [v0.0.8.p1] - 2022-10-05
+### Changed
+- Made Changelog follow the https://keepachangelog.com/en/1.0.0/ style
+- Changed Header2 in Changelogs client to Header3
+- Renamed CHANGELOGS.md to CHANGELOG.md because i am dumb
+- Changed file pointer in Changelogs server reflecting this change
 
-# v0.0.7 patch 1
-## Changes
-Added loading circle in changelogs
-Changed individual frames for text into a single text frame
-## Fixes
-Fixed request changelogs having no rate limit
-Fixed constant changelogs requests would make duplicate frames
+# [v0.0.8] - 2022-10-04
+### Added
+- New Custom Pivot for Viewmodel
+- WallBanging
+- BulletExit method for ParticleEffects
+### Changed
+- Made FindThickness return RayCastResult instead of Vector3
+- Fix ParticleEmit using Enabled instead of Emit
+- Fix Reloading modifier being broken for viewmodel sway
+- Fix WalkCycle not being seamless when sprinting and walking
 
-# v0.0.7
-## Changes
-Added a Changelog List UI
-Added a module that lets you read files from github
+# [v0.0.7.p1] 
+### Added
+- Loading indicator in changelogs
+### Changed
+- Replaced individual TextLabels for changelog into a single TextLabel
+- Fix request changelogs having no rate limit
+- Fix changelogs requests would make duplicate frames
+
+# [v0.0.7]
+### Added
+- Changelog List UI
+- Github File Fetcher
 
 
 
-## Everything past here is not properly documented
+### Everything past here is not properly documented
 
 
 
-# v0.0.6
-## Changes
-Optimized bullet hole methods from parts to attachments
-Tweaked spring values to reflect on states
-## Fixes
-Fixed LinearInterpolate to be framerate independent
+# [v0.0.6]
+### Changed
+- Replaced BulletHole Parts to use Attachments instead
+- Tweaked spring values to reflect on states
+- Fix LinearInterpolate to be framerate independent
 
-# v0.0.5
-## Changes
-Added bullet shells
-Added more checks to the reload function
-Renamed instance references in scripts
-Moved LinearInterpolate into its own module
-## Fixes
-Fixed bullet hole to weld onto part instead of anchored
-Fixed caster not ignoring camera children
-Fixed broken sprinting offsets
-Fixed weapon states
-Tweaked spring values to reflect on states
+# [v0.0.5]
+### Added
+- Bullet Shells
+- LinearInterpolate module
+### Changed
+- Better checks to the Reload function
+- Renamed Instance references in scripts
+- Tweaked spring values to reflect on states
+- Fix bullet hole to weld onto part instead of anchored
+- Fix caster not ignoring camera children
+- Fix broken sprinting offsets
+- Fix weapon states
+### Removed
+- Individual LinearInterpolate functions
 
-# v0.0.4
-## Changes
-Added aiming and basic reloading animations alongside states
-Added reloading camera shake
-Added viewmodel decorations
-Added walkcycles, recoil and sprinting states and springs
-Added emit particles method
-Added sound effects module
-## Fixes
-Fixed smoke trail going past the hit point
+# [v0.0.4]
+### Added
+- Aiming 
+- Basic reloading animation
+- Reloading camera shake
+- SoundEffects module
+- EmitParticles method
+- Viewmodel decorations
+- WalkCycles, Recoil, Sprinting states and springs
+### Fixes
+- Fix smoke trail going past the hit position
 
-# v0.0.3
-## Changes
-Added Viewmodel module
-Added spring module
-Added Smoke Trail
-## Fixes
-Minor fixes
+# [v0.0.3]
+### Added
+- Viewmodel module
+- Spring utility
+- Smoke Trail
+### Fixes
+- Minor fixes
 
-# v0.0.2 Patch 1
-## Changes
-Optimized the Raycast System
-Optimized the Visual Effects module
+# [v0.0.2.p1]
+### Changed
+- Optimized the RayCast System
+- Optimized the VisualEffects module
+- Renamed the VisualEffects module to ParticleEffects
 
-# v0.0.2
-## Changes
-Added a Visual Effects module
+# [v0.0.2]
+### Added
+- VisualEffects module
 
-# v0.0.1
-## Changes
-Added a Raycast System
-Added part thickness detection
-## Fixes
-Filesystem errors
+# [v0.0.1]
+### Added
+- RayCast System
+- PartThickness Method
+### Fixes
+- Fix Filesystem errors
