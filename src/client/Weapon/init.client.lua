@@ -91,6 +91,8 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	print(PenetrationPower)
 
 	local Result = Caster:Cast(origin, direction * 1024)
+	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+	print(PenetrationPower)
 	if not Result then
 		ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
 		ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 16))
@@ -102,41 +104,47 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 	ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 
-	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
-	print(PenetrationPower)
 	FindHumanoidAndDamage(Result)
 
-	-- finding part thickness
+	local WallbangCount = 1
 
-	local PartDepth, ThicknessResult: RaycastResult = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
-	if not ThicknessResult then
-		return
-	end
-	ParticleEffects:NewBulletExit(ThicknessResult.Position, ThicknessResult.Normal, ThicknessResult.Instance, direction)
+	repeat
+		-- finding part thickness
 
-	PenetrationPower = PenetrationPower - PartDepth
-	print(PenetrationPower)
+		local PartDepth, ThicknessResult = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
+		if not ThicknessResult then
+			return
+		end
+		PenetrationPower = PenetrationPower - PartDepth
+		print(PenetrationPower)
+		if PenetrationPower < 0 then
+			break
+		end
+		ParticleEffects:NewBulletExit(ThicknessResult.Position, ThicknessResult.Normal, ThicknessResult.Instance, direction)
 
-	-- wall bang thing
+		-- wall bang thing
 
-	local WallbangDirection = AddNoiseOnLookVector(PartDepth, origin, direction)
-	local RemainingDistanceLookVector = (WallbangDirection.LookVector * (1024 - (origin - ThicknessResult.Position).Magnitude))
-	local WallbangResult: RaycastResult = Caster:Cast(ThicknessResult.Position, RemainingDistanceLookVector)
+		local WallbangDirection = AddNoiseOnLookVector(PartDepth, origin, direction)
+		local RemainingDistanceLookVector = (WallbangDirection.LookVector * (1024 - (origin - ThicknessResult.Position).Magnitude))
+		local WallbangResult: RaycastResult = Caster:Cast(ThicknessResult.Position, RemainingDistanceLookVector)
+		PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+		print(PenetrationPower)
+		if not WallbangResult then
+			ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
+			ParticleEffects:NewBulletSmoke(ThicknessResult.Position, ThicknessResult.Position + (direction * 16))
+			return
+		end
+		ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, WallbangResult.Position)
+		ParticleEffects:NewBulletHole(WallbangResult.Position, WallbangResult.Normal, WallbangResult.Instance)
+		ParticleEffects:NewBulletSmoke(ThicknessResult.Position, WallbangResult.Position)
 
-	if not WallbangResult then
-		ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
-		ParticleEffects:NewBulletSmoke(ThicknessResult.Position, ThicknessResult.Position + (direction * 16))
-		return
-	end
+		Result = WallbangResult
+		origin = ThicknessResult.Position
+		direction = RemainingDistanceLookVector.Unit
 
-	ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, WallbangResult.Position)
-	ParticleEffects:NewBulletHole(WallbangResult.Position, WallbangResult.Normal, WallbangResult.Instance)
-	ParticleEffects:NewBulletSmoke(ThicknessResult.Position, WallbangResult.Position)
-
-	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
-	print(PenetrationPower)
-
-	FindHumanoidAndDamage(WallbangResult)
+		WallbangCount = WallbangCount + 1
+		FindHumanoidAndDamage(WallbangResult)
+	until WallbangCount > 4
 end
 
 local function UpdateViewmodel(deltaTime)

@@ -1,3 +1,9 @@
+# [v0.0.9] - 2022-10-05
+### Changed
+- bullets will now wall bang to a max of 4 times
+- wall bang loop breaks if bullets get a negative penetration value
+- Fix wall bang behavior with incorrect results
+
 # [v0.0.8.p1] - 2022-10-05
 ### Changed
 - Made Changelog follow the KeepAChangelog style
