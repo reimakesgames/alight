@@ -36,13 +36,13 @@ HydrateChangelogs.Event:Connect(function(theString)
 			list.list.Text = list.list.Text .. '<font size="32"><b>' .. string.gsub(Text, "^# ", "") .. "</b></font>" .. "\n"
 			continue
 		elseif isHeader3 then
-			list.list.Text = list.list.Text .. '<font size="24"><b>' .. string.gsub(Text, "^## ", "") .. "</b></font>" .. "\n"
+			list.list.Text = list.list.Text .. '<font size="24"><b>' .. string.gsub(Text, "^### ", "") .. "</b></font>" .. "\n"
 			continue
 		elseif isSpace then
 			list.list.Text = list.list.Text .. Text .. "\n"
 			continue
 		elseif isText then
-			list.list.Text = list.list.Text .. string.gsub(Text, "^## ", "") .. "  • " .. Text .. "\n"
+			list.list.Text = list.list.Text .. string.gsub(Text, "^## ", "") .. "	• " .. Text .. "\n"
 			continue
 		end
 	end
