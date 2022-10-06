@@ -82,15 +82,13 @@
 ### Fixes
 - Minor fixes
 
-# [v0.0.2.p1]
+# [v0.0.2]
+### Added
+- VisualEffects module
 ### Changed
 - Optimized the RayCast System
 - Optimized the VisualEffects module
 - Renamed the VisualEffects module to ParticleEffects
-
-# [v0.0.2]
-### Added
-- VisualEffects module
 
 # [v0.0.1]
 ### Added

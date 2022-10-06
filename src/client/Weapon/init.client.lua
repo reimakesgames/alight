@@ -91,14 +91,14 @@ local function WeaponFire(origin: Vector3, direction: Vector3)
 	print(PenetrationPower)
 
 	local Result = Caster:Cast(origin, direction * 1024)
-	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
-	print(PenetrationPower)
 	if not Result then
 		ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
 		ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 16))
 		ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 1024))
 		return
 	end
+	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+	print(PenetrationPower)
 	ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, Result.Position)
 	ParticleEffects:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
 	ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
