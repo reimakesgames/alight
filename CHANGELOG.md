@@ -1,3 +1,8 @@
+# [v0.0.10.e] - 2022-10-05
+### Added
+- Basic replication of cast
+- Predictable Randomness on both client and server
+
 # [v0.0.9] - 2022-10-05
 ### Changed
 - bullets will now wall bang to a max of 4 times
