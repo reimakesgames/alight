@@ -105,7 +105,7 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	if not Result then
 		-- ParticleEffects:__CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
 		VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, startPoint + (lookVector * 16))
-		VFXHandler:NewTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, lookVector)
+		VFXHandler:NewTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition + lookVector)
 		return
 	end
 	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
