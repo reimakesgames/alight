@@ -14,9 +14,9 @@ export type SoundSettings = {
 	SoundSize: Vector3?
 }
 
-local SoundEffects = {}
+local SFXHandler = {}
 
-function SoundEffects:PlaySound(soundObject: Sound, soundSettings: SoundSettings)
+function SFXHandler:PlaySound(soundObject: Sound, soundSettings: SoundSettings?)
 	local newSound = soundObject:Clone()
 	soundSettings = soundSettings or {}
 	Debris:AddItem(newSound, soundObject.TimeLength)
@@ -37,4 +37,4 @@ function SoundEffects:PlaySound(soundObject: Sound, soundSettings: SoundSettings
 	newSound:Play()
 end
 
-return SoundEffects
+return SFXHandler

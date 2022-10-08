@@ -1,3 +1,10 @@
+# [v0.1.0] - 2022-10-07
+### Changed
+- API members now have proper naming structure
+- Removed some redundant parameters
+- Fix server exit bullets rendering
+- Made Viewmodel constructor automatically cull ViewmodelClass.Model
+
 # [v0.0.10.e] - 2022-10-05
 ### Added
 - Basic replication of cast

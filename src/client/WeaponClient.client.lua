@@ -7,25 +7,27 @@ local UserInputService = game:GetService("UserInputService")
 local Utility = ReplicatedFirst:WaitForChild("Utility")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 local Assets = ReplicatedStorage:WaitForChild("Assets")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
 
 local Gameplay = Assets:WaitForChild("Gameplay")
 local Environment = Gameplay:WaitForChild("Environment")
+local Classes = Shared:WaitForChild("Classes")
+local Modules = Shared:WaitForChild("Modules")
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-local Spring = require(Utility.Spring)
-local LerpTools = require(Utility.LerpTools)
+local LerpTools = require(Utility.LerpUtil)
 local Link = require(Packages:WaitForChild("link"))
+local Viewmodel = require(Classes:WaitForChild("Viewmodel"))
+local Spring = require(Classes:WaitForChild("Spring"))
+local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
+local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
+local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
 
 local RequestForRNGSeedSignal = Link.WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link.WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link.WaitEvent("WeaponFire")
-
-local Caster = require(script.Caster)
-local ParticleEffects = require(script.ParticleEffects)
-local SoundEffects = require(script.SoundEffects)
-local Viewmodel = require(script.Viewmodel)
 
 local CurrentViewmodel
 local Anim = Instance.new("Animation")
@@ -72,43 +74,46 @@ local function FindHumanoidAndDamage(Result)
 	end
 end
 
-local function AddNoiseOnLookVector(PartDepth, origin, direction, random)
-	local RadiusModifier = (Random.new(random * 12345):NextNumber() / 0.25) * (PartDepth * 2)
+local function AddNoiseOnLookVector(partDepth, origin, direction, random)
+	local RadiusModifier = (Random.new(random * 12345):NextNumber() / 0.25) * (partDepth * 2)
 	local AngleModifier = (random * 360)
 	local x = RadiusModifier * math.sin(math.rad(AngleModifier));
 	local y = RadiusModifier * math.cos(math.rad(AngleModifier));
 	return CFrame.new(origin, origin + direction) * CFrame.Angles(math.rad(y), math.rad(x), 0)
 end
 
-local function WeaponFire(origin: Vector3, direction: Vector3, random: number)
+local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber: number)
+	local parameter = RaycastParams.new()
+	parameter.FilterDescendantsInstances = { LocalPlayer.Character, Camera }
+	parameter.FilterType = Enum.RaycastFilterType.Blacklist
 	CurrentViewmodel.Springs.Recoil:ApplyForce(Vector3.new(0, 0, math.random(32, 40)))
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
-	ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle)
+	VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle)
 	task.delay(0.02, function()
-		ParticleEffects:EmitParticlesFrom(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
-		ParticleEffects:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
+		VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
+		VFXHandler:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
 	end)
-	SoundEffects:PlaySound(workspace.FireSounds.fire)
+	SFXHandler:PlaySound(workspace.FireSounds.fire)
 
 	-- normal raycast
 
 	local PenetrationPower = 4
 	print(PenetrationPower)
 
-	local Result = Caster:Cast(origin, direction * 1024)
+	local Result = RaycastHandler:Raycast(startPoint, lookVector, 1024, parameter)
 	if not Result then
-		-- ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
-		ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 16))
-		ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, origin + (direction * 1024))
+		-- ParticleEffects:__CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
+		VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, startPoint + (lookVector * 16))
+		VFXHandler:NewTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, lookVector)
 		return
 	end
-	PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
 	print(PenetrationPower)
-	-- ParticleEffects:CreateRaycastDebug(Camera.CFrame.Position, Result.Position)
-	ParticleEffects:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
-	ParticleEffects:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
-	ParticleEffects:CreateFakeTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
+	-- ParticleEffects:__CreateRaycastDebug(Camera.CFrame.Position, Result.Position)
+	VFXHandler:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
+	VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
+	VFXHandler:NewTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 
 	FindHumanoidAndDamage(Result)
 
@@ -117,36 +122,36 @@ local function WeaponFire(origin: Vector3, direction: Vector3, random: number)
 	repeat
 		-- finding part thickness
 
-		local PartDepth, ThicknessResult = Caster:FindThickness(Result.Instance, Result.Position, Result.Position + (direction * 64), -direction * 64)
-		if not ThicknessResult then
+		local DepthResult, Depth = RaycastHandler:CheckHitDepth(Result.Instance, Result.Position, lookVector)
+		if not DepthResult then
 			return
 		end
-		PenetrationPower = PenetrationPower - PartDepth
+		PenetrationPower = PenetrationPower - Depth
 		print(PenetrationPower)
 		if PenetrationPower < 0 then
 			break
 		end
-		ParticleEffects:NewBulletExit(ThicknessResult.Position, ThicknessResult.Normal, ThicknessResult.Instance, direction)
+		VFXHandler:NewBulletExit(DepthResult.Position, DepthResult.Normal, DepthResult.Instance, lookVector)
 
 		-- wall bang thing
 
-		local WallbangDirection = AddNoiseOnLookVector(PartDepth, origin, direction, random)
-		local RemainingDistanceLookVector = (WallbangDirection.LookVector * (1024 - (origin - ThicknessResult.Position).Magnitude))
-		local WallbangResult: RaycastResult = Caster:Cast(ThicknessResult.Position, RemainingDistanceLookVector)
-		PenetrationPower = PenetrationPower - ((origin - Result.Position).Magnitude / 1024)
+		local WallbangDirection = AddNoiseOnLookVector(Depth, startPoint, lookVector, randomNumber)
+		local RemainingDistance = (1024 - (startPoint - DepthResult.Position).Magnitude)
+		local WallbangResult: RaycastResult = RaycastHandler:Raycast(DepthResult.Position, WallbangDirection.LookVector, RemainingDistance, parameter)
+		PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
 		print(PenetrationPower)
 		if not WallbangResult then
-			-- ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
-			ParticleEffects:NewBulletSmoke(ThicknessResult.Position, ThicknessResult.Position + (direction * 16))
+			-- ParticleEffects:__CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
+			VFXHandler:NewBulletSmoke(DepthResult.Position, DepthResult.Position + (lookVector * 16))
 			return
 		end
-		-- ParticleEffects:CreateRaycastDebug(ThicknessResult.Position, WallbangResult.Position)
-		ParticleEffects:NewBulletHole(WallbangResult.Position, WallbangResult.Normal, WallbangResult.Instance)
-		ParticleEffects:NewBulletSmoke(ThicknessResult.Position, WallbangResult.Position)
+		-- ParticleEffects:__CreateRaycastDebug(ThicknessResult.Position, WallbangResult.Position)
+		VFXHandler:NewBulletHole(WallbangResult.Position, WallbangResult.Normal, WallbangResult.Instance)
+		VFXHandler:NewBulletSmoke(DepthResult.Position, WallbangResult.Position)
 
 		Result = WallbangResult
-		origin = ThicknessResult.Position
-		direction = RemainingDistanceLookVector.Unit
+		startPoint = DepthResult.Position
+		lookVector = WallbangDirection.LookVector
 
 		WallbangCount = WallbangCount + 1
 		FindHumanoidAndDamage(WallbangResult)
@@ -184,7 +189,7 @@ local function UpdateViewmodel(deltaTime)
 
 	local PivotPointCFrame = (CurrentViewmodel.Model.HumanoidRootPart.CFrame * ViewmodelCFrame:Inverse()):ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.PivotPoint.WorldCFrame)
 
-	for _, spring: Spring.Spring in CurrentViewmodel.Springs do
+	for _, spring: Spring.SpringClass in CurrentViewmodel.Springs do
 		spring:Step(deltaTime)
 	end
 
@@ -351,6 +356,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 	CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
 	CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim):Play()
+	CurrentViewmodel:Cull(false)
 	reloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim2)
 	emptyReloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim3)
 end)

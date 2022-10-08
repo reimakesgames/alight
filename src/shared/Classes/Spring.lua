@@ -1,8 +1,8 @@
 local ITERATIONS = 8
 
-export type Spring = {
-	ApplyForce: (self: Spring, force: Vector3) -> nil;
-	Step: (self: Spring, deltaTime: number) -> Vector3;
+export type SpringClass = {
+	ApplyForce: (self: SpringClass, force: Vector3) -> nil;
+	Step: (self: SpringClass, deltaTime: number) -> Vector3;
 
 	Target: Vector3;
 	Position: Vector3;
@@ -62,4 +62,6 @@ function Spring:Step(deltaTime: number)
 	return self.Position
 end
 
-return Spring
+return Spring :: {
+	new: (mass: number, force: number, damping: number, speed: number) -> (SpringClass)
+}

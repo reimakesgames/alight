@@ -1,13 +1,17 @@
 local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Utility = ReplicatedFirst.Utility
+local Utility = ReplicatedFirst:WaitForChild("Utility")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+
+local Classes = Shared:WaitForChild("Classes")
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-local Spring = require(Utility.Spring)
 local QuickInstance = require(Utility.QuickInstance)
+local Spring = require(Classes.Spring)
 
 local function ViewmodelsFolder()
 	return Camera:FindFirstChild("Viewmodels") or QuickInstance("Folder", {Name = "Viewmodels", Parent = Camera})
@@ -28,23 +32,22 @@ type DefaultArms = {
 	["Right Arm"]: Part;
 }
 
-export type Viewmodel = {
-	new: (model: Model) -> Viewmodel;
-	Cull: (self: Viewmodel, enabled: boolean) -> nil;
-	SetCFrame: (self: Viewmodel, cframe: CFrame) -> nil;
-	Decorate: (self: Viewmodel, model: Model) -> nil;
-	CleanUp: (self: Viewmodel) -> nil;
+export type ViewmodelClass = {
+	Cull: (self: ViewmodelClass, enabled: boolean) -> nil;
+	SetCFrame: (self: ViewmodelClass, cframe: CFrame) -> nil;
+	Decorate: (self: ViewmodelClass, model: Model) -> nil;
+	CleanUp: (self: ViewmodelClass) -> nil;
 
 	Model: Model | DefaultArms;
 	Culled: boolean;
-	Springs: {[string]: Spring.Spring};
+	Springs: {[string]: Spring.SpringClass};
 	Decoration: Model;
 }
 
 local Viewmodel = {}
 Viewmodel.__index = Viewmodel
 
-function Viewmodel.new(model: Model): Viewmodel
+function Viewmodel.new(model: Model): ViewmodelClass
 	local self = setmetatable({
 		Culled = true;
 		Springs = {
@@ -59,6 +62,7 @@ function Viewmodel.new(model: Model): Viewmodel
 	local newModel: Model | DefaultArms = model:Clone()
 	newModel.Parent = ViewmodelsFolder()
 	self.Model = newModel
+	self:Cull(true)
 
 	return self
 end
@@ -95,19 +99,22 @@ function Viewmodel:Cull(enabled: boolean): nil
 end
 
 function Viewmodel:SetCFrame(cframe: CFrame): nil
+	if self.Culled then
+		return
+	end
 	self.Model:PivotTo(cframe)
 end
 
 function Viewmodel:CleanUp()
 	self.Model:Destroy()
 	self.Decoration:Destroy()
-	for _, Spring: Spring.Spring in self.Springs do
-		table.clear(Spring)
+	for _, spring: Spring.SpringClass in self.Springs do
+		table.clear(spring)
 	end
 	table.clear(self.Springs)
 	table.clear(self)
 end
 
 return Viewmodel :: {
-	new: (model: Model) -> Viewmodel
+	new: (model: Model) -> ViewmodelClass
 }

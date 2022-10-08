@@ -5,7 +5,7 @@ local Packages = ReplicatedStorage:WaitForChild("Packages")
 
 local Link = require(Packages.link)
 
-local GithubPuller = require(script.Parent.GithubPuller)
+local GithubPuller = require(script.Parent.GithubHandler)
 
 
 local File = "https://raw.githubusercontent.com/reimakesgames/hybrid-conflict/main/CHANGELOG.md"
