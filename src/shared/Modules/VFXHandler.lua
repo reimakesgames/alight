@@ -91,7 +91,7 @@ function VFXHandler:NewBulletHole(position: Vector3, normal: Vector3, object: Ba
 	end)
 end
 
-function VFXHandler:NewBulletExit(hitPosition: Vector3, hitNormal: Vector3, hitObject: BasePart, tracePath: Vector3)
+function VFXHandler:NewBulletExit(position: Vector3, normal: Vector3, object: BasePart, exitNormal: Vector3)
 	local emitterAttachment = Environment.NewBulletHole.Main:Clone()
 	local attachment0 = Environment.NewBulletHole.Attachment0:Clone()
 	local attachment1 = Environment.NewBulletHole.Attachment1:Clone()
@@ -99,14 +99,14 @@ function VFXHandler:NewBulletExit(hitPosition: Vector3, hitNormal: Vector3, hitO
 	attachment0.Beam.Attachment0 = attachment0
 	attachment0.Beam.Attachment1 = attachment1
 
-	emitterAttachment.Parent = hitObject
-	attachment0.Parent = hitObject
-	attachment1.Parent = hitObject
+	emitterAttachment.Parent = object
+	attachment0.Parent = object
+	attachment1.Parent = object
 
-	emitterAttachment.WorldCFrame = CFrame.new(hitPosition, hitPosition + hitNormal)
-	attachment0.WorldCFrame = CFrame.new(hitPosition + emitterAttachment.WorldCFrame.RightVector * 0.25, hitPosition + emitterAttachment.WorldCFrame.RightVector * 0.25 + hitNormal)
-	attachment1.WorldCFrame = CFrame.new(hitPosition + emitterAttachment.WorldCFrame.RightVector * -0.25, hitPosition + emitterAttachment.WorldCFrame.RightVector * -0.25 + hitNormal)
-	emitterAttachment.WorldCFrame = CFrame.new(hitPosition, hitPosition + tracePath)
+	emitterAttachment.WorldCFrame = CFrame.new(position, position + normal)
+	attachment0.WorldCFrame = CFrame.new(position + emitterAttachment.WorldCFrame.RightVector * 0.25, position + emitterAttachment.WorldCFrame.RightVector * 0.25 + normal)
+	attachment1.WorldCFrame = CFrame.new(position + emitterAttachment.WorldCFrame.RightVector * -0.25, position + emitterAttachment.WorldCFrame.RightVector * -0.25 + normal)
+	emitterAttachment.WorldCFrame = CFrame.new(position, position + exitNormal)
 
 	for _, object in emitterAttachment:GetChildren() do
 		if object:IsA("ParticleEmitter") then
@@ -119,11 +119,11 @@ function VFXHandler:NewBulletExit(hitPosition: Vector3, hitNormal: Vector3, hitO
 	end)
 end
 
-function VFXHandler:NewBulletSmoke(startPosition, endPosition)
+function VFXHandler:NewBulletSmoke(origin: Vector3, goal: Vector3)
 	local bulletSmoke = Environment.Smoke:Clone()
-	bulletSmoke.CFrame = CFrame.new(startPosition, endPosition)
+	bulletSmoke.CFrame = CFrame.new(origin, goal)
 	-- bulletSmoke.Start.WorldPosition = startPosition
-	bulletSmoke.End.WorldPosition = endPosition
+	bulletSmoke.End.WorldPosition = goal
 	bulletSmoke.Parent = EffectsFolder()
 
 	table.insert(BeamUpdates, bulletSmoke)
@@ -133,14 +133,14 @@ function VFXHandler:NewBulletSmoke(startPosition, endPosition)
 	end)
 end
 
-function VFXHandler:NewBulletShell(startCFrame)
+function VFXHandler:NewBulletShell(originCFrame)
 	local bulletShell = Environment.Shell:Clone()
-	bulletShell.CFrame = startCFrame
+	bulletShell.CFrame = originCFrame
 	bulletShell.Parent = EffectsFolder()
 	bulletShell:ApplyImpulse(bulletShell.CFrame.LookVector * 0.15)
 	bulletShell:ApplyAngularImpulse(Vector3.new(0, 0.001, 0))
 
-	bulletShell.Touched:Once(function(otherPart)
+	bulletShell.Touched:Once(function()
 		Debris:AddItem(bulletShell.Impact, bulletShell.Impact.TimeLength)
 		local Velocity = bulletShell:GetVelocityAtPosition(bulletShell.Position)
 		bulletShell.Impact.PlaybackSpeed = 1 + ((math.random() * 0.2) - 0.1)
@@ -149,22 +149,22 @@ function VFXHandler:NewBulletShell(startCFrame)
 	end)
 end
 
-function VFXHandler:NewTracer(origin: Vector3, endPosition: Vector3)
+function VFXHandler:NewTracer(origin: Vector3, lookVector: Vector3)
 	local _Tracer = Environment.Tracer:Clone()
 
-	_Tracer.CFrame = CFrame.new(origin, endPosition)
+	_Tracer.CFrame = CFrame.new(origin, origin + lookVector)
 	_Tracer.Parent = EffectsFolder()
 
 	table.insert(_TracersList, {
 		Object = _Tracer;
 		StartPosition = origin;
-		EndPosition = endPosition;
-		Magnitude = (origin - endPosition).Magnitude;
+		EndPosition = origin + lookVector;
+		Magnitude = (origin - (origin + lookVector)).Magnitude;
 		_ready = false;
 	})
 end
 
-function VFXHandler:__CreateRaycastDebug(origin, goal)
+function VFXHandler:__CreateRaycastDebug(origin: Vector3, goal: Vector3)
 	local startPart = Environment.Start:Clone()
 	local endPart = Environment.End:Clone()
 

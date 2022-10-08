@@ -131,12 +131,12 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		if PenetrationPower < 0 then
 			break
 		end
-		VFXHandler:NewBulletExit(DepthResult.Position, DepthResult.Normal, DepthResult.Instance, lookVector)
 
 		-- wall bang thing
 
 		local WallbangDirection = AddNoiseOnLookVector(Depth, startPoint, lookVector, randomNumber)
 		local RemainingDistance = (1024 - (startPoint - DepthResult.Position).Magnitude)
+		VFXHandler:NewBulletExit(DepthResult.Position, DepthResult.Normal, DepthResult.Instance, WallbangDirection.LookVector)
 		local WallbangResult: RaycastResult = RaycastHandler:Raycast(DepthResult.Position, WallbangDirection.LookVector, RemainingDistance, parameter)
 		PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
 		print(PenetrationPower)
