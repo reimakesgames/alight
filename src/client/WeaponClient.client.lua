@@ -30,29 +30,37 @@ local SendRNGSeedSignal = Link.WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link.WaitEvent("WeaponFire")
 
 local CurrentViewmodel
-local Anim = Instance.new("Animation")
-Anim.AnimationId = "rbxassetid://11060004291"
-local Anim2 = Instance.new("Animation")
-Anim2.AnimationId = "rbxassetid://11086817696"
-local Anim3 = Instance.new("Animation")
-Anim3.AnimationId = "rbxassetid://11087239261"
+local idleObject = Instance.new("Animation")
+idleObject.AnimationId = "rbxassetid://11060004291"
+local reloadObject = Instance.new("Animation")
+reloadObject.AnimationId = "rbxassetid://11086817696"
+local emptyReloadObject = Instance.new("Animation")
+emptyReloadObject.AnimationId = "rbxassetid://11087239261"
+local crouchIdle = Instance.new("Animation")
+crouchIdle.AnimationId = "rbxassetid://11213476779"
+local crouchWalk = Instance.new("Animation")
+crouchWalk.AnimationId = "rbxassetid://11213471255"
 local reloadAnimation, emptyReloadAnimation
+local crouchIdleAnimation, crouchWalkAnimation
 
-local WalkCycleX = 0
-local WalkCycleY = 0
-local CharacterVelocityMagnitude = 0
-local SprintingModifier = 0
-local FiringModifier = 0
-local ReloadingModifier = 0
-local WalkSpeedModifier = 1
-local MovingModifier = 0
-local CamX, CamY, CamZ = 0, 0, 0
+local WalkCycleX = 0.0
+local WalkCycleY = 0.0
+local CharacterVelocityMagnitude = 0.0
+local SprintingModifier = 0.0
+local FiringModifier = 0.0
+local ReloadingModifier = 0.0
+local MovingModifier = 0.0
+local CamX, CamY, CamZ = 0.0, 0.0, 0.0
+
+local WalkSpeedModifier = 1.0
+local HipHeightModifier = 0.0
 
 local ViewmodelCFrame = CFrame.new()
 local ShiftButtonDown = false
 local Mouse1Down = false
 local Mouse2Down = false
 local Sprinting = false
+local Crouching = false
 local Firing = false
 local Reloading = false
 local Aiming = false
@@ -248,15 +256,21 @@ local function UpdateViewmodel(deltaTime)
 	CurrentViewmodel:SetCFrame(RevertedRotatedCFrame)
 end
 
-local function UpdateCharacterWalkSpeed(deltaTime)
+local function UpdateHumanoid(deltaTime)
 	LerpTools.DeltaTime = deltaTime
 
 	if Sprinting then
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1.25, 16)
+		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 16)
+	elseif Crouching then
+		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 0.5, 16)
+		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, -1, 16)
 	else
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1, 16)
+		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 16)
 	end
 
+	LocalPlayer.Character.Humanoid.HipHeight = HipHeightModifier
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
 end
 
@@ -322,10 +336,14 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if input.KeyCode == Enum.KeyCode.LeftShift then
 		if Firing then return end
 		if Reloading then return end
+		Crouching = false
 		Aiming = false
 
 		ShiftButtonDown = true
 		Sprinting = true
+	elseif input.KeyCode == Enum.KeyCode.LeftControl then
+		Sprinting = false
+		Crouching = true
 	elseif input.KeyCode == Enum.KeyCode.R then
 		if Firing then return end
 		if Ammo >= MaxAmmo + 1 then return end
@@ -349,16 +367,25 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 	if input.KeyCode == Enum.KeyCode.LeftShift then
 		ShiftButtonDown = false
 		Sprinting = false
+	elseif input.KeyCode == Enum.KeyCode.LeftControl then
+		Crouching = false
 	end
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(character)
 	CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 	CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
-	CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim):Play()
+	CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(idleObject):Play()
 	CurrentViewmodel:Cull(false)
-	reloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim2)
-	emptyReloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(Anim3)
+	reloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(reloadObject)
+	emptyReloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(emptyReloadObject)
+	crouchIdleAnimation = character:WaitForChild("Humanoid").Animator:LoadAnimation(crouchIdle)
+	crouchIdleAnimation:Play()
+	crouchIdleAnimation:AdjustWeight(0)
+	crouchWalkAnimation = character:WaitForChild("Humanoid").Animator:LoadAnimation(crouchWalk)
+	crouchWalkAnimation:Play()
+	crouchWalkAnimation:AdjustWeight(0)
+
 end)
 
 LocalPlayer.CharacterRemoving:Connect(function(character)
@@ -370,7 +397,12 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	if CurrentViewmodel then
 		UpdateViewmodel(deltaTime)
 	end
-	UpdateCharacterWalkSpeed(deltaTime)
+	local Speed = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+	UpdateHumanoid(deltaTime)
+
+	crouchIdleAnimation:AdjustWeight(math.abs(HipHeightModifier))
+	crouchWalkAnimation:AdjustWeight(math.abs(HipHeightModifier) * 8)
+	crouchWalkAnimation:AdjustSpeed((Speed / 15))
 
 	UserInputService.MouseIconEnabled = not Aiming
 end)

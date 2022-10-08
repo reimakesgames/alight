@@ -1,3 +1,7 @@
+# [v0.1.1] - 2022-10-08
+### Added
+- Basic crouching
+
 # [v0.1.0] - 2022-10-07
 ### Changed
 - API members now have proper naming structure
