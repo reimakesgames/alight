@@ -11,8 +11,8 @@ local QuickInstance = require(Utility.QuickInstance)
 
 type Tracer = {
 	Object: Part;
-	StartPosition: Vector3;
-	EndPosition: Vector3;
+	Origin: Vector3;
+	Goal: Vector3;
 	Magnitude: number;
 	_ready: boolean;
 }
@@ -149,17 +149,17 @@ function VFXHandler:NewBulletShell(originCFrame)
 	end)
 end
 
-function VFXHandler:NewTracer(origin: Vector3, lookVector: Vector3)
+function VFXHandler:NewTracer(origin: Vector3, goal: Vector3)
 	local _Tracer = Environment.Tracer:Clone()
 
-	_Tracer.CFrame = CFrame.new(origin, origin + lookVector)
+	_Tracer.CFrame = CFrame.new(origin, origin + (goal - origin).Unit)
 	_Tracer.Parent = EffectsFolder()
 
 	table.insert(_TracersList, {
 		Object = _Tracer;
-		StartPosition = origin;
-		EndPosition = origin + lookVector;
-		Magnitude = (origin - (origin + lookVector)).Magnitude;
+		Origin = origin;
+		Goal = goal;
+		Magnitude = (origin - goal).Magnitude;
 		_ready = false;
 	})
 end
@@ -198,7 +198,7 @@ RunService:BindToRenderStep("HC_TracerUpdate", Enum.RenderPriority.Input.Value -
 			continue
 		end
 		Tracer.Object.CFrame = Tracer.Object.CFrame + (Tracer.Object.CFrame.LookVector * (deltaTime * 512))
-		if (Tracer.StartPosition - Tracer.Object.Position).Magnitude > Tracer.Magnitude then
+		if (Tracer.Origin - Tracer.Object.Position).Magnitude > Tracer.Magnitude then
 			Tracer.Object:Destroy()
 			table.remove(_TracersList, Index)
 			table.clear(Tracer)
