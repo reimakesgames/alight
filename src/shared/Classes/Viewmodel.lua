@@ -12,6 +12,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local QuickInstance = require(Utility.QuickInstance)
 local Spring = require(Classes.Spring)
+local Animator = require(Classes.Animator)
 
 local function ViewmodelsFolder()
 	return Camera:FindFirstChild("Viewmodels") or QuickInstance("Folder", {Name = "Viewmodels", Parent = Camera})
@@ -38,6 +39,8 @@ export type ViewmodelClass = {
 	Decorate: (self: ViewmodelClass, model: Model) -> nil;
 	CleanUp: (self: ViewmodelClass) -> nil;
 
+	Animator: Animator.AnimatorClass;
+
 	Model: Model | DefaultArms;
 	Culled: boolean;
 	Springs: {[string]: Spring.SpringClass};
@@ -49,6 +52,8 @@ Viewmodel.__index = Viewmodel
 
 function Viewmodel.new(model: Model): ViewmodelClass
 	local self = setmetatable({
+		Animator = Animator.new();
+
 		Culled = true;
 		Springs = {
 			Sway = Spring.new(5, 50, 4, 4);
@@ -62,6 +67,7 @@ function Viewmodel.new(model: Model): ViewmodelClass
 	local newModel: Model | DefaultArms = model:Clone()
 	newModel.Parent = ViewmodelsFolder()
 	self.Model = newModel
+	self.Animator.Animator = self.Model.AnimationController.Animator
 	self:Cull(true)
 
 	return self
