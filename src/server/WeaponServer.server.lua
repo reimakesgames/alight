@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -13,6 +14,7 @@ local Modules = Shared:WaitForChild("Modules")
 
 local Link = require(Packages:WaitForChild("link"))
 local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
+local PingTimes = require(Modules:WaitForChild("PingTimes"))
 
 local RequestForRNGSeedSignal = Link.CreateEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link.CreateEvent("SendRNGSeed")
@@ -28,7 +30,26 @@ local function AddNoiseOnLookVector(PartDepth, origin, direction, random)
 	return CFrame.new(origin, origin + direction) * CFrame.Angles(math.rad(y), math.rad(x), 0)
 end
 
-local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Player, randomNumber: number)
+
+local function FindHumanoidAndDamage(Result)
+	local Model = Result.Instance:FindFirstAncestorWhichIsA("Model")
+	if Model then
+		local Humanoid = Model:FindFirstChildWhichIsA("Humanoid")
+		if Humanoid then
+			Humanoid.Health = Humanoid.Health - 28
+		end
+	end
+end
+
+local function FindHitbox(whoShot: Player, victimCharacter: Model)
+	if not victimCharacter then return end
+	local Ping = PingTimes[whoShot]
+	require(victimCharacter.Hitbox):BacktrackHitbox(Ping)
+	return require(victimCharacter.Hitbox)
+end
+
+local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Player, hitPlayers: Array<Player>, randomNumber: number)
+	local Hitboxes = {}
 	local parameter = RaycastParams.new()
 	parameter.FilterDescendantsInstances = { player.Character }
 	parameter.FilterType = Enum.RaycastFilterType.Blacklist
@@ -37,10 +58,23 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 	local PenetrationPower = 4
 	print(PenetrationPower)
 
+	for _, targetPlayer in hitPlayers do
+		local Hitbox = FindHitbox(player, targetPlayer.Character)
+		local NewHitbox
+		if Hitbox then
+			NewHitbox = Hitbox:GetHitbox():Clone()
+			print(NewHitbox)
+		end
+		if NewHitbox then
+			NewHitbox.Parent = workspace
+			table.insert(Hitboxes, Hitbox)
+		end
+	end
 	local Result = RaycastHandler:Raycast(startPoint, lookVector, 1024, parameter)
 	if not Result then
 		return
 	end
+	FindHumanoidAndDamage(Result)
 	local Thing = Environment.Server:Clone()
 	Thing.CFrame = CFrame.new(Result.Position, Result.Position + Result.Normal)
 	Thing.Parent = workspace
@@ -74,6 +108,7 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 		if not WallbangResult then
 			return
 		end
+		FindHumanoidAndDamage(WallbangResult)
 		Thing = Environment.Server:Clone()
 		Thing.CFrame = CFrame.new(WallbangResult.Position, WallbangResult.Position + WallbangResult.Normal)
 		Thing.Parent = workspace
@@ -96,11 +131,21 @@ RequestForRNGSeedSignal.Event:Connect(function(player: Player)
 	SendRNGSeedSignal:FireClient(player, Seed)
 end)
 
-WeaponFireSignal.Event:Connect(function(player: Player, origin: Vector3, direction: Vector3)
+WeaponFireSignal.Event:Connect(function(player: Player, origin: Vector3, direction: Vector3, hitPlayers: Array<Player>)
 	if not PlayerRandomGenerators[player.Name] then
 		player:Kick("You have been kicked for: Attempting to fire without an RNG seed")
 	end
+	print(hitPlayers)
 
 	local random = PlayerRandomGenerators[player.Name]:NextNumber()
-	WeaponFire(origin, direction, player, random)
+	WeaponFire(origin, direction, player, hitPlayers, random)
+end)
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function(character)
+		local Hitbox = script.Parent.LagCompensator.Hitbox:Clone()
+		Hitbox.Parent = character
+		local thing = require(Hitbox)
+		print(thing)
+	end)
 end)

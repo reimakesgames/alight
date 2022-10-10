@@ -24,6 +24,7 @@ local Spring = require(Classes:WaitForChild("Spring"))
 local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
 local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
+local PingTimes = require(Modules:WaitForChild("PingTimes"))
 
 local RequestForRNGSeedSignal = Link.WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link.WaitEvent("SendRNGSeed")
@@ -91,6 +92,7 @@ local function AddNoiseOnLookVector(partDepth, origin, direction, random)
 end
 
 local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber: number)
+	local hitPlayers = {}
 	local parameter = RaycastParams.new()
 	parameter.FilterDescendantsInstances = { LocalPlayer.Character, Camera }
 	parameter.FilterType = Enum.RaycastFilterType.Blacklist
@@ -114,7 +116,7 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		-- ParticleEffects:__CreateRaycastDebug(Camera.CFrame.Position, origin + (direction * 1024))
 		VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, startPoint + (lookVector * 16))
 		VFXHandler:NewTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition + (lookVector * 1024))
-		return
+		return hitPlayers
 	end
 	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
 	print(PenetrationPower)
@@ -123,7 +125,11 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 	VFXHandler:NewTracer(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
 
-	FindHumanoidAndDamage(Result)
+	local hit = Players:GetPlayerFromCharacter(Result.Instance:FindFirstAncestorWhichIsA("Model"))
+	if hit then
+		table.insert(hitPlayers, hit)
+		FindHumanoidAndDamage(Result)
+	end
 
 	local WallbangCount = 1
 
@@ -132,7 +138,7 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 
 		local DepthResult, Depth = RaycastHandler:CheckHitDepth(Result.Instance, Result.Position, lookVector)
 		if not DepthResult then
-			return
+			return hitPlayers
 		end
 		PenetrationPower = PenetrationPower - Depth
 		print(PenetrationPower)
@@ -151,7 +157,7 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		if not WallbangResult then
 			-- ParticleEffects:__CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
 			VFXHandler:NewBulletSmoke(DepthResult.Position, DepthResult.Position + (lookVector * 16))
-			return
+			return hitPlayers
 		end
 		-- ParticleEffects:__CreateRaycastDebug(ThicknessResult.Position, WallbangResult.Position)
 		VFXHandler:NewBulletHole(WallbangResult.Position, WallbangResult.Normal, WallbangResult.Instance)
@@ -162,8 +168,14 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		lookVector = WallbangDirection.LookVector
 
 		WallbangCount = WallbangCount + 1
-		FindHumanoidAndDamage(WallbangResult)
+		hit = Players:GetPlayerFromCharacter(Result.Instance:FindFirstAncestorWhichIsA("Model"))
+		if hit then
+			table.insert(hitPlayers, hit)
+			FindHumanoidAndDamage(Result)
+		end
 	until WallbangCount > 4
+
+	return hitPlayers
 end
 
 local function UpdateViewmodel(deltaTime)
@@ -320,8 +332,9 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			workspace.FireSounds.fire:Play()
 			workspace.FireSounds.distant:Play()
 
-			WeaponFire(OriginPosition, LookVector, random)
-			WeaponFireSignal:FireServer(OriginPosition, LookVector)
+			local hitPlayers = WeaponFire(OriginPosition, LookVector, random)
+			print(hitPlayers)
+			WeaponFireSignal:FireServer(OriginPosition, LookVector, hitPlayers)
 			Ammo = Ammo - 1
 			UpdateHUD()
 			task.wait(0.1)
