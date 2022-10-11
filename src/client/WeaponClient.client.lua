@@ -32,12 +32,14 @@ local WeaponFireSignal = Link.WaitEvent("WeaponFire")
 
 local CurrentViewmodel
 local CurrentAnimator: Animator.AnimatorClass?
+local CurrentTool: Tool?
 local idleObject = Instance.new("Animation")
 idleObject.AnimationId = "rbxassetid://11060004291"
 local ReloadAnimation = Instance.new("Animation")
 ReloadAnimation.AnimationId = "rbxassetid://11086817696"
 local EmptyReloadAnimation = Instance.new("Animation")
 EmptyReloadAnimation.AnimationId = "rbxassetid://11087239261"
+
 local CrouchIdleAnimation = Instance.new("Animation")
 CrouchIdleAnimation.AnimationId = "rbxassetid://11213476779"
 local CrouchWalkAnimation = Instance.new("Animation")
@@ -49,9 +51,21 @@ WalkingAnimation.AnimationId = "rbxassetid://11218984236"
 local RunningAnimation = Instance.new("Animation")
 RunningAnimation.AnimationId = "rbxassetid://11218980268"
 
+local CrouchToolIdleAnimation = Instance.new("Animation")
+CrouchToolIdleAnimation.AnimationId = "rbxassetid://11240708962"
+local CrouchToolWalkAnimation = Instance.new("Animation")
+CrouchToolWalkAnimation.AnimationId = "rbxassetid://11240710136"
+local IdleToolAnimation = Instance.new("Animation")
+IdleToolAnimation.AnimationId = "rbxassetid://11240305064"
+local WalkingToolAnimation = Instance.new("Animation")
+WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
+local RunningToolAnimation = Instance.new("Animation")
+RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
+
 local WalkCycleX = 0.0
 local WalkCycleY = 0.0
 local CharacterVelocityMagnitude = 0.0
+local EquippedModifier = 0.0
 local SprintingModifier = 0.0
 local FiringModifier = 0.0
 local ReloadingModifier = 0.0
@@ -65,6 +79,7 @@ local ViewmodelCFrame = CFrame.new()
 local ShiftButtonDown = false
 local Mouse1Down = false
 local Mouse2Down = false
+local ActiveTool = false
 local Sprinting = false
 local Crouching = false
 local Firing = false
@@ -180,6 +195,7 @@ local function UpdateViewmodel(deltaTime)
 	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LerpTools:LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, 8)
+	EquippedModifier = LerpTools:LinearInterpolate(EquippedModifier, ActiveTool and 1 or 0, 32)
 	FiringModifier = Firing and 0 or LerpTools:LinearInterpolate(FiringModifier, 1, 16)
 	SprintingModifier = LerpTools:LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, 16)
 	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0, 8)
@@ -395,6 +411,34 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	CurrentAnimator:Load(CrouchWalkAnimation, "crouchWalk"):Play(0.1, 0)
 	CurrentAnimator:Load(WalkingAnimation, "walkingAnimation"):Play(0.1, 0)
 	CurrentAnimator:Load(RunningAnimation, "runningAnimation"):Play(0.1, 0)
+
+	CurrentAnimator:Load(IdleToolAnimation, "idleTool"):Play(0.1, 0)
+	CurrentAnimator:Load(CrouchToolIdleAnimation, "crouchToolIdle"):Play(0.1, 0)
+	CurrentAnimator:Load(CrouchToolWalkAnimation, "crouchToolWalk"):Play(0.1, 0)
+	CurrentAnimator:Load(WalkingToolAnimation, "walkingToolAnimation"):Play(0.1, 0)
+	CurrentAnimator:Load(RunningToolAnimation, "runningToolAnimation"):Play(0.1, 0)
+
+	character.ChildAdded:Connect(function(object)
+		if not object:IsA("Tool") then
+			return
+		end
+
+		if object:GetAttribute("HC_VALID_WEAPON") then
+			ActiveTool = true
+			CurrentTool = object
+		end
+	end)
+
+	character.ChildRemoved:Connect(function(object)
+		if not object:IsA("Tool") then
+			return
+		end
+
+		if object:GetAttribute("HC_VALID_WEAPON") then
+			ActiveTool = false
+			CurrentTool = nil
+		end
+	end)
 end)
 
 LocalPlayer.CharacterRemoving:Connect(function(character)
@@ -409,6 +453,7 @@ local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
 	if CurrentViewmodel then
+		CurrentViewmodel:Cull(not ActiveTool)
 		UpdateViewmodel(deltaTime)
 	end
 	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -423,36 +468,54 @@ RunService.RenderStepped:Connect(function(deltaTime)
 					if stoppedSwitch then
 						stoppedSwitch = false
 						CurrentAnimator.Tracks.walkingAnimation:Stop(0.1)
+						CurrentAnimator.Tracks.walkingToolAnimation:Stop(0.1)
 						CurrentAnimator.Tracks.runningAnimation:Stop(0.1)
+						CurrentAnimator.Tracks.runningToolAnimation:Stop(0.1)
 						CurrentAnimator.Tracks.crouchWalk:Stop(0.1)
-						CurrentAnimator.Tracks.idle:Play(0.1, 1)
+
+						CurrentAnimator.Tracks.idle:Play(0.1, (1 - EquippedModifier))
+						CurrentAnimator.Tracks.idleTool:Play(0.1, EquippedModifier)
 						CurrentAnimator.Tracks.crouchIdle:Play(0.1, 0)
+						CurrentAnimator.Tracks.crouchToolIdle:Play(0.1, 0)
 					end
-					CurrentAnimator.Tracks.idle:AdjustWeight(math.clamp(1 - Speed, 0, 1))
-					CurrentAnimator.Tracks.crouchIdle:AdjustWeight(math.abs(HipHeightModifier))
+
 					moveSwitch = true
 				else
 					if moveSwitch then
 						moveSwitch = false
 						CurrentAnimator.Tracks.walkingAnimation:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.walkingToolAnimation:Play(0.1, 0, 1)
 						CurrentAnimator.Tracks.runningAnimation:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.runningToolAnimation:Play(0.1, 0, 1)
 						CurrentAnimator.Tracks.crouchWalk:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.crouchToolWalk:Play(0.1, 0, 1)
 					end
-					CurrentAnimator.Tracks.walkingAnimation:AdjustWeight((Speed + HipHeightModifier) * (1 - SprintingModifier), 0.2)
-					CurrentAnimator.Tracks.runningAnimation:AdjustWeight((Speed + HipHeightModifier) * SprintingModifier, 0.2)
-					CurrentAnimator.Tracks.crouchWalk:AdjustWeight(Speed * math.abs(HipHeightModifier), 0.2)
-					CurrentAnimator.Tracks.idle:AdjustWeight(math.clamp(1 - Speed, 0, 1))
-					CurrentAnimator.Tracks.crouchIdle:AdjustWeight(math.abs(HipHeightModifier))
+					CurrentAnimator.Tracks.walkingAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * (1 - EquippedModifier) * (1 - SprintingModifier), 0.1)
+					CurrentAnimator.Tracks.walkingToolAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * EquippedModifier * (1 - SprintingModifier), 0.1)
+					CurrentAnimator.Tracks.runningAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * (1 - EquippedModifier) * SprintingModifier, 0.1)
+					CurrentAnimator.Tracks.runningToolAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * EquippedModifier * SprintingModifier, 0.1)
+					CurrentAnimator.Tracks.crouchWalk:AdjustWeight(Speed * HipHeightModifier * (1 - EquippedModifier), 0.1)
+					CurrentAnimator.Tracks.crouchToolWalk:AdjustWeight(Speed * HipHeightModifier * EquippedModifier, 0.1)
+
 					stoppedSwitch = true
 				end
+				CurrentAnimator.Tracks.idle:AdjustWeight((1 - (Speed / 16)) * (1 - math.abs(HipHeightModifier)) * (1 - EquippedModifier), 0.1)
+				CurrentAnimator.Tracks.idleTool:AdjustWeight((1 - (Speed / 16)) * (1 - math.abs(HipHeightModifier)) * EquippedModifier, 0.1)
+				CurrentAnimator.Tracks.crouchIdle:AdjustWeight(math.abs(HipHeightModifier) * (1 - EquippedModifier), 0.1)
+				CurrentAnimator.Tracks.crouchToolIdle:AdjustWeight(math.abs(HipHeightModifier) * EquippedModifier, 0.1)
 				-- CurrentAnimator.Tracks.idle:AdjustWeight(math.clamp(1 - Speed, 0, 1))
 				-- CurrentAnimator.Tracks.walkingAnimation:AdjustWeight(Speed * (1 - HipHeightModifier) * (1 - SprintingModifier))
 				-- CurrentAnimator.Tracks.runningAnimation:AdjustWeight(Speed * (1 - HipHeightModifier) * SprintingModifier)
 				-- CurrentAnimator.Tracks.crouchIdle:AdjustWeight(HipHeightModifier)
 				-- CurrentAnimator.Tracks.crouchWalk:AdjustWeight(Speed * HipHeightModifier)
-				CurrentAnimator.Tracks.walkingAnimation:AdjustSpeed((Speed / 16))
-				CurrentAnimator.Tracks.runningAnimation:AdjustSpeed((Speed / 16))
-				CurrentAnimator.Tracks.crouchWalk:AdjustSpeed((Speed / 16))
+				CurrentAnimator.Tracks.idle:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.idleTool:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.walkingAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.walkingToolAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.runningAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.runningToolAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.crouchWalk:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.crouchToolWalk:AdjustSpeed((Speed / 15))
 			end)
 		end
 	end
