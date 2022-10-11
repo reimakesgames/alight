@@ -19,6 +19,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local LerpTools = require(Utility.LerpUtil)
 local Link = require(Packages:WaitForChild("link"))
+local Prisma = require(Packages:WaitForChild("prisma"))
 local Viewmodel = require(Classes:WaitForChild("Viewmodel"))
 local Animator = require(Classes:WaitForChild("Animator"))
 local Spring = require(Classes:WaitForChild("Spring"))
@@ -424,6 +425,8 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			Prisma:ToggleArms(true, true)
+			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
 			CurrentTool = object
 		end
@@ -435,6 +438,8 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			Prisma:ToggleArms(false, false)
+			Prisma:ToggleTorsoLag(true)
 			ActiveTool = false
 			CurrentTool = nil
 		end

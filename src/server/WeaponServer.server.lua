@@ -41,12 +41,11 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 	if not Result then
 		return
 	end
-	local Thing = Environment.Server:Clone()
-	Thing.CFrame = CFrame.new(Result.Position, Result.Position + Result.Normal)
-	Thing.Parent = workspace
 	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
 	print(PenetrationPower)
 	local WallbangCount = 1
+
+	-- FindHumanoidAndDamage(Result)
 
 	repeat
 		-- finding part thickness
@@ -60,9 +59,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 		if PenetrationPower < 0 then
 			break
 		end
-		Thing = Environment.Server:Clone()
-		Thing.CFrame = CFrame.new(DepthResult.Position, DepthResult.Position + DepthResult.Normal)
-		Thing.Parent = workspace
 
 		-- wall bang thing
 
@@ -74,15 +70,14 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 		if not WallbangResult then
 			return
 		end
-		Thing = Environment.Server:Clone()
-		Thing.CFrame = CFrame.new(WallbangResult.Position, WallbangResult.Position + WallbangResult.Normal)
-		Thing.Parent = workspace
 
 		Result = WallbangResult
 		startPoint = DepthResult.Position
 		lookVector = WallbangDirection.LookVector
 
 		WallbangCount = WallbangCount + 1
+
+		-- FindHumanoidAndDamage(Result)
 	until WallbangCount > 4
 end
 
