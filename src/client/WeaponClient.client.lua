@@ -19,7 +19,9 @@ local LocalPlayer = Players.LocalPlayer
 
 local LerpTools = require(Utility.LerpUtil)
 local Link = require(Packages:WaitForChild("link"))
+local Prisma = require(Packages:WaitForChild("prisma"))
 local Viewmodel = require(Classes:WaitForChild("Viewmodel"))
+local Animator = require(Classes:WaitForChild("Animator"))
 local Spring = require(Classes:WaitForChild("Spring"))
 local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
@@ -29,23 +31,43 @@ local RequestForRNGSeedSignal = Link.WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link.WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link.WaitEvent("WeaponFire")
 
+local Viewmodels = {}
 local CurrentViewmodel
+local CurrentAnimator: Animator.AnimatorClass?
+local CurrentTool: Tool?
 local idleObject = Instance.new("Animation")
 idleObject.AnimationId = "rbxassetid://11060004291"
-local reloadObject = Instance.new("Animation")
-reloadObject.AnimationId = "rbxassetid://11086817696"
-local emptyReloadObject = Instance.new("Animation")
-emptyReloadObject.AnimationId = "rbxassetid://11087239261"
-local crouchIdle = Instance.new("Animation")
-crouchIdle.AnimationId = "rbxassetid://11213476779"
-local crouchWalk = Instance.new("Animation")
-crouchWalk.AnimationId = "rbxassetid://11213471255"
-local reloadAnimation, emptyReloadAnimation
-local crouchIdleAnimation, crouchWalkAnimation
+local ReloadAnimation = Instance.new("Animation")
+ReloadAnimation.AnimationId = "rbxassetid://11086817696"
+local EmptyReloadAnimation = Instance.new("Animation")
+EmptyReloadAnimation.AnimationId = "rbxassetid://11087239261"
+
+local CrouchIdleAnimation = Instance.new("Animation")
+CrouchIdleAnimation.AnimationId = "rbxassetid://11213476779"
+local CrouchWalkAnimation = Instance.new("Animation")
+CrouchWalkAnimation.AnimationId = "rbxassetid://11213471255"
+local IdleAnimation = Instance.new("Animation")
+IdleAnimation.AnimationId = "rbxassetid://11219539529"
+local WalkingAnimation = Instance.new("Animation")
+WalkingAnimation.AnimationId = "rbxassetid://11218984236"
+local RunningAnimation = Instance.new("Animation")
+RunningAnimation.AnimationId = "rbxassetid://11218980268"
+
+local CrouchToolIdleAnimation = Instance.new("Animation")
+CrouchToolIdleAnimation.AnimationId = "rbxassetid://11240708962"
+local CrouchToolWalkAnimation = Instance.new("Animation")
+CrouchToolWalkAnimation.AnimationId = "rbxassetid://11240710136"
+local IdleToolAnimation = Instance.new("Animation")
+IdleToolAnimation.AnimationId = "rbxassetid://11240305064"
+local WalkingToolAnimation = Instance.new("Animation")
+WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
+local RunningToolAnimation = Instance.new("Animation")
+RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 
 local WalkCycleX = 0.0
 local WalkCycleY = 0.0
 local CharacterVelocityMagnitude = 0.0
+local EquippedModifier = 0.0
 local SprintingModifier = 0.0
 local FiringModifier = 0.0
 local ReloadingModifier = 0.0
@@ -59,17 +81,29 @@ local ViewmodelCFrame = CFrame.new()
 local ShiftButtonDown = false
 local Mouse1Down = false
 local Mouse2Down = false
+local ActiveTool = false
 local Sprinting = false
 local Crouching = false
 local Firing = false
 local Reloading = false
 local Aiming = false
 
+local ReloadThread: thread
+
 local MaxAmmo = 25
 local Ammo = 25
 
 local function UpdateHUD()
-	LocalPlayer.PlayerGui.HUD.Ammo.Text = Ammo .. " /" .. MaxAmmo
+	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
+	if not HUD then
+		return
+	end
+	HUD.Enabled = ActiveTool
+	local AmmoLabel = HUD:FindFirstChild("Ammo")
+	if not AmmoLabel then
+		return
+	end
+	AmmoLabel.Text = Ammo .. " /" .. MaxAmmo
 end
 
 local function FindHumanoidAndDamage(Result)
@@ -174,6 +208,7 @@ local function UpdateViewmodel(deltaTime)
 	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LerpTools:LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, 8)
+	EquippedModifier = LerpTools:LinearInterpolate(EquippedModifier, ActiveTool and 1 or 0, 32)
 	FiringModifier = Firing and 0 or LerpTools:LinearInterpolate(FiringModifier, 1, 16)
 	SprintingModifier = LerpTools:LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, 16)
 	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0, 8)
@@ -261,36 +296,36 @@ local function UpdateHumanoid(deltaTime)
 
 	if Sprinting then
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1.25, 16)
-		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 16)
+		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 8)
 	elseif Crouching then
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 0.5, 16)
-		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, -1, 16)
+		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 1, 8)
 	else
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1, 16)
-		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 16)
+		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 8)
 	end
 
-	LocalPlayer.Character.Humanoid.HipHeight = HipHeightModifier
+	LocalPlayer.Character.Humanoid.HipHeight = -HipHeightModifier
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
 end
 
 local function AmmunitionLogic()
 	if Ammo > 0 then
-		reloadAnimation:Play()
+		CurrentViewmodel.Animator.Tracks.reload:Play()
 		Reloading = true
-		reloadAnimation.Stopped:Once(function()
-			Ammo = MaxAmmo + 1
-			UpdateHUD()
-			Reloading = false
-		end)
+		task.wait(CurrentViewmodel.Animator.Tracks.reload.Length)
+		Ammo = MaxAmmo + 1
+		UpdateHUD()
+
+		Reloading = false
 	elseif Ammo == 0 then
-		emptyReloadAnimation:Play()
+		CurrentViewmodel.Animator.Tracks.emptyReload:Play()
 		Reloading = true
-		emptyReloadAnimation.Stopped:Once(function()
-			Ammo = MaxAmmo
-			UpdateHUD()
-			Reloading = false
-		end)
+		task.wait(CurrentViewmodel.Animator.Tracks.emptyReload.Length)
+		Ammo = MaxAmmo
+		UpdateHUD()
+
+		Reloading = false
 	end
 end
 
@@ -305,6 +340,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if gameProcessedEvent then return end
 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if not ActiveTool then return end
 		if Firing then return end
 		if Ammo == 0 then return end
 		if Reloading then return end
@@ -328,6 +364,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			Firing = false
 		until not Mouse1Down or Ammo == 0
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+		if not ActiveTool then return end
+
 		Sprinting = false
 		Mouse2Down = true
 		Aiming = true
@@ -345,12 +383,14 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		Sprinting = false
 		Crouching = true
 	elseif input.KeyCode == Enum.KeyCode.R then
+		if not ActiveTool then return end
 		if Firing then return end
 		if Ammo >= MaxAmmo + 1 then return end
 		if Reloading then return end
 		Sprinting = false
 
-		AmmunitionLogic()
+		ReloadThread = coroutine.create(AmmunitionLogic)
+		coroutine.resume(ReloadThread)
 	end
 end)
 
@@ -373,36 +413,191 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(character)
-	CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
-	CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
-	CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(idleObject):Play()
-	CurrentViewmodel:Cull(false)
-	reloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(reloadObject)
-	emptyReloadAnimation = CurrentViewmodel.Model.AnimationController.Animator:LoadAnimation(emptyReloadObject)
-	crouchIdleAnimation = character:WaitForChild("Humanoid").Animator:LoadAnimation(crouchIdle)
-	crouchIdleAnimation:Play()
-	crouchIdleAnimation:AdjustWeight(0)
-	crouchWalkAnimation = character:WaitForChild("Humanoid").Animator:LoadAnimation(crouchWalk)
-	crouchWalkAnimation:Play()
-	crouchWalkAnimation:AdjustWeight(0)
+	UpdateHUD()
 
+	WalkCycleX = 0.0
+	WalkCycleY = 0.0
+	CharacterVelocityMagnitude = 0.0
+	EquippedModifier = 0.0
+	SprintingModifier = 0.0
+	FiringModifier = 0.0
+	ReloadingModifier = 0.0
+	MovingModifier = 0.0
+	CamX, CamY, CamZ = 0.0, 0.0, 0.0
+
+	WalkSpeedModifier = 1.0
+	HipHeightModifier = 0.0
+
+	ViewmodelCFrame = CFrame.new()
+	ShiftButtonDown = false
+	Mouse1Down = false
+	Mouse2Down = false
+	ActiveTool = false
+	Sprinting = false
+	Crouching = false
+	Firing = false
+	Reloading = false
+	Aiming = false
+
+	MaxAmmo = 25
+	Ammo = 25
+
+	CurrentAnimator = Animator.new()
+	CurrentAnimator.Animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
+
+	CurrentAnimator:Load(IdleAnimation, "idle"):Play(0.1, 1)
+	CurrentAnimator:Load(CrouchIdleAnimation, "crouchIdle"):Play(0.1, 0)
+	CurrentAnimator:Load(CrouchWalkAnimation, "crouchWalk"):Play(0.1, 0)
+	CurrentAnimator:Load(WalkingAnimation, "walkingAnimation"):Play(0.1, 0)
+	CurrentAnimator:Load(RunningAnimation, "runningAnimation"):Play(0.1, 0)
+
+	CurrentAnimator:Load(IdleToolAnimation, "idleTool"):Play(0.1, 0)
+	CurrentAnimator:Load(CrouchToolIdleAnimation, "crouchToolIdle"):Play(0.1, 0)
+	CurrentAnimator:Load(CrouchToolWalkAnimation, "crouchToolWalk"):Play(0.1, 0)
+	CurrentAnimator:Load(WalkingToolAnimation, "walkingToolAnimation"):Play(0.1, 0)
+	CurrentAnimator:Load(RunningToolAnimation, "runningToolAnimation"):Play(0.1, 0)
+
+	character.ChildAdded:Connect(function(object)
+		if not object:IsA("Tool") then
+			return
+		end
+
+		if object:GetAttribute("HC_VALID_WEAPON") then
+			Prisma:ToggleArms(true, true)
+			Prisma:ToggleTorsoLag(false)
+			ActiveTool = true
+			CurrentTool = object
+
+			CurrentViewmodel = Viewmodels[object]
+			if not CurrentViewmodel then
+				CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
+				Viewmodels[object] = CurrentViewmodel
+
+				CurrentViewmodel.Animator:Load(idleObject, "idle"):Play(0.1, 1, 1)
+				CurrentViewmodel.Animator:Load(ReloadAnimation, "reload")
+				CurrentViewmodel.Animator:Load(EmptyReloadAnimation, "emptyReload")
+
+				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
+				CurrentViewmodel:Cull(false)
+			end
+
+			UpdateHUD()
+		end
+	end)
+
+	character.ChildRemoved:Connect(function(object)
+		if not object:IsA("Tool") then
+			return
+		end
+
+		if object:GetAttribute("HC_VALID_WEAPON") then
+			if ReloadThread then
+				coroutine.close(ReloadThread)
+			end
+			CurrentViewmodel.Animator.Tracks.reload:Stop()
+			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
+			Prisma:ToggleArms(false, false)
+			Prisma:ToggleTorsoLag(true)
+			ActiveTool = false
+			CurrentTool = nil
+			Mouse1Down = false
+			Mouse2Down = false
+			Firing = false
+			Reloading = false
+			Aiming = false
+
+			Viewmodels[object]:Cull(true)
+
+			UpdateHUD()
+		end
+	end)
 end)
 
 LocalPlayer.CharacterRemoving:Connect(function(character)
+	for _, Viewmodel in Viewmodels do
+		Viewmodel:CleanUp()
+	end
 	CurrentViewmodel:CleanUp()
 	CurrentViewmodel = nil
+	CurrentAnimator:Destroy()
+	CurrentAnimator = nil :: Animator.AnimatorClass?
 end)
 
+local moveSwitch = false
+local stoppedSwitch = true
+
 RunService.RenderStepped:Connect(function(deltaTime)
+	local LeftEnabled = Sprinting or not ActiveTool
+	local RightEnabled = Sprinting or not ActiveTool
+	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
+
 	if CurrentViewmodel then
+		CurrentViewmodel:Cull(not ActiveTool)
 		UpdateViewmodel(deltaTime)
 	end
-	local Speed = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-	UpdateHumanoid(deltaTime)
+	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		UpdateHumanoid(deltaTime)
+		local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
+		local Speed = Vector2.new(CharacterVelocity.X, CharacterVelocity.Z).Magnitude
 
-	crouchIdleAnimation:AdjustWeight(math.abs(HipHeightModifier))
-	crouchWalkAnimation:AdjustWeight(math.abs(HipHeightModifier) * 8)
-	crouchWalkAnimation:AdjustSpeed((Speed / 15))
+		if CurrentAnimator then
+			pcall(function()
+				if Speed <= 0.1 then
+					Speed = 0
+					if stoppedSwitch then
+						stoppedSwitch = false
+						CurrentAnimator.Tracks.walkingAnimation:Stop(0.1)
+						CurrentAnimator.Tracks.walkingToolAnimation:Stop(0.1)
+						CurrentAnimator.Tracks.runningAnimation:Stop(0.1)
+						CurrentAnimator.Tracks.runningToolAnimation:Stop(0.1)
+						CurrentAnimator.Tracks.crouchWalk:Stop(0.1)
+
+						CurrentAnimator.Tracks.idle:Play(0.1, (1 - EquippedModifier))
+						CurrentAnimator.Tracks.idleTool:Play(0.1, EquippedModifier)
+						CurrentAnimator.Tracks.crouchIdle:Play(0.1, 0)
+						CurrentAnimator.Tracks.crouchToolIdle:Play(0.1, 0)
+					end
+
+					moveSwitch = true
+				else
+					if moveSwitch then
+						moveSwitch = false
+						CurrentAnimator.Tracks.walkingAnimation:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.walkingToolAnimation:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.runningAnimation:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.runningToolAnimation:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.crouchWalk:Play(0.1, 0, 1)
+						CurrentAnimator.Tracks.crouchToolWalk:Play(0.1, 0, 1)
+					end
+					CurrentAnimator.Tracks.walkingAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * (1 - EquippedModifier) * (1 - SprintingModifier), 0.1)
+					CurrentAnimator.Tracks.walkingToolAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * EquippedModifier * (1 - SprintingModifier), 0.1)
+					CurrentAnimator.Tracks.runningAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * (1 - EquippedModifier) * SprintingModifier, 0.1)
+					CurrentAnimator.Tracks.runningToolAnimation:AdjustWeight(Speed * (1 - math.abs(HipHeightModifier)) * EquippedModifier * SprintingModifier, 0.1)
+					CurrentAnimator.Tracks.crouchWalk:AdjustWeight(Speed * HipHeightModifier * (1 - EquippedModifier), 0.1)
+					CurrentAnimator.Tracks.crouchToolWalk:AdjustWeight(Speed * HipHeightModifier * EquippedModifier, 0.1)
+
+					stoppedSwitch = true
+				end
+				CurrentAnimator.Tracks.idle:AdjustWeight((1 - (Speed / 16)) * (1 - math.abs(HipHeightModifier)) * (1 - EquippedModifier), 0.1)
+				CurrentAnimator.Tracks.idleTool:AdjustWeight((1 - (Speed / 16)) * (1 - math.abs(HipHeightModifier)) * EquippedModifier, 0.1)
+				CurrentAnimator.Tracks.crouchIdle:AdjustWeight(math.abs(HipHeightModifier) * (1 - EquippedModifier), 0.1)
+				CurrentAnimator.Tracks.crouchToolIdle:AdjustWeight(math.abs(HipHeightModifier) * EquippedModifier, 0.1)
+				-- CurrentAnimator.Tracks.idle:AdjustWeight(math.clamp(1 - Speed, 0, 1))
+				-- CurrentAnimator.Tracks.walkingAnimation:AdjustWeight(Speed * (1 - HipHeightModifier) * (1 - SprintingModifier))
+				-- CurrentAnimator.Tracks.runningAnimation:AdjustWeight(Speed * (1 - HipHeightModifier) * SprintingModifier)
+				-- CurrentAnimator.Tracks.crouchIdle:AdjustWeight(HipHeightModifier)
+				-- CurrentAnimator.Tracks.crouchWalk:AdjustWeight(Speed * HipHeightModifier)
+				CurrentAnimator.Tracks.idle:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.idleTool:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.walkingAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.walkingToolAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.runningAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.runningToolAnimation:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.crouchWalk:AdjustSpeed((Speed / 15))
+				CurrentAnimator.Tracks.crouchToolWalk:AdjustSpeed((Speed / 15))
+			end)
+		end
+	end
 
 	UserInputService.MouseIconEnabled = not Aiming
 end)
