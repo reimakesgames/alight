@@ -31,6 +31,7 @@ local RequestForRNGSeedSignal = Link.WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link.WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link.WaitEvent("WeaponFire")
 
+local Viewmodels = {}
 local CurrentViewmodel
 local CurrentAnimator: Animator.AnimatorClass?
 local CurrentTool: Tool?
@@ -87,11 +88,22 @@ local Firing = false
 local Reloading = false
 local Aiming = false
 
+local ReloadThread: thread
+
 local MaxAmmo = 25
 local Ammo = 25
 
 local function UpdateHUD()
-	LocalPlayer.PlayerGui.HUD.Ammo.Text = Ammo .. " /" .. MaxAmmo
+	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
+	if not HUD then
+		return
+	end
+	HUD.Enabled = ActiveTool
+	local AmmoLabel = HUD:FindFirstChild("Ammo")
+	if not AmmoLabel then
+		return
+	end
+	AmmoLabel.Text = Ammo .. " /" .. MaxAmmo
 end
 
 local function FindHumanoidAndDamage(Result)
@@ -301,19 +313,19 @@ local function AmmunitionLogic()
 	if Ammo > 0 then
 		CurrentViewmodel.Animator.Tracks.reload:Play()
 		Reloading = true
-		CurrentViewmodel.Animator.Tracks.reload.Stopped:Once(function()
-			Ammo = MaxAmmo + 1
-			UpdateHUD()
-			Reloading = false
-		end)
+		task.wait(CurrentViewmodel.Animator.Tracks.reload.Length)
+		Ammo = MaxAmmo + 1
+		UpdateHUD()
+
+		Reloading = false
 	elseif Ammo == 0 then
 		CurrentViewmodel.Animator.Tracks.emptyReload:Play()
 		Reloading = true
-		CurrentViewmodel.Animator.Tracks.emptyReload.Stopped:Once(function()
-			Ammo = MaxAmmo
-			UpdateHUD()
-			Reloading = false
-		end)
+		task.wait(CurrentViewmodel.Animator.Tracks.emptyReload.Length)
+		Ammo = MaxAmmo
+		UpdateHUD()
+
+		Reloading = false
 	end
 end
 
@@ -328,6 +340,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if gameProcessedEvent then return end
 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if not ActiveTool then return end
 		if Firing then return end
 		if Ammo == 0 then return end
 		if Reloading then return end
@@ -351,6 +364,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			Firing = false
 		until not Mouse1Down or Ammo == 0
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+		if not ActiveTool then return end
+
 		Sprinting = false
 		Mouse2Down = true
 		Aiming = true
@@ -368,12 +383,14 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		Sprinting = false
 		Crouching = true
 	elseif input.KeyCode == Enum.KeyCode.R then
+		if not ActiveTool then return end
 		if Firing then return end
 		if Ammo >= MaxAmmo + 1 then return end
 		if Reloading then return end
 		Sprinting = false
 
-		AmmunitionLogic()
+		ReloadThread = coroutine.create(AmmunitionLogic)
+		coroutine.resume(ReloadThread)
 	end
 end)
 
@@ -396,16 +413,37 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(character)
-	CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
+	UpdateHUD()
+
+	WalkCycleX = 0.0
+	WalkCycleY = 0.0
+	CharacterVelocityMagnitude = 0.0
+	EquippedModifier = 0.0
+	SprintingModifier = 0.0
+	FiringModifier = 0.0
+	ReloadingModifier = 0.0
+	MovingModifier = 0.0
+	CamX, CamY, CamZ = 0.0, 0.0, 0.0
+
+	WalkSpeedModifier = 1.0
+	HipHeightModifier = 0.0
+
+	ViewmodelCFrame = CFrame.new()
+	ShiftButtonDown = false
+	Mouse1Down = false
+	Mouse2Down = false
+	ActiveTool = false
+	Sprinting = false
+	Crouching = false
+	Firing = false
+	Reloading = false
+	Aiming = false
+
+	MaxAmmo = 25
+	Ammo = 25
+
 	CurrentAnimator = Animator.new()
 	CurrentAnimator.Animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
-
-	CurrentViewmodel.Animator:Load(idleObject, "idle"):Play(0.1, 1, 1)
-	CurrentViewmodel.Animator:Load(ReloadAnimation, "reload")
-	CurrentViewmodel.Animator:Load(EmptyReloadAnimation, "emptyReload")
-
-	CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
-	CurrentViewmodel:Cull(false)
 
 	CurrentAnimator:Load(IdleAnimation, "idle"):Play(0.1, 1)
 	CurrentAnimator:Load(CrouchIdleAnimation, "crouchIdle"):Play(0.1, 0)
@@ -429,6 +467,21 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
 			CurrentTool = object
+
+			CurrentViewmodel = Viewmodels[object]
+			if not CurrentViewmodel then
+				CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
+				Viewmodels[object] = CurrentViewmodel
+
+				CurrentViewmodel.Animator:Load(idleObject, "idle"):Play(0.1, 1, 1)
+				CurrentViewmodel.Animator:Load(ReloadAnimation, "reload")
+				CurrentViewmodel.Animator:Load(EmptyReloadAnimation, "emptyReload")
+
+				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
+				CurrentViewmodel:Cull(false)
+			end
+
+			UpdateHUD()
 		end
 	end)
 
@@ -438,10 +491,24 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			if ReloadThread then
+				coroutine.close(ReloadThread)
+			end
+			CurrentViewmodel.Animator.Tracks.reload:Stop()
+			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
 			Prisma:ToggleArms(false, false)
 			Prisma:ToggleTorsoLag(true)
 			ActiveTool = false
 			CurrentTool = nil
+			Mouse1Down = false
+			Mouse2Down = false
+			Firing = false
+			Reloading = false
+			Aiming = false
+
+			Viewmodels[object]:Cull(true)
+
+			UpdateHUD()
 		end
 	end)
 end)
@@ -457,6 +524,10 @@ local moveSwitch = false
 local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
+	local LeftEnabled = Sprinting or not ActiveTool
+	local RightEnabled = Sprinting or not ActiveTool
+	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
+
 	if CurrentViewmodel then
 		CurrentViewmodel:Cull(not ActiveTool)
 		UpdateViewmodel(deltaTime)
