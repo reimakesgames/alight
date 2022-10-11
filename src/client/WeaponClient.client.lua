@@ -514,6 +514,9 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 
 LocalPlayer.CharacterRemoving:Connect(function(character)
+	for _, Viewmodel in Viewmodels do
+		Viewmodel:CleanUp()
+	end
 	CurrentViewmodel:CleanUp()
 	CurrentViewmodel = nil
 	CurrentAnimator:Destroy()
