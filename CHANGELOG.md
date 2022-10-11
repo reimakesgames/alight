@@ -1,3 +1,11 @@
+# [v0.1.2] - 2022-10-11
+### Added
+- Animation Blending
+- Equipped Modifier
+- Cancellable Reload
+- Tool oriented Viewmodels
+- Animator Class
+
 # [v0.1.1] - 2022-10-08
 ### Added
 - Basic crouching
