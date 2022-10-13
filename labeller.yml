@@ -1,0 +1,16 @@
+Repository:
+- '*'
+
+Client:
+- src/client/**/*
+
+Server:
+- src/server/**/*
+
+API:
+- src/shared/Modules/**/*
+- src/shared/Classes/**/*
+
+Miscellaneous:
+- src/first/**/*
+- src/utility/**/*
