@@ -1,3 +1,12 @@
+# [v0.1.3] - 2022-10-13
+### Added
+- Ammunition Reserve
+- Reserve Display
+
+### Changed
+- Reloading / Firing Ammo Logic
+- WeaponClient variable changes
+
 # [v0.1.2] - 2022-10-11
 ### Added
 - Animation Blending

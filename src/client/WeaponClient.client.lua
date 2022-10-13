@@ -90,21 +90,9 @@ local Aiming = false
 
 local ReloadThread: thread
 
-local MaxAmmo = 25
-local Ammo = 25
-
-local function UpdateHUD()
-	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
-	if not HUD then
-		return
-	end
-	HUD.Enabled = ActiveTool
-	local AmmoLabel = HUD:FindFirstChild("Ammo")
-	if not AmmoLabel then
-		return
-	end
-	AmmoLabel.Text = Ammo .. " /" .. MaxAmmo
-end
+local Reserve = 75
+local Capacity = 25
+local Magazine = 25
 
 local function FindHumanoidAndDamage(Result)
 	local Model = Result.Instance:FindFirstAncestorWhichIsA("Model")
@@ -309,24 +297,52 @@ local function UpdateHumanoid(deltaTime)
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
 end
 
-local function AmmunitionLogic()
-	if Ammo > 0 then
-		CurrentViewmodel.Animator.Tracks.reload:Play()
+local function UpdateHUD()
+	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
+	if not HUD then
+		return
+	end
+	HUD.Enabled = ActiveTool
+	local Body = HUD:FindFirstChild("Ammunition")
+	if not Body then
+		return
+	end
+	local MagazineLabel = Body:FindFirstChild("Magazine")
+	local ReserveLabel = Body:FindFirstChild("Reserve")
+	MagazineLabel.Text = tostring(Magazine)
+	ReserveLabel.Text = tostring(Reserve)
+end
+
+local function ReloadBulletLogic()
+	if Reserve == 0 then
+		return
+	end
+
+	if Magazine > 0 then
 		Reloading = true
+		CurrentViewmodel.Animator.Tracks.reload:Play()
 		task.wait(CurrentViewmodel.Animator.Tracks.reload.Length)
-		Ammo = MaxAmmo + 1
+		local use = math.min((Capacity + 1) - Magazine, Reserve)
+		Magazine = Magazine + use
+		Reserve = Reserve - use
 		UpdateHUD()
 
 		Reloading = false
-	elseif Ammo == 0 then
-		CurrentViewmodel.Animator.Tracks.emptyReload:Play()
+	elseif Magazine == 0 then
 		Reloading = true
+		CurrentViewmodel.Animator.Tracks.emptyReload:Play()
 		task.wait(CurrentViewmodel.Animator.Tracks.emptyReload.Length)
-		Ammo = MaxAmmo
+		local use = math.min(Capacity - Magazine, Reserve)
+		Magazine = Magazine + use
+		Reserve = Reserve - use
 		UpdateHUD()
 
 		Reloading = false
 	end
+end
+
+local function FireBulletLogic()
+	Magazine = Magazine - 1
 end
 
 local RNG: Random
@@ -342,7 +358,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		if not ActiveTool then return end
 		if Firing then return end
-		if Ammo == 0 then return end
+		if Magazine == 0 then return end
 		if Reloading then return end
 
 		Sprinting = false
@@ -358,11 +374,11 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 			WeaponFire(OriginPosition, LookVector, random)
 			WeaponFireSignal:FireServer(OriginPosition, LookVector)
-			Ammo = Ammo - 1
+			FireBulletLogic()
 			UpdateHUD()
 			task.wait(0.1)
 			Firing = false
-		until not Mouse1Down or Ammo == 0
+		until not Mouse1Down or Magazine == 0
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 		if not ActiveTool then return end
 
@@ -385,11 +401,11 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	elseif input.KeyCode == Enum.KeyCode.R then
 		if not ActiveTool then return end
 		if Firing then return end
-		if Ammo >= MaxAmmo + 1 then return end
+		if Magazine >= Capacity + 1 then return end
 		if Reloading then return end
 		Sprinting = false
 
-		ReloadThread = coroutine.create(AmmunitionLogic)
+		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
 	end
 end)
@@ -439,8 +455,9 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	Reloading = false
 	Aiming = false
 
-	MaxAmmo = 25
-	Ammo = 25
+	Reserve = 75
+	Capacity = 25
+	Magazine = 25
 
 	CurrentAnimator = Animator.new()
 	CurrentAnimator.Animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
