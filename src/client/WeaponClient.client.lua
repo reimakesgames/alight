@@ -618,3 +618,5 @@ RunService.RenderStepped:Connect(function(deltaTime)
 
 	UserInputService.MouseIconEnabled = not Aiming
 end)
+
+-- hello github
