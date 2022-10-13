@@ -45,6 +45,8 @@ export type ViewmodelClass = {
 	Culled: boolean;
 	Springs: {[string]: Spring.SpringClass};
 	Decoration: Model;
+	ReloadStage: string;
+	ReloadResumptionPoint: number;
 }
 
 local Viewmodel = {}
@@ -61,7 +63,9 @@ function Viewmodel.new(model: Model): ViewmodelClass
 			WalkCycle = Spring.new(5, 50, 4, 4);
 			Recoil = Spring.new(5, 25, 3, 16);
 			RecoilNoise = Spring.new(5, 50, 2, 8)
-		}
+		};
+		ReloadStage = "none";
+		ReloadResumptionPoint = 0.0;
 	}, Viewmodel)
 
 	local newModel: Model | DefaultArms = model:Clone()

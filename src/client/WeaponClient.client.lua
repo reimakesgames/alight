@@ -90,8 +90,10 @@ local Aiming = false
 
 local ReloadThread: thread
 
+local MagOut = false
 local MaxAmmo = 25
 local Ammo = 25
+local Chambered = true
 
 local function UpdateHUD()
 	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
@@ -103,6 +105,7 @@ local function UpdateHUD()
 	if not AmmoLabel then
 		return
 	end
+	AmmoLabel.TextColor3 = MagOut and Color3.new(0.5,0.5,0.5) or Color3.new(1, 1, 1)
 	AmmoLabel.Text = Ammo .. " /" .. MaxAmmo
 end
 
@@ -309,23 +312,43 @@ local function UpdateHumanoid(deltaTime)
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16 * WalkSpeedModifier
 end
 
-local function AmmunitionLogic()
+local function ReloadAmmoLogic()
 	if Ammo > 0 then
-		CurrentViewmodel.Animator.Tracks.reload:Play()
+		CurrentViewmodel.Animator.Tracks.reload:Play(0.01)
+		CurrentViewmodel.Animator.Tracks.reload.TimePosition = CurrentViewmodel.ReloadResumptionPoint
+		print(CurrentViewmodel.ReloadResumptionPoint)
+		CurrentViewmodel.Model.WeaponModel:FindFirstChild("Magazine").Transparency = 0
 		Reloading = true
-		task.wait(CurrentViewmodel.Animator.Tracks.reload.Length)
+		task.wait(CurrentViewmodel.Animator.Tracks.reload.Length - CurrentViewmodel.ReloadResumptionPoint)
 		Ammo = MaxAmmo + 1
 		UpdateHUD()
 
 		Reloading = false
 	elseif Ammo == 0 then
-		CurrentViewmodel.Animator.Tracks.emptyReload:Play()
+		CurrentViewmodel.Animator.Tracks.emptyReload:Play(0.01)
+		CurrentViewmodel.Animator.Tracks.emptyReload.TimePosition = CurrentViewmodel.ReloadResumptionPoint
+		print(CurrentViewmodel.ReloadResumptionPoint)
+
+		CurrentViewmodel.Model.WeaponModel:FindFirstChild("Magazine").Transparency = 0
 		Reloading = true
-		task.wait(CurrentViewmodel.Animator.Tracks.emptyReload.Length)
+		task.wait(CurrentViewmodel.Animator.Tracks.emptyReload.Length - CurrentViewmodel.ReloadResumptionPoint)
 		Ammo = MaxAmmo
 		UpdateHUD()
 
 		Reloading = false
+	end
+
+	CurrentViewmodel.ReloadStage = "none"
+	CurrentViewmodel.ReloadResumptionPoint = 0.0
+end
+
+local function FireAmmoLogic()
+	if Ammo > 0 then
+		Ammo = Ammo - 1
+	elseif Ammo == 0 or MagOut then
+		Chambered = false
+	elseif not Chambered then
+		return
 	end
 end
 
@@ -341,6 +364,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		if not ActiveTool then return end
+		if MagOut and not Chambered then return end
 		if Firing then return end
 		if Ammo == 0 then return end
 		if Reloading then return end
@@ -389,7 +413,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if Reloading then return end
 		Sprinting = false
 
-		ReloadThread = coroutine.create(AmmunitionLogic)
+		ReloadThread = coroutine.create(ReloadAmmoLogic)
 		coroutine.resume(ReloadThread)
 	end
 end)
@@ -476,10 +500,46 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 				CurrentViewmodel.Animator:Load(idleObject, "idle"):Play(0.1, 1, 1)
 				CurrentViewmodel.Animator:Load(ReloadAnimation, "reload")
 				CurrentViewmodel.Animator:Load(EmptyReloadAnimation, "emptyReload")
+				CurrentViewmodel.Animator.Tracks.reload:GetMarkerReachedSignal("reload"):Connect(function(value)
+					if value == "magout" then
+						MagOut = true
+						CurrentViewmodel.ReloadStage = value
+						CurrentViewmodel.ReloadResumptionPoint = CurrentViewmodel.Animator.Tracks.reload.TimePosition
+						UpdateHUD()
+					elseif value == "magin" then
+						MagOut = false
+						CurrentViewmodel.ReloadStage = value
+						CurrentViewmodel.ReloadResumptionPoint = CurrentViewmodel.Animator.Tracks.reload.TimePosition
+						UpdateHUD()
+					end
+				end)
+				CurrentViewmodel.Animator.Tracks.emptyReload:GetMarkerReachedSignal("reload"):Connect(function(value)
+					if value == "magout" then
+						MagOut = true
+						CurrentViewmodel.ReloadStage = value
+						CurrentViewmodel.ReloadResumptionPoint = CurrentViewmodel.Animator.Tracks.emptyReload.TimePosition
+						UpdateHUD()
+						print(CurrentViewmodel.ReloadResumptionPoint)
+					elseif value == "magin" then
+						MagOut = false
+						CurrentViewmodel.ReloadStage = value
+						CurrentViewmodel.ReloadResumptionPoint = CurrentViewmodel.Animator.Tracks.emptyReload.TimePosition
+						UpdateHUD()
+					end
+				end)
+				-- CurrentViewmodel.Animator.Tracks.reload.Stopped:Connect(function()
+				-- 	CurrentViewmodel.ReloadStage = "none"
+				-- 	CurrentViewmodel.ReloadResumptionPoint = 0.0
+				-- end)
+				-- CurrentViewmodel.Animator.Tracks.emptyReload.Stopped:Connect(function()
+				-- 	CurrentViewmodel.ReloadStage = "none"
+				-- 	CurrentViewmodel.ReloadResumptionPoint = 0.0
+				-- end)
 
 				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
 				CurrentViewmodel:Cull(false)
 			end
+			CurrentViewmodel.Model.WeaponModel:FindFirstChild("Magazine").Transparency = CurrentViewmodel.ReloadStage == "magout" and 1 or 0
 
 			UpdateHUD()
 		end
