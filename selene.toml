@@ -1,0 +1,86 @@
+std = "roblox"
+
+[rules]
+# rules taken from here:
+# https://kampfkarren.github.io/selene/lints/index.html
+
+almost_swapped = "deny"
+# Checks for foo = bar; bar = foo sequences.
+
+constant_table_comparison = "deny"
+# Checks for direct comparisons with constant tables.
+
+deprecated = "warn"
+# Checks for use of deprecated fields and functions, as configured by your standard library.
+
+divide_by_zero = "warn"
+# Checks for division by zero. Allows 0 / 0 as a way to get nan.
+
+duplicate_keys = "deny"
+# Checks for duplicate keys being defined inside of tables.
+
+empty_if = "warn"
+# Checks for empty if blocks.
+
+global_usage = "warn"
+# Prohibits use of _G.
+
+high_syclomatic_complexity = "deny"
+# Measures the cyclomatic complexity of a function to see if it exceeds the configure maximum.
+
+if_same_then_else = "warn"
+# Checks for branches in if blocks that are equivalent.
+
+ifs_same_cond = "deny"
+# Checks for branches in if blocks with equivalent conditions.
+
+incorrect_standard_library_use = "deny"
+# Checks for correct use of the standard library.
+
+mismatched_arg_count = "deny"
+# Checks for too many arguments passed to function calls of defined functions.
+
+multiple_statements = "warn"
+# Checks for multiple statements on the same line.
+
+must_use = "deny"
+# Checks that the return values of functions marked must_use are used.
+
+parenthese_conditions = "allow"
+# Checks for conditions in the form of (expression).
+
+roblox_incorrect_color3_new_bounds = "deny"
+# Checks for uses of Color3.new where the arguments are not between 0 and 1.
+
+# roblox_incorrect_roact_usage = "warn"
+# # Checks for valid uses of Roact.createElement. Verifies that class name given is valid and that the properties passed for it are valid for that class.
+
+shadowing = "deny"
+# Checks for overriding of variables under the same name.
+
+suspicious_reverse_loop = "deny"
+# Checks for for _ = #x, 1 do sequences without specifying a negative step.
+
+type_check_inside_call = "deny"
+# Checks for type(foo == "type"), instead of type(foo) == "type".
+
+unbalanced_assignments = "warn"
+# Checks for unbalanced assignments, such as a, b, c = 1.
+
+undefined_variable = "deny"
+# Checks for uses of variables that are not defined.
+
+unscoped_variables = "warn"
+# Checks for variables that are unscoped (don't have a local variable attached).
+
+unused_variable = "warn"
+# Checks for variables that are unused.
+
+[config]
+empty_if = { comments_count = true }
+# comments_count (default: false) - A bool that determines whether or not if statements with exclusively comments are empty.
+
+high_syclomatic_complexity = { maximum_complexity = 12 } # cmon i don't want complicated functions
+# maximum_complexity (default: 40) - A number that determines the maximum threshold for cyclomatic complexity, beyond which the lint will report.
+
+
