@@ -80,9 +80,9 @@ function VFXHandler:NewBulletHole(position: Vector3, normal: Vector3, object: Ba
 	attachment0.WorldCFrame = CFrame.new(position + emitterAttachment.WorldCFrame.RightVector * 0.25, position + emitterAttachment.WorldCFrame.RightVector * 0.25 + normal)
 	attachment1.WorldCFrame = CFrame.new(position + emitterAttachment.WorldCFrame.RightVector * -0.25, position + emitterAttachment.WorldCFrame.RightVector * -0.25 + normal)
 
-	for _, object in emitterAttachment:GetChildren() do
-		if object:IsA("ParticleEmitter") then
-			object:Emit(8)
+	for _, child in emitterAttachment:GetChildren() do
+		if child:IsA("ParticleEmitter") then
+			child:Emit(8)
 		end
 	end
 
@@ -108,9 +108,9 @@ function VFXHandler:NewBulletExit(position: Vector3, normal: Vector3, object: Ba
 	attachment1.WorldCFrame = CFrame.new(position + emitterAttachment.WorldCFrame.RightVector * -0.25, position + emitterAttachment.WorldCFrame.RightVector * -0.25 + normal)
 	emitterAttachment.WorldCFrame = CFrame.new(position, position + exitNormal)
 
-	for _, object in emitterAttachment:GetChildren() do
-		if object:IsA("ParticleEmitter") then
-			object:Emit(8)
+	for _, child in emitterAttachment:GetChildren() do
+		if child:IsA("ParticleEmitter") then
+			child:Emit(8)
 		end
 	end
 

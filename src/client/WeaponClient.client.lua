@@ -34,7 +34,7 @@ local WeaponFireSignal = Link.WaitEvent("WeaponFire")
 local Viewmodels = {}
 local CurrentViewmodel
 local CurrentAnimator: Animator.AnimatorClass?
-local CurrentTool: Tool?
+local _CurrentTool: Tool?
 local idleObject = Instance.new("Animation")
 idleObject.AnimationId = "rbxassetid://11060004291"
 local ReloadAnimation = Instance.new("Animation")
@@ -78,9 +78,9 @@ local WalkSpeedModifier = 1.0
 local HipHeightModifier = 0.0
 
 local ViewmodelCFrame = CFrame.new()
-local ShiftButtonDown = false
+local _ShiftButtonDown = false
 local Mouse1Down = false
-local Mouse2Down = false
+local _Mouse2Down = false
 local ActiveTool = false
 local Sprinting = false
 local Crouching = false
@@ -383,7 +383,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if not ActiveTool then return end
 
 		Sprinting = false
-		Mouse2Down = true
+		_Mouse2Down = true
 		Aiming = true
 	end
 
@@ -393,7 +393,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		Crouching = false
 		Aiming = false
 
-		ShiftButtonDown = true
+		_ShiftButtonDown = true
 		Sprinting = true
 	elseif input.KeyCode == Enum.KeyCode.LeftControl then
 		Sprinting = false
@@ -416,12 +416,12 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		Mouse1Down = false
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-		Mouse2Down = false
+		_Mouse2Down = false
 		Aiming = false
 	end
 
 	if input.KeyCode == Enum.KeyCode.LeftShift then
-		ShiftButtonDown = false
+		_ShiftButtonDown = false
 		Sprinting = false
 	elseif input.KeyCode == Enum.KeyCode.LeftControl then
 		Crouching = false
@@ -445,9 +445,9 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	HipHeightModifier = 0.0
 
 	ViewmodelCFrame = CFrame.new()
-	ShiftButtonDown = false
+	_ShiftButtonDown = false
 	Mouse1Down = false
-	Mouse2Down = false
+	_Mouse2Down = false
 	ActiveTool = false
 	Sprinting = false
 	Crouching = false
@@ -483,7 +483,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleArms(true, true)
 			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
-			CurrentTool = object
+			_CurrentTool = object
 
 			CurrentViewmodel = Viewmodels[object]
 			if not CurrentViewmodel then
@@ -516,9 +516,9 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleArms(false, false)
 			Prisma:ToggleTorsoLag(true)
 			ActiveTool = false
-			CurrentTool = nil
+			_CurrentTool = nil
 			Mouse1Down = false
-			Mouse2Down = false
+			_Mouse2Down = false
 			Firing = false
 			Reloading = false
 			Aiming = false
@@ -530,9 +530,9 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	end)
 end)
 
-LocalPlayer.CharacterRemoving:Connect(function(character)
-	for _, Viewmodel in Viewmodels do
-		Viewmodel:CleanUp()
+LocalPlayer.CharacterRemoving:Connect(function(_character)
+	for _, viewmodel in Viewmodels do
+		viewmodel:CleanUp()
 	end
 	CurrentViewmodel:CleanUp()
 	CurrentViewmodel = nil
