@@ -1,4 +1,4 @@
-name: CI
+name: Lint
 
 on:
   pull_request:
@@ -9,13 +9,13 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install Foreman
-        uses: LPGhatguy/aftman@v0.2.7
+      - name: Install
+        uses: Roblox/setup-foreman@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Selene
+      - name: Run
         run: selene src
