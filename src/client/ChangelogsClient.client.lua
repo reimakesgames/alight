@@ -8,8 +8,8 @@ local PlayerGui = LocalPlayer.PlayerGui
 
 local Link = require(Packages:WaitForChild("link"))
 
-local HydrateChangelogs = Link.WaitEvent("HydrateChangelogs")
-local RequestChangelogs = Link.WaitEvent("RequestChangelogs")
+local HydrateChangelogs = Link:WaitEvent("HydrateChangelogs")
+local RequestChangelogs = Link:WaitEvent("RequestChangelogs")
 
 local ChangelogsUI = PlayerGui:WaitForChild("Changelogs")
 

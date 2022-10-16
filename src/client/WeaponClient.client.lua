@@ -27,9 +27,9 @@ local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
 local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
 
-local RequestForRNGSeedSignal = Link.WaitEvent("RequestForRNGSeed")
-local SendRNGSeedSignal = Link.WaitEvent("SendRNGSeed")
-local WeaponFireSignal = Link.WaitEvent("WeaponFire")
+local RequestForRNGSeedSignal = Link:WaitEvent("RequestForRNGSeed")
+local SendRNGSeedSignal = Link:WaitEvent("SendRNGSeed")
+local WeaponFireSignal = Link:WaitEvent("WeaponFire")
 
 local Viewmodels = {}
 local CurrentViewmodel
@@ -93,6 +93,8 @@ local ReloadThread: thread
 local Reserve = 75
 local Capacity = 25
 local Magazine = 25
+
+Prisma:ToggleLegRotation(false)
 
 local function FindHumanoidAndDamage(Result)
 	local Model = Result.Instance:FindFirstAncestorWhichIsA("Model")
@@ -534,7 +536,7 @@ LocalPlayer.CharacterRemoving:Connect(function(_character)
 	for _, viewmodel in Viewmodels do
 		viewmodel:CleanUp()
 	end
-	CurrentViewmodel:CleanUp()
+	table.clear(Viewmodels)
 	CurrentViewmodel = nil
 	CurrentAnimator:Destroy()
 	CurrentAnimator = nil :: Animator.AnimatorClass?

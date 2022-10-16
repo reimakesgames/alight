@@ -1,3 +1,11 @@
+# [v0.1.4] - 2022-10-16
+### Changed
+- Update version of link from v0.2.1 to v0.2.4
+- Update version of prisma from v0.2.0 to v0.2.1
+- Fix tool oriented viewmodel bug when dead and respawned
+- Fix API changes with link
+- Enabled Leg Rotation
+
 # [v0.1.3] - 2022-10-13
 ### Added
 - Ammunition Reserve
