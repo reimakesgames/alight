@@ -112,8 +112,12 @@ function Viewmodel:SetCFrame(cframe: CFrame): nil
 end
 
 function Viewmodel:CleanUp()
-	self.Model:Destroy()
-	self.Decoration:Destroy()
+	if self.Model then
+		self.Model:Destroy()
+	end
+	if self.Decoration then
+		self.Decoration:Destroy()
+	end
 	for _, spring: Spring.SpringClass in self.Springs do
 		table.clear(spring)
 	end
