@@ -14,9 +14,9 @@ local Modules = Shared:WaitForChild("Modules")
 local Link = require(Packages:WaitForChild("link"))
 local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 
-local RequestForRNGSeedSignal = Link.CreateEvent("RequestForRNGSeed")
-local SendRNGSeedSignal = Link.CreateEvent("SendRNGSeed")
-local WeaponFireSignal = Link.CreateEvent("WeaponFire")
+local RequestForRNGSeedSignal = Link:CreateEvent("RequestForRNGSeed")
+local SendRNGSeedSignal = Link:CreateEvent("SendRNGSeed")
+local WeaponFireSignal = Link:CreateEvent("WeaponFire")
 
 local PlayerRandomGenerators: Dictionary<Random> = {}
 

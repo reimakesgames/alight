@@ -11,8 +11,8 @@ local GithubPuller = require(script.Parent.GithubHandler)
 local File = "https://raw.githubusercontent.com/reimakesgames/hybrid-conflict/main/CHANGELOG.md"
 
 
-local HydrateChangelogs = Link.CreateEvent("HydrateChangelogs")
-local RequestChangelogs = Link.CreateEvent("RequestChangelogs")
+local HydrateChangelogs = Link:CreateEvent("HydrateChangelogs")
+local RequestChangelogs = Link:CreateEvent("RequestChangelogs")
 
 local RateLimits = {}
 
