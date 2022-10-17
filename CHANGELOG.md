@@ -1,3 +1,8 @@
+### The following entries does not follow the Proper
+### Semantic Versioning Guidelines
+
+
+
 # [v0.1.4] - 2022-10-16
 ### Changed
 - Update version of link from v0.2.1 to v0.2.4
@@ -63,7 +68,7 @@
 - Fix Reloading modifier being broken for viewmodel sway
 - Fix WalkCycle not being seamless when sprinting and walking
 
-# [v0.0.7.p1] 
+# [v0.0.7.p1]
 ### Added
 - Loading indicator in changelogs
 ### Changed
@@ -105,7 +110,7 @@
 
 # [v0.0.4]
 ### Added
-- Aiming 
+- Aiming
 - Basic reloading animation
 - Reloading camera shake
 - SoundEffects module
