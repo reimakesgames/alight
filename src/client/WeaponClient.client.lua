@@ -89,6 +89,7 @@ local Crouching
 local Firing
 local Reloading
 local Aiming
+local Inspecting = false
 
 local Reserve
 local Capacity
@@ -118,6 +119,7 @@ local function InitializeVariables()
 	Firing = false
 	Reloading = false
 	Aiming = false
+	Inspecting = false
 
 	Reserve = 75
 	Capacity = 25
