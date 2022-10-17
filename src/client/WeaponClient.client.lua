@@ -319,7 +319,6 @@ local function UpdateHUD()
 end
 
 local function CancelInspect()
-	print("cancelled")
 	Inspecting = false
 	CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(1)
 	CurrentViewmodel.Animator.Tracks.inspect:Stop(0.0001)
@@ -425,7 +424,6 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if not ActiveTool then return end
 		if Firing then return end
 		if Inspecting then return end
-		print("inspecting")
 		Inspecting = true
 		CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(0.0001)
 		CurrentViewmodel.Animator.Tracks.inspect:Play(0.1, 1, 1)
