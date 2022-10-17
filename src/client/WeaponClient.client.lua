@@ -73,6 +73,7 @@ local EquippedModifier
 local SprintingModifier
 local FiringModifier
 local ReloadingModifier
+local InspectingModifier
 local MovingModifier
 local CamX, CamY, CamZ
 
@@ -89,7 +90,7 @@ local Crouching
 local Firing
 local Reloading
 local Aiming
-local Inspecting = false
+local Inspecting
 
 local Reserve
 local Capacity
@@ -103,6 +104,7 @@ local function InitializeVariables()
 	SprintingModifier = 0.0
 	FiringModifier = 0.0
 	ReloadingModifier = 0.0
+	InspectingModifier = 0.0
 	MovingModifier = 0.0
 	CamX, CamY, CamZ = 0.0, 0.0, 0.0
 
