@@ -74,6 +74,7 @@ local SprintingModifier = 0.0
 local FiringModifier = 0.0
 local ReloadingModifier = 0.0
 local MovingModifier = 0.0
+local InspectingModifier = 0.0
 local CamX, CamY, CamZ = 0.0, 0.0, 0.0
 
 local WalkSpeedModifier = 1.0
@@ -205,6 +206,7 @@ local function UpdateViewmodel(deltaTime)
 	FiringModifier = Firing and 0 or LerpTools:LinearInterpolate(FiringModifier, 1, 16)
 	SprintingModifier = LerpTools:LinearInterpolate(SprintingModifier, Sprinting and 1 or 0, 16)
 	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0, 8)
+	InspectingModifier = LerpTools:LinearInterpolate(InspectingModifier, Inspecting and 1 or 0, 8)
 	MovingModifier = LerpTools:LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), 16)
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
@@ -257,14 +259,14 @@ local function UpdateViewmodel(deltaTime)
 	)
 
 	local WalkCycleAngles = CFrame.Angles(
-		(WalkCycle.X / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * (1 - ReloadingModifier) * (1 + (SprintingModifier * 4)),
-		(WalkCycle.Y / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * (1 - ReloadingModifier) * (1 + (SprintingModifier * 8)),
+		(WalkCycle.X / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * (0.25 + ((1 - InspectingModifier) * 0.75)) * (1 - ReloadingModifier) * (1 + (SprintingModifier * 4)),
+		(WalkCycle.Y / 1024) * CharacterVelocityMagnitude * (0.25 + ((1 - PercentageToGoal) * 0.75)) * (0.25 + ((1 - InspectingModifier) * 0.75)) * (1 - ReloadingModifier) * (1 + (SprintingModifier * 8)),
 		0
 	)
 
 	local SprintingShift = CFrame.Angles(
 		0,
-		(SprintingModifier * (1 - PercentageToGoal)) * FiringModifier * ((WalkSpeedModifier - 1) * 4) * MovingModifier,
+		(SprintingModifier * (1 - PercentageToGoal)) * (1 - InspectingModifier) * FiringModifier * ((WalkSpeedModifier - 1) * 4) * MovingModifier,
 		0
 	)
 
