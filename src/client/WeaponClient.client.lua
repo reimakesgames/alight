@@ -32,15 +32,17 @@ local SendRNGSeedSignal = Link:WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link:WaitEvent("WeaponFire")
 
 local Viewmodels = {}
-local CurrentViewmodel
+local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
 local _CurrentTool: Tool?
-local idleObject = Instance.new("Animation")
-idleObject.AnimationId = "rbxassetid://11060004291"
-local ReloadAnimation = Instance.new("Animation")
-ReloadAnimation.AnimationId = "rbxassetid://11086817696"
-local EmptyReloadAnimation = Instance.new("Animation")
-EmptyReloadAnimation.AnimationId = "rbxassetid://11087239261"
+local WeaponIdleAnimation = Instance.new("Animation")
+WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
+local WeaponInspectAnimation = Instance.new("Animation")
+WeaponInspectAnimation.AnimationId = "rbxassetid://11303640542"
+local WeaponReloadAnimation = Instance.new("Animation")
+WeaponReloadAnimation.AnimationId = "rbxassetid://11086817696"
+local WeaponEmptyReloadAnimation = Instance.new("Animation")
+WeaponEmptyReloadAnimation.AnimationId = "rbxassetid://11087239261"
 
 local CrouchIdleAnimation = Instance.new("Animation")
 CrouchIdleAnimation.AnimationId = "rbxassetid://11213476779"
@@ -87,6 +89,7 @@ local Crouching = false
 local Firing = false
 local Reloading = false
 local Aiming = false
+local Inspecting = false
 
 local ReloadThread: thread
 
@@ -315,6 +318,13 @@ local function UpdateHUD()
 	ReserveLabel.Text = tostring(Reserve)
 end
 
+local function CancelInspect()
+	print("cancelled")
+	Inspecting = false
+	CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(1)
+	CurrentViewmodel.Animator.Tracks.inspect:Stop(0.0001)
+end
+
 local function ReloadBulletLogic()
 	if Reserve == 0 then
 		return
@@ -362,6 +372,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if Firing then return end
 		if Magazine == 0 then return end
 		if Reloading then return end
+		CancelInspect()
 
 		Sprinting = false
 		Mouse1Down = true
@@ -383,6 +394,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		until not Mouse1Down or Magazine == 0
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 		if not ActiveTool then return end
+		CancelInspect()
 
 		Sprinting = false
 		_Mouse2Down = true
@@ -409,6 +421,15 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
+	elseif input.KeyCode == Enum.KeyCode.G then
+		if not ActiveTool then return end
+		if Firing then return end
+		if Inspecting then return end
+		print("inspecting")
+		Inspecting = true
+		CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(0.0001)
+		CurrentViewmodel.Animator.Tracks.inspect:Play(0.1, 1, 1)
+		CurrentViewmodel.Animator.Tracks.inspect.Stopped:Once(CancelInspect)
 	end
 end)
 
@@ -492,9 +513,10 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 				CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
 				Viewmodels[object] = CurrentViewmodel
 
-				CurrentViewmodel.Animator:Load(idleObject, "idle"):Play(0.1, 1, 1)
-				CurrentViewmodel.Animator:Load(ReloadAnimation, "reload")
-				CurrentViewmodel.Animator:Load(EmptyReloadAnimation, "emptyReload")
+				CurrentViewmodel.Animator:Load(WeaponIdleAnimation, "idle"):Play(0.1, 1, 1)
+				CurrentViewmodel.Animator:Load(WeaponInspectAnimation, "inspect")
+				CurrentViewmodel.Animator:Load(WeaponReloadAnimation, "reload")
+				CurrentViewmodel.Animator:Load(WeaponEmptyReloadAnimation, "emptyReload")
 
 				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
 				CurrentViewmodel:Cull(false)
@@ -513,6 +535,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			if ReloadThread then
 				coroutine.close(ReloadThread)
 			end
+			CurrentViewmodel.Animator.Tracks.inspect:Stop()
 			CurrentViewmodel.Animator.Tracks.reload:Stop()
 			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
 			Prisma:ToggleArms(false, false)
@@ -524,6 +547,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Firing = false
 			Reloading = false
 			Aiming = false
+			Inspecting = false
 
 			Viewmodels[object]:Cull(true)
 
