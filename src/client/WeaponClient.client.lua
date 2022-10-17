@@ -64,35 +64,66 @@ WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
 local RunningToolAnimation = Instance.new("Animation")
 RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 
-local WalkCycleX = 0.0
-local WalkCycleY = 0.0
-local CharacterVelocityMagnitude = 0.0
-local EquippedModifier = 0.0
-local SprintingModifier = 0.0
-local FiringModifier = 0.0
-local ReloadingModifier = 0.0
-local MovingModifier = 0.0
-local CamX, CamY, CamZ = 0.0, 0.0, 0.0
+local WalkCycleX
+local WalkCycleY
+local CharacterVelocityMagnitude
+local EquippedModifier
+local SprintingModifier
+local FiringModifier
+local ReloadingModifier
+local MovingModifier
+local CamX, CamY, CamZ
 
-local WalkSpeedModifier = 1.0
-local HipHeightModifier = 0.0
+local WalkSpeedModifier
+local HipHeightModifier
 
-local ViewmodelCFrame = CFrame.new()
-local _ShiftButtonDown = false
-local Mouse1Down = false
-local _Mouse2Down = false
-local ActiveTool = false
-local Sprinting = false
-local Crouching = false
-local Firing = false
-local Reloading = false
-local Aiming = false
+local ViewmodelCFrame
+local _ShiftButtonDown
+local Mouse1Down
+local _Mouse2Down
+local ActiveTool
+local Sprinting
+local Crouching
+local Firing
+local Reloading
+local Aiming
+
+local Reserve
+local Capacity
+local Magazine
+
+local function InitializeVariables()
+	WalkCycleX = 0.0
+	WalkCycleY = 0.0
+	CharacterVelocityMagnitude = 0.0
+	EquippedModifier = 0.0
+	SprintingModifier = 0.0
+	FiringModifier = 0.0
+	ReloadingModifier = 0.0
+	MovingModifier = 0.0
+	CamX, CamY, CamZ = 0.0, 0.0, 0.0
+
+	WalkSpeedModifier = 1.0
+	HipHeightModifier = 0.0
+
+	ViewmodelCFrame = CFrame.new()
+	_ShiftButtonDown = false
+	Mouse1Down = false
+	_Mouse2Down = false
+	ActiveTool = false
+	Sprinting = false
+	Crouching = false
+	Firing = false
+	Reloading = false
+	Aiming = false
+
+	Reserve = 75
+	Capacity = 25
+	Magazine = 25
+end
+InitializeVariables()
 
 local ReloadThread: thread
-
-local Reserve = 75
-local Capacity = 25
-local Magazine = 25
 
 Prisma:ToggleLegRotation(false)
 
@@ -431,35 +462,8 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(character)
+	InitializeVariables()
 	UpdateHUD()
-
-	WalkCycleX = 0.0
-	WalkCycleY = 0.0
-	CharacterVelocityMagnitude = 0.0
-	EquippedModifier = 0.0
-	SprintingModifier = 0.0
-	FiringModifier = 0.0
-	ReloadingModifier = 0.0
-	MovingModifier = 0.0
-	CamX, CamY, CamZ = 0.0, 0.0, 0.0
-
-	WalkSpeedModifier = 1.0
-	HipHeightModifier = 0.0
-
-	ViewmodelCFrame = CFrame.new()
-	_ShiftButtonDown = false
-	Mouse1Down = false
-	_Mouse2Down = false
-	ActiveTool = false
-	Sprinting = false
-	Crouching = false
-	Firing = false
-	Reloading = false
-	Aiming = false
-
-	Reserve = 75
-	Capacity = 25
-	Magazine = 25
 
 	CurrentAnimator = Animator.new()
 	CurrentAnimator.Animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
