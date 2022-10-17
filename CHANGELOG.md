@@ -1,3 +1,8 @@
+# [0.2.0] - 2022-10-17
+### Added
+- Weapon Inspect
+- Variable Initialize function
+
 ### The following entries does not follow the Proper
 ### Semantic Versioning Guidelines
 
