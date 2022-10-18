@@ -576,8 +576,8 @@ local moveSwitch = false
 local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
-	local LeftEnabled = Sprinting or not ActiveTool
-	local RightEnabled = Sprinting or not ActiveTool
+	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
+	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
 
 	if CurrentViewmodel then
