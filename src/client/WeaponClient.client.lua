@@ -34,7 +34,8 @@ local WeaponFireSignal = Link:WaitEvent("WeaponFire")
 local Viewmodels = {}
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
-local _CurrentTool: Tool?
+local CurrentTool: Tool?
+
 local WeaponIdleAnimation = Instance.new("Animation")
 WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
 local WeaponInspectAnimation = Instance.new("Animation")
@@ -65,6 +66,10 @@ local WalkingToolAnimation = Instance.new("Animation")
 WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
 local RunningToolAnimation = Instance.new("Animation")
 RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
+
+local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
+
+local HeadCameraMagnitude = 0.0
 
 local WalkCycleX
 local WalkCycleY
@@ -227,12 +232,10 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	until WallbangCount > 4
 end
 
-local function UpdateViewmodel(deltaTime)
-	LerpTools.DeltaTime = deltaTime
+local function UpdateModifiers(deltaTime)
 	WalkCycleX = WalkCycleX + (deltaTime * 20 * WalkSpeedModifier)
 	WalkCycleY = WalkCycleY + (deltaTime * 10 * WalkSpeedModifier)
 
-	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LerpTools:LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, 8)
 	EquippedModifier = LerpTools:LinearInterpolate(EquippedModifier, ActiveTool and 1 or 0, 32)
@@ -241,6 +244,10 @@ local function UpdateViewmodel(deltaTime)
 	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0, 8)
 	InspectingModifier = LerpTools:LinearInterpolate(InspectingModifier, Inspecting and 1 or 0, 8)
 	MovingModifier = LerpTools:LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), 16)
+end
+
+local function UpdateViewmodel(deltaTime)
+	local MouseDelta = UserInputService:GetMouseDelta()
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
@@ -319,9 +326,7 @@ local function UpdateViewmodel(deltaTime)
 	CurrentViewmodel:SetCFrame(RevertedRotatedCFrame)
 end
 
-local function UpdateHumanoid(deltaTime)
-	LerpTools.DeltaTime = deltaTime
-
+local function UpdateHumanoid(_deltaTime)
 	if Sprinting then
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1.25, 16)
 		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 8)
@@ -455,7 +460,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
-	elseif input.KeyCode == Enum.KeyCode.G then
+	elseif input.KeyCode == Enum.KeyCode.F then
 		if not ActiveTool then return end
 		if Firing then return end
 		if Inspecting then return end
@@ -512,7 +517,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleArms(true, true)
 			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
-			_CurrentTool = object
+			CurrentTool = object
 
 			CurrentViewmodel = Viewmodels[object]
 			if not CurrentViewmodel then
@@ -526,6 +531,12 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 
 				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
 				CurrentViewmodel:Cull(false)
+			end
+
+			for _, child in CurrentTool:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = 1
+				end
 			end
 
 			UpdateHUD()
@@ -544,10 +555,19 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			CurrentViewmodel.Animator.Tracks.inspect:Stop()
 			CurrentViewmodel.Animator.Tracks.reload:Stop()
 			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
+
+			for _, child in CurrentTool:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = 1
+				end
+			end
+
 			Prisma:ToggleArms(false, false)
 			Prisma:ToggleTorsoLag(true)
+			CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
+			ViewmodelCFrame = CFrame.new()
+			CurrentTool = nil
 			ActiveTool = false
-			_CurrentTool = nil
 			Mouse1Down = false
 			_Mouse2Down = false
 			Firing = false
@@ -567,7 +587,7 @@ LocalPlayer.CharacterRemoving:Connect(function(_character)
 		viewmodel:CleanUp()
 	end
 	table.clear(Viewmodels)
-	CurrentViewmodel = nil
+	CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 	CurrentAnimator:Destroy()
 	CurrentAnimator = nil :: Animator.AnimatorClass?
 end)
@@ -576,17 +596,18 @@ local moveSwitch = false
 local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
-	local LeftEnabled = Sprinting or not ActiveTool
-	local RightEnabled = Sprinting or not ActiveTool
+	LerpTools.DeltaTime = deltaTime
+	UpdateModifiers(deltaTime)
+
+	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
+	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
 
-	if CurrentViewmodel then
-		CurrentViewmodel:Cull(not ActiveTool)
-		UpdateViewmodel(deltaTime)
-	end
 	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
 		UpdateHumanoid(deltaTime)
 		local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
+		local HeadPosition = LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET
+		HeadCameraMagnitude = (HeadPosition.Position - Camera.CFrame.Position).Magnitude
 		local Speed = Vector2.new(CharacterVelocity.X, CharacterVelocity.Z).Magnitude
 
 		if CurrentAnimator then
@@ -645,6 +666,35 @@ RunService.RenderStepped:Connect(function(deltaTime)
 				CurrentAnimator.Tracks.crouchWalk:AdjustSpeed((Speed / 15))
 				CurrentAnimator.Tracks.crouchToolWalk:AdjustSpeed((Speed / 15))
 			end)
+		end
+	else
+		HeadCameraMagnitude = 128
+	end
+
+	if CurrentViewmodel then
+		if CurrentViewmodel.Model then
+			for _, child in CurrentViewmodel.Model:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
+				end
+			end
+		end
+		if CurrentViewmodel.Decoration then
+			for _, child in CurrentViewmodel.Decoration:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
+				end
+			end
+		end
+		CurrentViewmodel:Cull(not ActiveTool)
+		UpdateViewmodel(deltaTime)
+	end
+
+	if CurrentTool then
+		for _, child in CurrentTool:GetDescendants() do
+			if child:IsA("BasePart") then
+				child.LocalTransparencyModifier = -HeadCameraMagnitude + 2
+			end
 		end
 	end
 

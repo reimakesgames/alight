@@ -1,7 +1,17 @@
+# [0.2.3] - 2022-10-18
+### Changed
+- Viewmodel/Worldmodel now hides itself properly
+- Separated Modifier and Viewmodel calls
+- Fix wrong key for inspect from G to F
+
+
+
 # [0.2.0] - 2022-10-17
 ### Added
 - Weapon Inspect
 - Variable Initialize function
+
+
 
 ### The following entries does not follow the Proper
 ### Semantic Versioning Guidelines
