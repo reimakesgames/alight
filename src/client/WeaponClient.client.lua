@@ -34,7 +34,7 @@ local WeaponFireSignal = Link:WaitEvent("WeaponFire")
 local Viewmodels = {}
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
-local _CurrentTool: Tool?
+local CurrentTool: Tool?
 local WeaponIdleAnimation = Instance.new("Animation")
 WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
 local WeaponInspectAnimation = Instance.new("Animation")
@@ -512,7 +512,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleArms(true, true)
 			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
-			_CurrentTool = object
+			CurrentTool = object
 
 			CurrentViewmodel = Viewmodels[object]
 			if not CurrentViewmodel then
@@ -526,6 +526,12 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 
 				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
 				CurrentViewmodel:Cull(false)
+			end
+
+			for _, child in CurrentTool:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = 1
+				end
 			end
 
 			UpdateHUD()
@@ -544,10 +550,17 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			CurrentViewmodel.Animator.Tracks.inspect:Stop()
 			CurrentViewmodel.Animator.Tracks.reload:Stop()
 			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
+
+			for _, child in CurrentTool:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = 1
+				end
+			end
+
 			Prisma:ToggleArms(false, false)
 			Prisma:ToggleTorsoLag(true)
 			ActiveTool = false
-			_CurrentTool = nil
+			CurrentTool = nil
 			Mouse1Down = false
 			_Mouse2Down = false
 			Firing = false
