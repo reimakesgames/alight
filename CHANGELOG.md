@@ -4,6 +4,8 @@
 - Separated Modifier and Viewmodel calls
 - Fix wrong key for inspect from G to F
 
+
+
 # [0.2.0] - 2022-10-17
 ### Added
 - Weapon Inspect

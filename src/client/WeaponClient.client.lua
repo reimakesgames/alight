@@ -35,6 +35,7 @@ local Viewmodels = {}
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
 local CurrentTool: Tool?
+
 local WeaponIdleAnimation = Instance.new("Animation")
 WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
 local WeaponInspectAnimation = Instance.new("Animation")
