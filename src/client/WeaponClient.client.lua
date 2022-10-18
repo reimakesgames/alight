@@ -559,8 +559,9 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 
 			Prisma:ToggleArms(false, false)
 			Prisma:ToggleTorsoLag(true)
-			ActiveTool = false
+			CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 			CurrentTool = nil
+			ActiveTool = false
 			Mouse1Down = false
 			_Mouse2Down = false
 			Firing = false
@@ -580,7 +581,7 @@ LocalPlayer.CharacterRemoving:Connect(function(_character)
 		viewmodel:CleanUp()
 	end
 	table.clear(Viewmodels)
-	CurrentViewmodel = nil
+	CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 	CurrentAnimator:Destroy()
 	CurrentAnimator = nil :: Animator.AnimatorClass?
 end)
