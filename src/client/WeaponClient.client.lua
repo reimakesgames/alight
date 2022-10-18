@@ -227,12 +227,10 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	until WallbangCount > 4
 end
 
-local function UpdateViewmodel(deltaTime)
-	LerpTools.DeltaTime = deltaTime
+local function UpdateModifiers(deltaTime)
 	WalkCycleX = WalkCycleX + (deltaTime * 20 * WalkSpeedModifier)
 	WalkCycleY = WalkCycleY + (deltaTime * 10 * WalkSpeedModifier)
 
-	local MouseDelta = UserInputService:GetMouseDelta()
 	local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 	CharacterVelocityMagnitude = LerpTools:LinearInterpolate(CharacterVelocityMagnitude, Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude, 8)
 	EquippedModifier = LerpTools:LinearInterpolate(EquippedModifier, ActiveTool and 1 or 0, 32)
@@ -241,6 +239,10 @@ local function UpdateViewmodel(deltaTime)
 	ReloadingModifier = LerpTools:LinearInterpolate(ReloadingModifier, Reloading and 1 or 0, 8)
 	InspectingModifier = LerpTools:LinearInterpolate(InspectingModifier, Inspecting and 1 or 0, 8)
 	MovingModifier = LerpTools:LinearInterpolate(MovingModifier, math.clamp(Vector3.new(CharacterVelocity.X, 0, CharacterVelocity.Z).Magnitude / 8, 0, 1), 16)
+end
+
+local function UpdateViewmodel(deltaTime)
+	local MouseDelta = UserInputService:GetMouseDelta()
 
 	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
 	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
@@ -319,9 +321,7 @@ local function UpdateViewmodel(deltaTime)
 	CurrentViewmodel:SetCFrame(RevertedRotatedCFrame)
 end
 
-local function UpdateHumanoid(deltaTime)
-	LerpTools.DeltaTime = deltaTime
-
+local function UpdateHumanoid(_deltaTime)
 	if Sprinting then
 		WalkSpeedModifier = LerpTools:LinearInterpolate(WalkSpeedModifier, 1.25, 16)
 		HipHeightModifier = LerpTools:LinearInterpolate(HipHeightModifier, 0, 8)
@@ -560,6 +560,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleArms(false, false)
 			Prisma:ToggleTorsoLag(true)
 			CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
+			ViewmodelCFrame = CFrame.new()
 			CurrentTool = nil
 			ActiveTool = false
 			Mouse1Down = false
@@ -590,6 +591,9 @@ local moveSwitch = false
 local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
+	LerpTools.DeltaTime = deltaTime
+	UpdateModifiers(deltaTime)
+
 	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
