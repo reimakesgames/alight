@@ -66,6 +66,10 @@ WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
 local RunningToolAnimation = Instance.new("Animation")
 RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 
+local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
+
+local HeadCameraMagnitude = 0.0
+
 local WalkCycleX
 local WalkCycleY
 local CharacterVelocityMagnitude
@@ -455,7 +459,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
-	elseif input.KeyCode == Enum.KeyCode.G then
+	elseif input.KeyCode == Enum.KeyCode.F then
 		if not ActiveTool then return end
 		if Firing then return end
 		if Inspecting then return end
@@ -598,13 +602,11 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
 
-	if CurrentViewmodel then
-		CurrentViewmodel:Cull(not ActiveTool)
-		UpdateViewmodel(deltaTime)
-	end
 	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
 		UpdateHumanoid(deltaTime)
 		local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
+		local HeadPosition = LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET
+		HeadCameraMagnitude = (HeadPosition.Position - Camera.CFrame.Position).Magnitude
 		local Speed = Vector2.new(CharacterVelocity.X, CharacterVelocity.Z).Magnitude
 
 		if CurrentAnimator then
@@ -663,6 +665,35 @@ RunService.RenderStepped:Connect(function(deltaTime)
 				CurrentAnimator.Tracks.crouchWalk:AdjustSpeed((Speed / 15))
 				CurrentAnimator.Tracks.crouchToolWalk:AdjustSpeed((Speed / 15))
 			end)
+		end
+	else
+		HeadCameraMagnitude = 128
+	end
+
+	if CurrentViewmodel then
+		if CurrentViewmodel.Model then
+			for _, child in CurrentViewmodel.Model:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
+				end
+			end
+		end
+		if CurrentViewmodel.Decoration then
+			for _, child in CurrentViewmodel.Decoration:GetDescendants() do
+				if child:IsA("BasePart") then
+					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
+				end
+			end
+		end
+		CurrentViewmodel:Cull(not ActiveTool)
+		UpdateViewmodel(deltaTime)
+	end
+
+	if CurrentTool then
+		for _, child in CurrentTool:GetDescendants() do
+			if child:IsA("BasePart") then
+				child.LocalTransparencyModifier = -HeadCameraMagnitude + 2
+			end
 		end
 	end
 
