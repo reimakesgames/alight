@@ -5,6 +5,7 @@ registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 [dependencies]
+testez = "roblox/testez@0.4.1"
 fastsignal = "lucasmzreal/fastsignal@10.2.1"
 janitor = "howmanysmall/janitor@1.14.1"
 fastcastredux = "encodedvenom/fastcastredux@0.1.3"

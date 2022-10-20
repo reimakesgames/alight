@@ -27,6 +27,12 @@
       }
     },
 
+    "ServerStorage": {
+      "Tests": {
+        "$path": "test"
+      }
+    },
+
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": {
