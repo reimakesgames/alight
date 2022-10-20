@@ -5,6 +5,9 @@
 /*.rbxlx.lock
 /*.rbxl.lock
 
+# Unit Test places
+out.rbxl
+
 # Wally
 wally.lock
 Packages
