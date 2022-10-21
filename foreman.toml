@@ -1,4 +1,0 @@
-# why tf doesn't aftman support CI?? i literally hve to use foreman for this bs...
-
-[tools]
-selene = { source = "Kampfkarren/selene", version = "0.21.1" }
