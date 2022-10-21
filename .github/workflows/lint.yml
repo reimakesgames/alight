@@ -11,8 +11,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
 
-      - name: Install
-        uses: Roblox/setup-foreman@v1
+      - name: Install Aftman
+        uses: actions/setup-aftman@v0.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
