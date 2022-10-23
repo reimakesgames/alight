@@ -11,5 +11,6 @@ local TestEZ = require(Packages.testez)
 local Bootstrapper = require(Tests.container.bootstrap)
 
 Bootstrapper:run({
-	Tests["test.spec"]
+	Tests["test.spec"],
+	Tests["KeybindsManager.spec"]
 })
