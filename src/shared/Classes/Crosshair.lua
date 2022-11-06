@@ -19,6 +19,22 @@ export type CrosshairProperties = {
 	Crosshairs: CrosshairArmEnabled?,
 }
 
+local LOOKUP_TABLE = {}
+LOOKUP_TABLE.AnchorPoint = {
+	Top = Vector2.new(0.5, 1);
+	Bottom = Vector2.new(0.5, 0);
+	Left = Vector2.new(1, 0.5);
+	Right = Vector2.new(0, 0.5);
+	Center = Vector2.new(0.5, 0.5);
+}
+LOOKUP_TABLE.Position = {
+	Top = UDim2.fromScale(0.5, 0);
+	Bottom = UDim2.fromScale(0.5, 1);
+	Left = UDim2.fromScale(0, 0.5);
+	Right = UDim2.fromScale(1, 0.5);
+	Center = UDim2.fromScale(0.5, 0.5);
+}
+
 local Root = QuickInstance("Frame", {
 	Parent = game.StarterGui.HUD,
 	AnchorPoint = Vector2.new(0.5, 0.5),
@@ -33,68 +49,54 @@ local function CreateCrosshair(properties: CrosshairProperties)
 	properties.Height = properties.Height or 4
 	properties.Width = properties.Width or 2
 	properties.Gap = properties.Gap or 8
-	properties.CenterDotEnabled = properties.CenterDotEnabled ~= nil and properties.CenterDotEnabled or true
+	properties.CenterDotEnabled = properties.CenterDotEnabled
 	properties.Crosshairs = properties.Crosshairs or { Bottom = true, Left = true, Right = true, Top = true }
-	local MainCrosshair = QuickInstance("Frame", {
+	local Container = QuickInstance("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		BackgroundColor3 = Color3.fromRGB(255),
+		BackgroundColor3 = Color3.fromRGB(255, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Size = UDim2.new(0, properties.Gap * 2, 0, properties.Gap * 2),
 	})
-	if properties.Crosshairs.Bottom then
+
+	local function CreateCrosshairArm(name: string)
+		local IS_VERTICAL = name == "Top" or name == "Bottom"
+		local IS_CENTER = name == "Center"
+		local X = IS_VERTICAL and properties.Width or IS_CENTER and properties.Width or properties.Height
+		local Y = IS_VERTICAL and properties.Height or IS_CENTER and properties.Width or properties.Width
 		QuickInstance("Frame", {
-			Name = "Bottom",
-			AnchorPoint = Vector2.new(0.5, 0),
-			Parent = MainCrosshair,
+			AnchorPoint = LOOKUP_TABLE.AnchorPoint[name],
+			Position = LOOKUP_TABLE.Position[name],
+			Size = UDim2.fromOffset(X, Y),
+
 			BackgroundColor3 = properties.Color,
 			BackgroundTransparency = properties.Opacity,
+
 			BorderSizePixel = 0,
-			Position = UDim2.new(0.5, 0, 1, 0),
-			Size = UDim2.new(0, properties.Width, 0, properties.Height),
+
+			Name = name,
+			Parent = Container,
 		})
+	end
+
+	if properties.Crosshairs.Top then
+		CreateCrosshairArm("Top")
+	end
+	if properties.Crosshairs.Bottom then
+		CreateCrosshairArm("Bottom")
 	end
 	if properties.Crosshairs.Left then
-		QuickInstance("Frame", {
-			Name = "Left",
-			AnchorPoint = Vector2.new(1, 0.5),
-			Parent = MainCrosshair,
-			BackgroundColor3 = properties.Color,
-			BackgroundTransparency = properties.Opacity,
-			BorderSizePixel = 0,
-			Position = UDim2.new(0, 0, 0.5, 0),
-			Size = UDim2.new(0, properties.Height, 0, properties.Width),
-		})
+		CreateCrosshairArm("Left")
 	end
 	if properties.Crosshairs.Right then
-		QuickInstance("Frame", {
-			Name = "Right",
-			AnchorPoint = Vector2.new(0, 0.5),
-			Parent = MainCrosshair,
-			BackgroundColor3 = properties.Color,
-			BackgroundTransparency = properties.Opacity,
-			BorderSizePixel = 0,
-			Position = UDim2.new(1, 0, 0.5, 0),
-			Size = UDim2.new(0, properties.Height, 0, properties.Width),
-		})
+		CreateCrosshairArm("Right")
 	end
-	if properties.Crosshairs.Top then
-		QuickInstance("Frame", {
-			Name = "Top",
-			AnchorPoint = Vector2.new(0.5, 1),
-			Parent = MainCrosshair,
-			BackgroundColor3 = properties.Color,
-			BackgroundTransparency = properties.Opacity,
-			BorderSizePixel = 0,
-			Position = UDim2.new(0.5, 0, 0, 0),
-			Size = UDim2.new(0, properties.Width, 0, properties.Height),
-		})
-	end
+
 	if properties.CenterDotEnabled then
 		QuickInstance("Frame", {
 			Name = "Center",
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Parent = MainCrosshair,
+			Parent = Container,
 			BackgroundColor3 = properties.Color,
 			BackgroundTransparency = properties.Opacity,
 			BorderSizePixel = 0,
@@ -102,7 +104,7 @@ local function CreateCrosshair(properties: CrosshairProperties)
 			Size = UDim2.new(0, properties.Width, 0, properties.Width),
 		})
 	end
-	for _, arm in MainCrosshair:GetChildren() do
+	for _, arm in Container:GetChildren() do
 		-- QuickInstance("UICorner", {
 		-- 	CornerRadius = UDim.new(0, 2),
 		-- 	Parent = arm,
@@ -116,7 +118,7 @@ local function CreateCrosshair(properties: CrosshairProperties)
 			Parent = arm,
 		})
 	end
-	return MainCrosshair
+	return Container
 end
 
 local Crosshair = {}
@@ -138,6 +140,21 @@ function Crosshair.new()
 		}
 	})
 	Thing.Parent = Structure
+	local ThingTwo = CreateCrosshair({
+		Color = Color3.new(0, 1, 0);
+		Opacity = 0;
+		Height = 2;
+		Width = 2;
+		Gap = 12;
+		CenterDotEnabled = false;
+		Crosshairs = {
+			Bottom = true;
+			Left = true;
+			Right = true;
+			Top = true;
+		}
+	})
+	ThingTwo.Parent = Structure
 	return Structure
 end
 
