@@ -23,6 +23,7 @@ local Prisma = require(Packages:WaitForChild("prisma"))
 local Viewmodel = require(Classes:WaitForChild("Viewmodel"))
 local Animator = require(Classes:WaitForChild("Animator"))
 local Spring = require(Classes:WaitForChild("Spring"))
+local Crosshair = require(Classes:WaitForChild("Crosshair"))
 local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
 local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
@@ -34,6 +35,7 @@ local WeaponFireSignal = Link:WaitEvent("WeaponFire")
 local Viewmodels = {}
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
+local CurrentCrosshair
 local CurrentTool: Tool?
 
 local WeaponIdleAnimation = Instance.new("Animation")
@@ -539,6 +541,8 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 				end
 			end
 
+			CurrentCrosshair = Crosshair.new()
+			CurrentCrosshair.Parent = LocalPlayer.PlayerGui:FindFirstChild("HUD")
 			UpdateHUD()
 		end
 	end)
@@ -578,6 +582,8 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Viewmodels[object]:Cull(true)
 
 			UpdateHUD()
+			CurrentCrosshair:Destroy()
+			CurrentCrosshair = nil
 		end
 	end)
 end)
@@ -698,7 +704,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 		end
 	end
 
-	UserInputService.MouseIconEnabled = not Aiming
+	UserInputService.MouseIconEnabled = not ActiveTool
 end)
 
 -- hello github
