@@ -13,11 +13,13 @@ local Gameplay = Assets:WaitForChild("Gameplay")
 local Environment = Gameplay:WaitForChild("Environment")
 local Classes = Shared:WaitForChild("Classes")
 local Modules = Shared:WaitForChild("Modules")
+local Types = Shared:WaitForChild("Types")
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local LerpTools = require(Utility.LerpUtil)
+local StringUtil = require(Utility.StringUtil)
 local Link = require(Packages:WaitForChild("link"))
 local Prisma = require(Packages:WaitForChild("prisma"))
 local Viewmodel = require(Classes:WaitForChild("Viewmodel"))
@@ -28,11 +30,16 @@ local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
 local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
 
+local R6CharacterModel = require(Types:WaitForChild("R6CharacterModel"))
+
 local RequestForRNGSeedSignal = Link:WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link:WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link:WaitEvent("WeaponFire")
+local DropToolSignal = Link:WaitEvent("DropTool")
+local EquipToolFunction = Link:WaitFunction("EquipTool")
 
 local Viewmodels = {}
+local CurrentCharacter: R6CharacterModel.Type?
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
 local CurrentCrosshair
@@ -345,12 +352,40 @@ local function UpdateHumanoid(_deltaTime)
 end
 
 local function UpdateHUD()
-	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
-	if not HUD then
+	local Mouse = LocalPlayer:GetMouse()
+	local Hud = LocalPlayer.PlayerGui:FindFirstChild("HUD")
+	if not Hud then
 		return
 	end
-	HUD.Enabled = ActiveTool
-	local Body = HUD:FindFirstChild("Ammunition")
+	Hud.Enabled = ActiveTool
+
+	-- Hover Over
+	if CurrentCharacter then
+		if CurrentCharacter:FindFirstChild("Head") then
+			local HoverOverUi = Hud:FindFirstChild("HoverOver")
+			local MouseTarget = Mouse.Target
+			local HoveredTool = MouseTarget and MouseTarget.Parent
+			local ToolModel = HoveredTool and HoveredTool:FindFirstChild("Model")
+			local MouseHit = Mouse.Hit
+			local IsPickupable = MouseTarget and MouseTarget:GetAttribute("HC_PICKUP")
+			local IsClose = IsPickupable and MouseHit and (MouseHit.Position - CurrentCharacter.Head.CFrame.Position).Magnitude < 6
+
+			if HoverOverUi and MouseTarget and IsPickupable and IsClose then
+				HoverOverUi.PickupHighlight.Enabled = true
+				HoverOverUi.PickupHighlight.Adornee = ToolModel
+				HoverOverUi.Enabled = true
+				HoverOverUi.Adornee = MouseTarget
+				HoverOverUi.Background.Anchor.ToolName.Text = (HoveredTool.Name):upper()
+				HoverOverUi.Background.TypeTool.Text = "Standard " .. StringUtil.UppercaseFirstLetter(HoveredTool.Name)
+			else
+				HoverOverUi.PickupHighlight.Enabled = false
+				HoverOverUi.Enabled = false
+			end
+		end
+	end
+
+	-- ammunition
+	local Body = Hud:FindFirstChild("Ammunition")
 	if not Body then
 		return
 	end
@@ -462,7 +497,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
-	elseif input.KeyCode == Enum.KeyCode.F then
+	elseif input.KeyCode == Enum.KeyCode.Y then
 		if not ActiveTool then return end
 		if Firing then return end
 		if Inspecting then return end
@@ -470,6 +505,33 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(0.0001)
 		CurrentViewmodel.Animator.Tracks.inspect:Play(0.1, 1, 1)
 		CurrentViewmodel.Animator.Tracks.inspect.Stopped:Once(CancelInspect)
+	elseif input.KeyCode == Enum.KeyCode.F then
+		if not CurrentCharacter then return end
+		if not CurrentCharacter:FindFirstChild("Head") then return end
+
+		local Mouse = LocalPlayer:GetMouse()
+
+		local MouseTarget = Mouse.Target
+		local MouseHit = Mouse.Hit
+		local HoveredTool = MouseTarget and MouseTarget.Parent
+		local IsPickupable = MouseTarget and MouseTarget:GetAttribute("HC_PICKUP")
+		local IsClose = IsPickupable and MouseHit and (MouseTarget.CFrame.Position - CurrentCharacter.Head.CFrame.Position).Magnitude < 6
+
+		if MouseTarget and IsPickupable and IsClose then
+			if HoveredTool:IsA("Tool") then
+				-- CurrentCharacter.Humanoid:EquipTool(Mouse.Target.Parent)
+				print("Requesting Pickup")
+				local val = EquipToolFunction:InvokeServer(HoveredTool)
+				print(val)
+			end
+		else
+			print("Pickup failed")
+		end
+	elseif input.KeyCode == Enum.KeyCode.G then
+		if not ActiveTool then return end
+		if not CurrentCharacter then return end
+		if not CurrentCharacter:FindFirstChild("Head") then return end
+		DropToolSignal:FireServer(CurrentTool, CurrentCharacter.Head.CFrame)
 	end
 end)
 
@@ -491,10 +553,11 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 	end
 end)
 
-LocalPlayer.CharacterAdded:Connect(function(character)
+LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 	InitializeVariables()
 	UpdateHUD()
 
+	CurrentCharacter = character
 	CurrentAnimator = Animator.new()
 	CurrentAnimator.Animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
 
@@ -593,6 +656,7 @@ LocalPlayer.CharacterRemoving:Connect(function(_character)
 		viewmodel:CleanUp()
 	end
 	table.clear(Viewmodels)
+	CurrentCharacter = nil :: R6CharacterModel.Type?
 	CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 	CurrentAnimator:Destroy()
 	CurrentAnimator = nil :: Animator.AnimatorClass?
@@ -604,6 +668,7 @@ local stoppedSwitch = true
 RunService.RenderStepped:Connect(function(deltaTime)
 	LerpTools.DeltaTime = deltaTime
 	UpdateModifiers(deltaTime)
+	UpdateHUD()
 
 	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
