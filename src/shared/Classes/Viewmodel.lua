@@ -6,6 +6,9 @@ local Utility = ReplicatedFirst:WaitForChild("Utility")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 
 local Classes = Shared:WaitForChild("Classes")
+local Types = Shared:WaitForChild("Types")
+
+local DefaultArms = require(Types.DefaultArms)
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
@@ -18,21 +21,6 @@ local function ViewmodelsFolder()
 	return Camera:FindFirstChild("Viewmodels") or QuickInstance("Folder", {Name = "Viewmodels", Parent = Camera})
 end
 
-type DefaultArms = {
-	AnimationController: AnimationController | {
-		Animator: Animator
-	};
-	HumanoidRootPart: Part;
-	Camera: Part;
-	WeaponModel: Model | {
-		AimPoint: Attachment;
-		Muzzle: Attachment;
-		EjectionPort: Attachment;
-	};
-	["Left Arm"]: Part;
-	["Right Arm"]: Part;
-}
-
 export type ViewmodelClass = {
 	Cull: (self: ViewmodelClass, enabled: boolean) -> nil;
 	SetCFrame: (self: ViewmodelClass, cframe: CFrame) -> nil;
@@ -41,7 +29,7 @@ export type ViewmodelClass = {
 
 	Animator: Animator.AnimatorClass;
 
-	Model: Model | DefaultArms;
+	Model: Model | DefaultArms.Type;
 	Culled: boolean;
 	Springs: {[string]: Spring.SpringClass};
 	Decoration: Model;
@@ -64,22 +52,22 @@ function Viewmodel.new(model: Model): ViewmodelClass
 		}
 	}, Viewmodel)
 
-	local newModel: Model | DefaultArms = model:Clone()
+	local newModel: Model | DefaultArms.Type = model:Clone()
 	newModel.Parent = ViewmodelsFolder()
 	self.Model = newModel
 	self.Animator.Animator = self.Model.AnimationController.Animator
 	self:Cull(true)
 
-	return self
+	return self :: ViewmodelClass
 end
 
-function Viewmodel:Decorate(model: Model)
-	local newModel = model:Clone()
+function Viewmodel:Decorate(model: DefaultArms.Type)
+	local newModel: DefaultArms.Type = model:Clone()
 
 	QuickInstance("Motor6D", {
 		Part0 = newModel["Left Arm"];
 		Part1 = self.Model["Left Arm"];
-		Parent = newModel["Left Arm"]
+		Parent = newModel["Left Arm"];
 	})
 
 	QuickInstance("Motor6D", {

@@ -31,6 +31,7 @@ local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
 local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
 
 local R6CharacterModel = require(Types:WaitForChild("R6CharacterModel"))
+local WeaponModel = require(Types:WaitForChild("WeaponModel"))
 
 local RequestForRNGSeedSignal = Link:WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link:WaitEvent("SendRNGSeed")
@@ -43,7 +44,7 @@ local CurrentCharacter: R6CharacterModel.Type?
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
 local CurrentCrosshair
-local CurrentTool: Tool?
+local CurrentTool: WeaponModel.Type?
 
 local WeaponIdleAnimation = Instance.new("Animation")
 WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
@@ -598,7 +599,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 				CurrentViewmodel:Cull(false)
 			end
 
-			for _, child in CurrentTool:GetDescendants() do
+			for _, child: BasePart in CurrentTool:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = 1
 				end
@@ -623,7 +624,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 			CurrentViewmodel.Animator.Tracks.reload:Stop()
 			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
 
-			for _, child in CurrentTool:GetDescendants() do
+			for _, child: BasePart in CurrentTool:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = 1
 				end
@@ -633,7 +634,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 			Prisma:ToggleTorsoLag(true)
 			CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 			ViewmodelCFrame = CFrame.new()
-			CurrentTool = nil
+			CurrentTool = nil :: WeaponModel.Type
 			ActiveTool = false
 			Mouse1Down = false
 			_Mouse2Down = false
@@ -651,7 +652,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 	end)
 end)
 
-LocalPlayer.CharacterRemoving:Connect(function(_character)
+LocalPlayer.CharacterRemoving:Connect(function(_character: R6CharacterModel.Type)
 	for _, viewmodel in Viewmodels do
 		viewmodel:CleanUp()
 	end
@@ -744,14 +745,14 @@ RunService.RenderStepped:Connect(function(deltaTime)
 
 	if CurrentViewmodel then
 		if CurrentViewmodel.Model then
-			for _, child in CurrentViewmodel.Model:GetDescendants() do
+			for _, child: BasePart in CurrentViewmodel.Model:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
 				end
 			end
 		end
 		if CurrentViewmodel.Decoration then
-			for _, child in CurrentViewmodel.Decoration:GetDescendants() do
+			for _, child: BasePart in CurrentViewmodel.Decoration:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
 				end
@@ -762,7 +763,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	end
 
 	if CurrentTool then
-		for _, child in CurrentTool:GetDescendants() do
+		for _, child: BasePart in CurrentTool:GetDescendants() do
 			if child:IsA("BasePart") then
 				child.LocalTransparencyModifier = -HeadCameraMagnitude + 2
 			end
