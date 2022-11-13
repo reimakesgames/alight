@@ -369,7 +369,7 @@ local function UpdateHUD()
 			local ToolModel = HoveredTool and HoveredTool:FindFirstChild("Model")
 			local MouseHit = Mouse.Hit
 			local IsPickupable = MouseTarget and MouseTarget:GetAttribute("HC_PICKUP")
-			local IsClose = IsPickupable and MouseHit and (MouseHit.Position - CurrentCharacter.Head.CFrame.Position).Magnitude < 6
+			local IsClose = IsPickupable and MouseHit and (MouseTarget.CFrame.Position - CurrentCharacter.HumanoidRootPart.CFrame.Position).Magnitude < 6
 
 			if HoverOverUi and MouseTarget and IsPickupable and IsClose then
 				HoverOverUi.PickupHighlight.Enabled = true
@@ -516,7 +516,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		local MouseHit = Mouse.Hit
 		local HoveredTool = MouseTarget and MouseTarget.Parent
 		local IsPickupable = MouseTarget and MouseTarget:GetAttribute("HC_PICKUP")
-		local IsClose = IsPickupable and MouseHit and (MouseTarget.CFrame.Position - CurrentCharacter.Head.CFrame.Position).Magnitude < 6
+		local IsClose = IsPickupable and MouseHit and (MouseTarget.CFrame.Position - CurrentCharacter.HumanoidRootPart.CFrame.Position).Magnitude < 6
 
 		if MouseTarget and IsPickupable and IsClose then
 			if HoveredTool:IsA("Tool") then

@@ -89,18 +89,18 @@ function ToolHandler.EquipTool(player: Player, tool: WeaponModel.Type)
 	end
 	local Character: R6CharacterModel.Type = player.Character
 	local Humanoid: ActiveHumanoid.Type = Character:FindFirstChild("Humanoid")
-	local Head: Part = Character:FindFirstChild("Head")
+	local HumanoidRootPart: Part = Character:FindFirstChild("HumanoidRootPart")
 	local Hitbox: Part = tool:FindFirstChild("PICKUP_HITBOX")
 	if not Humanoid then
 		return "no humanoid?"
 	end
-	if not Head then
-		return "no head?"
+	if not HumanoidRootPart then
+		return "no humanoidRootPart?"
 	end
 	if not Hitbox then
 		return "no hitbox?"
 	end
-	if (Hitbox.CFrame.Position - Head.CFrame.Position).Magnitude < 6 then
+	if (Hitbox.CFrame.Position - HumanoidRootPart.CFrame.Position).Magnitude < 6 then
 		Humanoid:EquipTool(tool)
 		return "ok"
 	end
