@@ -496,11 +496,13 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if Reloading then return end
 		Sprinting = false
 
+		CancelInspect()
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
 	elseif input.KeyCode == Enum.KeyCode.Y then
 		if not ActiveTool then return end
 		if Firing then return end
+		if Reloading then return end
 		if Inspecting then return end
 		Inspecting = true
 		CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(0.0001)
