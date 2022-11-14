@@ -576,21 +576,26 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 	CurrentAnimator:Load(WalkingToolAnimation, "walkingToolAnimation"):Play(0.1, 0)
 	CurrentAnimator:Load(RunningToolAnimation, "runningToolAnimation"):Play(0.1, 0)
 
-	character.ChildAdded:Connect(function(object)
+	character.ChildAdded:Connect(function(object: WeaponModel.Type)
 		if not object:IsA("Tool") then
 			return
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			local guid: StringValue = object:FindFirstChild("GUID")
+			if not guid then
+				return
+			end
+			local guidValue = guid.Value
 			Prisma:ToggleArms(true, true)
 			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
 			CurrentTool = object
 
-			CurrentViewmodel = Viewmodels[object]
+			CurrentViewmodel = Viewmodels[guidValue]
 			if not CurrentViewmodel then
 				CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
-				Viewmodels[object] = CurrentViewmodel
+				Viewmodels[guidValue] = CurrentViewmodel
 
 				CurrentViewmodel.Animator:Load(WeaponIdleAnimation, "idle"):Play(0.1, 1, 1)
 				CurrentViewmodel.Animator:Load(WeaponInspectAnimation, "inspect")
@@ -613,12 +618,17 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 		end
 	end)
 
-	character.ChildRemoved:Connect(function(object)
+	character.ChildRemoved:Connect(function(object: WeaponModel.Type)
 		if not object:IsA("Tool") then
 			return
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			local guid: StringValue = object:FindFirstChild("GUID")
+			if not guid then
+				return
+			end
+			local guidValue = guid.Value
 			if ReloadThread then
 				coroutine.close(ReloadThread)
 			end
@@ -645,7 +655,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 			Aiming = false
 			Inspecting = false
 
-			Viewmodels[object]:Cull(true)
+			Viewmodels[guidValue]:Cull(true)
 
 			UpdateHUD()
 			CurrentCrosshair:Destroy()

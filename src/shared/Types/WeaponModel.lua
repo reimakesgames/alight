@@ -10,7 +10,8 @@ export type Type = Instance | {
 	Handle: Part | {
 		Handle: Motor6D
 	};
-	Hitbox: Part
+	Hitbox: Part;
+	GUID: StringValue;
 }
 
 return {}
