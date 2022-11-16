@@ -19,7 +19,6 @@
 - Internal types (DX)
 - Class properties in methods not appearing (DX)
 
-
 # [0.2.3] - 2022-10-18
 ### Changed
 - Viewmodel/Worldmodel now hides itself properly

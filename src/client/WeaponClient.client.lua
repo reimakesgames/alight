@@ -43,6 +43,7 @@ local Viewmodels = {}
 local CurrentCharacter: R6CharacterModel.Type?
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
+
 local CurrentCrosshair
 local CurrentTool: WeaponModel.Type?
 
@@ -497,7 +498,9 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		CancelInspect()
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
+
 	elseif input.KeyCode == Enum.KeyCode.Y then
+
 		if not ActiveTool then return end
 		if Firing then return end
 		if Reloading then return end
