@@ -174,11 +174,9 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
 	VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle)
-	task.delay(0.02, function()
-		VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
-		VFXHandler:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
-	end)
 	SFXHandler:PlaySound(workspace.FireSounds.fire)
+	VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
+	VFXHandler:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
 
 	-- normal raycast
 
