@@ -1,4 +1,4 @@
-return function<Class>(ClassName: Class, Properties: {[string]: any}): Class
+return function(ClassName: string, Properties: {[string]: any}): Instance
 	local Object = Instance.new(ClassName)
 	if Properties then
 		for Property, Value in Properties do

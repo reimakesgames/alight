@@ -1,6 +1,9 @@
 local ITERATIONS = 8
 
 export type SpringClass = {
+	__index: SpringClass;
+	new: (mass: number, force: number, damping: number, speed: number) -> SpringClass;
+
 	ApplyForce: (self: SpringClass, force: Vector3) -> nil;
 	Step: (self: SpringClass, deltaTime: number) -> Vector3;
 
@@ -14,10 +17,10 @@ export type SpringClass = {
 	Speed: number;
 }
 
-local Spring = {}
+local Spring = {} :: SpringClass
 Spring.__index = Spring
 
-function Spring.new(mass: number, force: number, damping: number, speed: number)
+function Spring.new(mass: number, force: number, damping: number, speed: number): SpringClass
 	local spring = setmetatable({
 		Target = Vector3.new(),
 		Position = Vector3.new(),
@@ -29,7 +32,7 @@ function Spring.new(mass: number, force: number, damping: number, speed: number)
 		Speed = speed or 4,
 	}, Spring)
 
-	return spring
+	return spring :: SpringClass
 end
 
 function Spring:ApplyForce(force: Vector3)

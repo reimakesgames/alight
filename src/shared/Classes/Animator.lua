@@ -1,12 +1,15 @@
 export type AnimatorClass = {
+	__index: AnimatorClass;
+	new: () -> (AnimatorClass);
+
 	Load: (self: AnimatorClass, animation: Animation, trackName: string) -> AnimationTrack;
 	Destroy: (self: AnimatorClass) -> ();
 
-	Tracks: Dictionary<AnimationTrack>;
+	Tracks: {[string]: AnimationTrack};
 	Animator: Animator;
 }
 
-local Animator = {}
+local Animator = {} :: AnimatorClass
 Animator.__index = Animator
 
 function Animator.new(): AnimatorClass
@@ -15,7 +18,7 @@ function Animator.new(): AnimatorClass
 		Animator = nil,
 	}, Animator)
 
-	return self
+	return self :: AnimatorClass
 end
 
 function Animator:Load(animation: Animation, trackName: string)

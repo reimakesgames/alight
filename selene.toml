@@ -83,4 +83,4 @@ empty_if = { comments_count = true }
 high_syclomatic_complexity = { maximum_complexity = 12 } # cmon i don't want complicated functions
 # maximum_complexity (default: 40) - A number that determines the maximum threshold for cyclomatic complexity, beyond which the lint will report.
 
-unused_variable = { ignore_pattern = "^_|Players|ReplicatedFirst|ReplicatedStorage|RunService|UserInputService|Utility|Packages|Assets|Shared|Gameplay|Environment|Classes|Modules"  }
+unused_variable = { ignore_pattern = "^_|Players|ReplicatedFirst|ReplicatedStorage|RunService|UserInputService|Utility|Packages|Assets|Shared|Gameplay|Environment|Classes|Modules|Types"  }

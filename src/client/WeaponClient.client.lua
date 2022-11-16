@@ -13,28 +13,39 @@ local Gameplay = Assets:WaitForChild("Gameplay")
 local Environment = Gameplay:WaitForChild("Environment")
 local Classes = Shared:WaitForChild("Classes")
 local Modules = Shared:WaitForChild("Modules")
+local Types = Shared:WaitForChild("Types")
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 local LerpTools = require(Utility.LerpUtil)
+local StringUtil = require(Utility.StringUtil)
 local Link = require(Packages:WaitForChild("link"))
 local Prisma = require(Packages:WaitForChild("prisma"))
 local Viewmodel = require(Classes:WaitForChild("Viewmodel"))
 local Animator = require(Classes:WaitForChild("Animator"))
 local Spring = require(Classes:WaitForChild("Spring"))
+local Crosshair = require(Classes:WaitForChild("Crosshair"))
 local RaycastHandler = require(Modules:WaitForChild("RaycastHandler"))
 local VFXHandler = require(Modules:WaitForChild("VFXHandler"))
 local SFXHandler = require(Modules:WaitForChild("SFXHandler"))
 
+local R6CharacterModel = require(Types:WaitForChild("R6CharacterModel"))
+local WeaponModel = require(Types:WaitForChild("WeaponModel"))
+
 local RequestForRNGSeedSignal = Link:WaitEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link:WaitEvent("SendRNGSeed")
 local WeaponFireSignal = Link:WaitEvent("WeaponFire")
+local DropToolSignal = Link:WaitEvent("DropTool")
+local EquipToolFunction = Link:WaitFunction("EquipTool")
 
 local Viewmodels = {}
+local CurrentCharacter: R6CharacterModel.Type?
 local CurrentViewmodel: Viewmodel.ViewmodelClass?
 local CurrentAnimator: Animator.AnimatorClass?
-local CurrentTool: Tool?
+
+local CurrentCrosshair
+local CurrentTool: WeaponModel.Type?
 
 local WeaponIdleAnimation = Instance.new("Animation")
 WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
@@ -164,11 +175,9 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	CurrentViewmodel.Springs.RecoilNoise:ApplyForce(Vector3.new(0, 0, math.random(-8, 8)))
 
 	VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle)
-	task.delay(0.02, function()
-		VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
-		VFXHandler:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
-	end)
 	SFXHandler:PlaySound(workspace.FireSounds.fire)
+	VFXHandler:EmitMuzzleParticles(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort)
+	VFXHandler:NewBulletShell(CurrentViewmodel.Model.WeaponModel.Handle.EjectionPort.WorldCFrame)
 
 	-- normal raycast
 
@@ -343,12 +352,40 @@ local function UpdateHumanoid(_deltaTime)
 end
 
 local function UpdateHUD()
-	local HUD = LocalPlayer.PlayerGui:FindFirstChild("HUD")
-	if not HUD then
+	local Mouse = LocalPlayer:GetMouse()
+	local Hud = LocalPlayer.PlayerGui:FindFirstChild("HUD")
+	if not Hud then
 		return
 	end
-	HUD.Enabled = ActiveTool
-	local Body = HUD:FindFirstChild("Ammunition")
+	Hud.Enabled = ActiveTool
+
+	-- Hover Over
+	if CurrentCharacter then
+		if CurrentCharacter:FindFirstChild("Head") then
+			local HoverOverUi = Hud:FindFirstChild("HoverOver")
+			local MouseTarget = Mouse.Target
+			local HoveredTool = MouseTarget and MouseTarget.Parent
+			local ToolModel = HoveredTool and HoveredTool:FindFirstChild("Model")
+			local MouseHit = Mouse.Hit
+			local IsPickupable = MouseTarget and MouseTarget:GetAttribute("HC_PICKUP")
+			local IsClose = IsPickupable and MouseHit and (MouseTarget.CFrame.Position - CurrentCharacter.HumanoidRootPart.CFrame.Position).Magnitude < 6
+
+			if HoverOverUi and MouseTarget and IsPickupable and IsClose then
+				HoverOverUi.PickupHighlight.Enabled = true
+				HoverOverUi.PickupHighlight.Adornee = ToolModel
+				HoverOverUi.Enabled = true
+				HoverOverUi.Adornee = MouseTarget
+				HoverOverUi.Background.Anchor.ToolName.Text = (HoveredTool.Name):upper()
+				HoverOverUi.Background.TypeTool.Text = "Standard " .. StringUtil.UppercaseFirstLetter(HoveredTool.Name)
+			else
+				HoverOverUi.PickupHighlight.Enabled = false
+				HoverOverUi.Enabled = false
+			end
+		end
+	end
+
+	-- ammunition
+	local Body = Hud:FindFirstChild("Ammunition")
 	if not Body then
 		return
 	end
@@ -458,16 +495,47 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if Reloading then return end
 		Sprinting = false
 
+		CancelInspect()
 		ReloadThread = coroutine.create(ReloadBulletLogic)
 		coroutine.resume(ReloadThread)
-	elseif input.KeyCode == Enum.KeyCode.F then
+
+	elseif input.KeyCode == Enum.KeyCode.Y then
+
 		if not ActiveTool then return end
 		if Firing then return end
+		if Reloading then return end
 		if Inspecting then return end
 		Inspecting = true
 		CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(0.0001)
 		CurrentViewmodel.Animator.Tracks.inspect:Play(0.1, 1, 1)
 		CurrentViewmodel.Animator.Tracks.inspect.Stopped:Once(CancelInspect)
+	elseif input.KeyCode == Enum.KeyCode.F then
+		if not CurrentCharacter then return end
+		if not CurrentCharacter:FindFirstChild("Head") then return end
+
+		local Mouse = LocalPlayer:GetMouse()
+
+		local MouseTarget = Mouse.Target
+		local MouseHit = Mouse.Hit
+		local HoveredTool = MouseTarget and MouseTarget.Parent
+		local IsPickupable = MouseTarget and MouseTarget:GetAttribute("HC_PICKUP")
+		local IsClose = IsPickupable and MouseHit and (MouseTarget.CFrame.Position - CurrentCharacter.HumanoidRootPart.CFrame.Position).Magnitude < 6
+
+		if MouseTarget and IsPickupable and IsClose then
+			if HoveredTool:IsA("Tool") then
+				-- CurrentCharacter.Humanoid:EquipTool(Mouse.Target.Parent)
+				print("Requesting Pickup")
+				local val = EquipToolFunction:InvokeServer(HoveredTool)
+				print(val)
+			end
+		else
+			print("Pickup failed")
+		end
+	elseif input.KeyCode == Enum.KeyCode.G then
+		if not ActiveTool then return end
+		if not CurrentCharacter then return end
+		if not CurrentCharacter:FindFirstChild("Head") then return end
+		DropToolSignal:FireServer(CurrentTool, CurrentCharacter.Head.CFrame)
 	end
 end)
 
@@ -489,10 +557,11 @@ UserInputService.InputEnded:Connect(function(input, gameProcessedEvent)
 	end
 end)
 
-LocalPlayer.CharacterAdded:Connect(function(character)
+LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 	InitializeVariables()
 	UpdateHUD()
 
+	CurrentCharacter = character
 	CurrentAnimator = Animator.new()
 	CurrentAnimator.Animator = character:WaitForChild("Humanoid"):WaitForChild("Animator")
 
@@ -508,21 +577,26 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 	CurrentAnimator:Load(WalkingToolAnimation, "walkingToolAnimation"):Play(0.1, 0)
 	CurrentAnimator:Load(RunningToolAnimation, "runningToolAnimation"):Play(0.1, 0)
 
-	character.ChildAdded:Connect(function(object)
+	character.ChildAdded:Connect(function(object: WeaponModel.Type)
 		if not object:IsA("Tool") then
 			return
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			local guid: StringValue = object:FindFirstChild("GUID")
+			if not guid then
+				return
+			end
+			local guidValue = guid.Value
 			Prisma:ToggleArms(true, true)
 			Prisma:ToggleTorsoLag(false)
 			ActiveTool = true
 			CurrentTool = object
 
-			CurrentViewmodel = Viewmodels[object]
+			CurrentViewmodel = Viewmodels[guidValue]
 			if not CurrentViewmodel then
 				CurrentViewmodel = Viewmodel.new(ReplicatedStorage.v_UMP45)
-				Viewmodels[object] = CurrentViewmodel
+				Viewmodels[guidValue] = CurrentViewmodel
 
 				CurrentViewmodel.Animator:Load(WeaponIdleAnimation, "idle"):Play(0.1, 1, 1)
 				CurrentViewmodel.Animator:Load(WeaponInspectAnimation, "inspect")
@@ -533,22 +607,29 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 				CurrentViewmodel:Cull(false)
 			end
 
-			for _, child in CurrentTool:GetDescendants() do
+			for _, child: BasePart in CurrentTool:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = 1
 				end
 			end
 
+			CurrentCrosshair = Crosshair.new()
+			CurrentCrosshair.Parent = LocalPlayer.PlayerGui:FindFirstChild("HUD")
 			UpdateHUD()
 		end
 	end)
 
-	character.ChildRemoved:Connect(function(object)
+	character.ChildRemoved:Connect(function(object: WeaponModel.Type)
 		if not object:IsA("Tool") then
 			return
 		end
 
 		if object:GetAttribute("HC_VALID_WEAPON") then
+			local guid: StringValue = object:FindFirstChild("GUID")
+			if not guid then
+				return
+			end
+			local guidValue = guid.Value
 			if ReloadThread then
 				coroutine.close(ReloadThread)
 			end
@@ -556,7 +637,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			CurrentViewmodel.Animator.Tracks.reload:Stop()
 			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
 
-			for _, child in CurrentTool:GetDescendants() do
+			for _, child: BasePart in CurrentTool:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = 1
 				end
@@ -566,7 +647,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Prisma:ToggleTorsoLag(true)
 			CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 			ViewmodelCFrame = CFrame.new()
-			CurrentTool = nil
+			CurrentTool = nil :: WeaponModel.Type
 			ActiveTool = false
 			Mouse1Down = false
 			_Mouse2Down = false
@@ -575,18 +656,21 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 			Aiming = false
 			Inspecting = false
 
-			Viewmodels[object]:Cull(true)
+			Viewmodels[guidValue]:Cull(true)
 
 			UpdateHUD()
+			CurrentCrosshair:Destroy()
+			CurrentCrosshair = nil
 		end
 	end)
 end)
 
-LocalPlayer.CharacterRemoving:Connect(function(_character)
+LocalPlayer.CharacterRemoving:Connect(function(_character: R6CharacterModel.Type)
 	for _, viewmodel in Viewmodels do
 		viewmodel:CleanUp()
 	end
 	table.clear(Viewmodels)
+	CurrentCharacter = nil :: R6CharacterModel.Type?
 	CurrentViewmodel = nil :: Viewmodel.ViewmodelClass?
 	CurrentAnimator:Destroy()
 	CurrentAnimator = nil :: Animator.AnimatorClass?
@@ -598,6 +682,7 @@ local stoppedSwitch = true
 RunService.RenderStepped:Connect(function(deltaTime)
 	LerpTools.DeltaTime = deltaTime
 	UpdateModifiers(deltaTime)
+	UpdateHUD()
 
 	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
@@ -673,14 +758,14 @@ RunService.RenderStepped:Connect(function(deltaTime)
 
 	if CurrentViewmodel then
 		if CurrentViewmodel.Model then
-			for _, child in CurrentViewmodel.Model:GetDescendants() do
+			for _, child: BasePart in CurrentViewmodel.Model:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
 				end
 			end
 		end
 		if CurrentViewmodel.Decoration then
-			for _, child in CurrentViewmodel.Decoration:GetDescendants() do
+			for _, child: BasePart in CurrentViewmodel.Decoration:GetDescendants() do
 				if child:IsA("BasePart") then
 					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
 				end
@@ -691,14 +776,14 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	end
 
 	if CurrentTool then
-		for _, child in CurrentTool:GetDescendants() do
+		for _, child: BasePart in CurrentTool:GetDescendants() do
 			if child:IsA("BasePart") then
 				child.LocalTransparencyModifier = -HeadCameraMagnitude + 2
 			end
 		end
 	end
 
-	UserInputService.MouseIconEnabled = not Aiming
+	UserInputService.MouseIconEnabled = not ActiveTool
 end)
 
 -- hello github

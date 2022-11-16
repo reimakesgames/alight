@@ -18,7 +18,7 @@ local RequestForRNGSeedSignal = Link:CreateEvent("RequestForRNGSeed")
 local SendRNGSeedSignal = Link:CreateEvent("SendRNGSeed")
 local WeaponFireSignal = Link:CreateEvent("WeaponFire")
 
-local PlayerRandomGenerators: Dictionary<Random> = {}
+local PlayerRandomGenerators: {[string]: Random} = {}
 
 local function AddNoiseOnLookVector(PartDepth, origin, direction, random)
 	local RadiusModifier = (Random.new(random * 12345):NextNumber() / 0.25) * (PartDepth * 2)
