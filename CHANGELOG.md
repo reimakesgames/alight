@@ -1,3 +1,25 @@
+# [0.3.0] - 2022-11-16
+### Added
+- Crosshair Class
+- Character Ragdolling
+- Tool Dropping
+- Tool Pickup
+- Tool Select Gui
+- Tool GUID
+
+### Changed
+- View model table references
+- Ejection smoke and bullet is instantaneous now
+- CI manager from Foreman to Aftman
+
+### Fixed
+- Tool Pickup checks
+- Inspect and Reload priority conflict
+- QuickInstance return type (DX)
+- Internal types (DX)
+- Class properties in methods not appearing (DX)
+
+
 # [0.2.3] - 2022-10-18
 ### Changed
 - Viewmodel/Worldmodel now hides itself properly
