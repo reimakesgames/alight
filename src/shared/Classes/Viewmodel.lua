@@ -22,6 +22,9 @@ local function ViewmodelsFolder()
 end
 
 export type ViewmodelClass = {
+	__index: ViewmodelClass,
+	new: (model: Model) -> (ViewmodelClass),
+
 	Cull: (self: ViewmodelClass, enabled: boolean) -> nil;
 	SetCFrame: (self: ViewmodelClass, cframe: CFrame) -> nil;
 	Decorate: (self: ViewmodelClass, model: Model) -> nil;
@@ -35,7 +38,7 @@ export type ViewmodelClass = {
 	Decoration: Model;
 }
 
-local Viewmodel = {}
+local Viewmodel: ViewmodelClass = {} :: ViewmodelClass
 Viewmodel.__index = Viewmodel
 
 function Viewmodel.new(model: Model): ViewmodelClass
