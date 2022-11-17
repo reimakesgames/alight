@@ -1,0 +1,17 @@
+name: NewPR
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  Comment:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: peter-evans/create-or-update-comment@v2
+      with:
+        issue-number: ${{ github.event.number }}
+        body: |
+          Thank you for creating a pull request @${{ github.event.pull_request.user.login }}!
+          Your changes will be reviewed when possible.
+        reactions: hooray

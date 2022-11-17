@@ -1,16 +1,16 @@
-Repository:
+modified-repo:
 - '*'
 
-Client:
+modified-client:
 - src/client/**/*
 
-Server:
+modified-server:
 - src/server/**/*
 
-API:
+modified-api:
 - src/shared/Modules/**/*
 - src/shared/Classes/**/*
 
-Miscellaneous:
+modified-util:
 - src/first/**/*
 - src/utility/**/*
