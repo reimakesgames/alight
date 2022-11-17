@@ -1,3 +1,11 @@
+# [0.3.1] - 2022-11-17
+### Added
+- New Pull Requests get a comment now
+- New Issues get a label automatically
+
+### Changed
+- CI Workflows
+
 # [0.3.0] - 2022-11-16
 ### Added
 - Crosshair Class
