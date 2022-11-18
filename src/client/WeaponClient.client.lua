@@ -186,7 +186,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	-- normal raycast
 
 	local PenetrationPower = 4
-	print(PenetrationPower)
 
 	local Result = RaycastHandler:Raycast(startPoint, lookVector, 1024, parameter)
 	if not Result then
@@ -196,7 +195,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		return
 	end
 	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
-	print(PenetrationPower)
 	-- ParticleEffects:__CreateRaycastDebug(Camera.CFrame.Position, Result.Position)
 	VFXHandler:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
 	VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
@@ -214,7 +212,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 			return
 		end
 		PenetrationPower = PenetrationPower - Depth
-		print(PenetrationPower)
 		if PenetrationPower < 0 then
 			break
 		end
@@ -226,7 +223,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		VFXHandler:NewBulletExit(DepthResult.Position, DepthResult.Normal, DepthResult.Instance, WallbangDirection.LookVector)
 		local WallbangResult: RaycastResult = RaycastHandler:Raycast(DepthResult.Position, WallbangDirection.LookVector, RemainingDistance, parameter)
 		PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
-		print(PenetrationPower)
 		if not WallbangResult then
 			-- ParticleEffects:__CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
 			VFXHandler:NewBulletSmoke(DepthResult.Position, DepthResult.Position + (lookVector * 16))
@@ -536,12 +532,11 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if MouseTarget and IsPickupable and IsClose then
 			if HoveredTool:IsA("Tool") then
 				-- CurrentCharacter.Humanoid:EquipTool(Mouse.Target.Parent)
-				print("Requesting Pickup")
 				local val = EquipToolFunction:InvokeServer(HoveredTool)
-				print(val)
+				if type(val) == "string" then
+					warn("Pickup:", val)
+				end
 			end
-		else
-			print("Pickup failed")
 		end
 	elseif input.KeyCode == Enum.KeyCode.G then
 		if not ActiveTool then return end
