@@ -7,7 +7,7 @@
             "request": "launch",
             // "command": "if [[ ${fileExtname} == '.lua' ]]\nthen\nrun-in-roblox --place ./out.rbxl --script ${relativeFile}\nelse\necho select a LUA file!\nfi"
             // "command": ".vscode/runner.sh ${fileExtname} '${relativeFile}'",
-            "command": "./run.sh",
+            "command": "./unit.sh",
         }
     ]
 }
