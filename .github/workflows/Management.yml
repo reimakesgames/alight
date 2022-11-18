@@ -12,10 +12,3 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: needs-triage
-      - uses: peter-evans/create-or-update-comment@v2
-        with:
-          issue-number: ${{ github.event.number }}
-          body: |
-            Thank you for creating an issue @${{ github.event.issue.user.login }}!
-            Your issue will be reviewed when possible.
-          reactions: hooray
