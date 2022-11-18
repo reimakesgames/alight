@@ -533,6 +533,9 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			if HoveredTool:IsA("Tool") then
 				-- CurrentCharacter.Humanoid:EquipTool(Mouse.Target.Parent)
 				local val = EquipToolFunction:InvokeServer(HoveredTool)
+				if type(val) == "string" then
+					warn("Pickup:", val)
+				end
 			end
 		end
 	elseif input.KeyCode == Enum.KeyCode.G then
