@@ -35,14 +35,12 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 	-- normal raycast
 
 	local PenetrationPower = 4
-	print(PenetrationPower)
 
 	local Result = RaycastHandler:Raycast(startPoint, lookVector, 1024, parameter)
 	if not Result then
 		return
 	end
 	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
-	print(PenetrationPower)
 	local WallbangCount = 1
 
 	-- FindHumanoidAndDamage(Result)
@@ -55,7 +53,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 			return
 		end
 		PenetrationPower = PenetrationPower - Depth
-		print(PenetrationPower)
 		if PenetrationPower < 0 then
 			break
 		end
@@ -66,7 +63,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, player: Play
 		local RemainingDistance = (1024 - (startPoint - DepthResult.Position).Magnitude)
 		local WallbangResult: RaycastResult = RaycastHandler:Raycast(DepthResult.Position, WallbangDirection.LookVector, RemainingDistance, parameter)
 		PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
-		print(PenetrationPower)
 		if not WallbangResult then
 			return
 		end

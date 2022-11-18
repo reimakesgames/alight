@@ -22,8 +22,6 @@ RequestChangelogs.Event:Connect(function(player)
 	end
 
 	if RateLimits[player] > workspace.DistributedGameTime then
-		print(RateLimits[player], workspace.DistributedGameTime)
-		print(RateLimits[player] > workspace.DistributedGameTime)
 		error("Player " .. player.Name .. " is ratelimited for " .. RateLimits[player] - workspace.DistributedGameTime .. " seconds")
 		return
 	end
