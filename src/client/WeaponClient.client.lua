@@ -702,7 +702,6 @@ local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
 	LerpTools.DeltaTime = deltaTime
-	UpdateModifiers(deltaTime)
 	UpdateHUD()
 
 	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
@@ -710,6 +709,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
 
 	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		UpdateModifiers(deltaTime)
 		UpdateHumanoid(deltaTime)
 		local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 		local HeadPosition = LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET
