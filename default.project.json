@@ -4,6 +4,9 @@
     "$className": "DataModel",
 
     "ReplicatedFirst": {
+      "build": {
+        "$path": "build"
+      },
       "First": {
         "$path": "src/first"
       },
