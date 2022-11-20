@@ -92,19 +92,19 @@ function ToolHandler.EquipTool(player: Player, tool: WeaponModel.Type)
 	local HumanoidRootPart: Part = Character:FindFirstChild("HumanoidRootPart")
 	local Hitbox: Part = tool:FindFirstChild("PICKUP_HITBOX")
 	if not Humanoid then
-		return "no humanoid?"
+		return "No Humanoid found."
 	end
 	if not HumanoidRootPart then
-		return "no humanoidRootPart?"
+		return "No HumanoidRootPart found."
 	end
 	if not Hitbox then
-		return "no hitbox?"
+		return "No Hitbox found."
 	end
 	if (Hitbox.CFrame.Position - HumanoidRootPart.CFrame.Position).Magnitude < 6 then
 		Humanoid:EquipTool(tool)
-		return "ok"
+		return true
 	end
-	return "huh you failed all verification tests."
+	return "Too far away."
 end
 
 return ToolHandler

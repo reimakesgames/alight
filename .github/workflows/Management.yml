@@ -12,7 +12,3 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: needs-triage
-      - name: Comment on Issue
-        uses: ben-z/actions-comment-on-issue@1.0.2
-        with:
-          message: "Thank you for creating an issue @${{ github.event.issue.user.login }}!\nYour issue will be reviewed when possible."

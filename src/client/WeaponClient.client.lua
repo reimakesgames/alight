@@ -47,6 +47,8 @@ local CurrentAnimator: Animator.AnimatorClass?
 local CurrentCrosshair
 local CurrentTool: WeaponModel.Type?
 
+local WeaponEquipAnimation = Instance.new("Animation")
+WeaponEquipAnimation.AnimationId = "rbxassetid://11586371799"
 local WeaponIdleAnimation = Instance.new("Animation")
 WeaponIdleAnimation.AnimationId = "rbxassetid://11060004291"
 local WeaponInspectAnimation = Instance.new("Animation")
@@ -107,6 +109,7 @@ local Firing
 local Reloading
 local Aiming
 local Inspecting
+local Deploying
 
 local Reserve
 local Capacity
@@ -138,6 +141,7 @@ local function InitializeVariables()
 	Reloading = false
 	Aiming = false
 	Inspecting = false
+	Deploying = true
 
 	Reserve = 75
 	Capacity = 25
@@ -182,7 +186,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 	-- normal raycast
 
 	local PenetrationPower = 4
-	print(PenetrationPower)
 
 	local Result = RaycastHandler:Raycast(startPoint, lookVector, 1024, parameter)
 	if not Result then
@@ -192,7 +195,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		return
 	end
 	PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
-	print(PenetrationPower)
 	-- ParticleEffects:__CreateRaycastDebug(Camera.CFrame.Position, Result.Position)
 	VFXHandler:NewBulletHole(Result.Position, Result.Normal, Result.Instance)
 	VFXHandler:NewBulletSmoke(CurrentViewmodel.Model.WeaponModel.Handle.Muzzle.WorldPosition, Result.Position)
@@ -210,7 +212,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 			return
 		end
 		PenetrationPower = PenetrationPower - Depth
-		print(PenetrationPower)
 		if PenetrationPower < 0 then
 			break
 		end
@@ -222,7 +223,6 @@ local function WeaponFire(startPoint: Vector3, lookVector: Vector3, randomNumber
 		VFXHandler:NewBulletExit(DepthResult.Position, DepthResult.Normal, DepthResult.Instance, WallbangDirection.LookVector)
 		local WallbangResult: RaycastResult = RaycastHandler:Raycast(DepthResult.Position, WallbangDirection.LookVector, RemainingDistance, parameter)
 		PenetrationPower = PenetrationPower - ((startPoint - Result.Position).Magnitude / 1024)
-		print(PenetrationPower)
 		if not WallbangResult then
 			-- ParticleEffects:__CreateRaycastDebug(ThicknessResult.Position, RemainingDistanceLookVector)
 			VFXHandler:NewBulletSmoke(DepthResult.Position, DepthResult.Position + (lookVector * 16))
@@ -401,6 +401,11 @@ local function CancelInspect()
 	CurrentViewmodel.Animator.Tracks.inspect:Stop(0.0001)
 end
 
+local function CancelEquip()
+	Deploying = false
+	CurrentViewmodel.Animator.Tracks.equip:Stop(0.0001)
+end
+
 local function ReloadBulletLogic()
 	if Reserve == 0 then
 		return
@@ -447,6 +452,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if not ActiveTool then return end
 		if Firing then return end
 		if Magazine == 0 then return end
+		if Deploying then return end
 		if Reloading then return end
 		CancelInspect()
 
@@ -470,6 +476,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		until not Mouse1Down or Magazine == 0
 	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
 		if not ActiveTool then return end
+		if Deploying then return end
 		CancelInspect()
 
 		Sprinting = false
@@ -492,6 +499,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if not ActiveTool then return end
 		if Firing then return end
 		if Magazine >= Capacity + 1 then return end
+		if Deploying then return end
 		if Reloading then return end
 		Sprinting = false
 
@@ -500,10 +508,10 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		coroutine.resume(ReloadThread)
 
 	elseif input.KeyCode == Enum.KeyCode.Y then
-
 		if not ActiveTool then return end
 		if Firing then return end
 		if Reloading then return end
+		if Deploying then return end
 		if Inspecting then return end
 		Inspecting = true
 		CurrentViewmodel.Animator.Tracks.idle:AdjustWeight(0.0001)
@@ -524,12 +532,11 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		if MouseTarget and IsPickupable and IsClose then
 			if HoveredTool:IsA("Tool") then
 				-- CurrentCharacter.Humanoid:EquipTool(Mouse.Target.Parent)
-				print("Requesting Pickup")
 				local val = EquipToolFunction:InvokeServer(HoveredTool)
-				print(val)
+				if type(val) == "string" then
+					warn("Pickup:", val)
+				end
 			end
-		else
-			print("Pickup failed")
 		end
 	elseif input.KeyCode == Enum.KeyCode.G then
 		if not ActiveTool then return end
@@ -599,13 +606,20 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 				Viewmodels[guidValue] = CurrentViewmodel
 
 				CurrentViewmodel.Animator:Load(WeaponIdleAnimation, "idle"):Play(0.1, 1, 1)
+				CurrentViewmodel.Animator:Load(WeaponEquipAnimation, "equip")
 				CurrentViewmodel.Animator:Load(WeaponInspectAnimation, "inspect")
 				CurrentViewmodel.Animator:Load(WeaponReloadAnimation, "reload")
 				CurrentViewmodel.Animator:Load(WeaponEmptyReloadAnimation, "emptyReload")
 
 				CurrentViewmodel:Decorate(ReplicatedStorage.DecorationArms)
-				CurrentViewmodel:Cull(false)
 			end
+			CurrentViewmodel.Animator.Tracks.equip:Stop(0.0001)
+			CurrentViewmodel.Animator.Tracks.equip:Play(0.0001, 1, 1)
+			task.delay(0, function()
+				CurrentViewmodel:Cull(false)
+			end)
+			Deploying = true
+			CurrentViewmodel.Animator.Tracks.equip.Stopped:Once(CancelEquip)
 
 			for _, child: BasePart in CurrentTool:GetDescendants() do
 				if child:IsA("BasePart") then
@@ -633,6 +647,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 			if ReloadThread then
 				coroutine.close(ReloadThread)
 			end
+			CurrentViewmodel.Animator.Tracks.equip:Stop()
 			CurrentViewmodel.Animator.Tracks.inspect:Stop()
 			CurrentViewmodel.Animator.Tracks.reload:Stop()
 			CurrentViewmodel.Animator.Tracks.emptyReload:Stop()
@@ -655,6 +670,7 @@ LocalPlayer.CharacterAdded:Connect(function(character: R6CharacterModel.Type)
 			Reloading = false
 			Aiming = false
 			Inspecting = false
+			Deploying = true
 
 			Viewmodels[guidValue]:Cull(true)
 
@@ -681,7 +697,6 @@ local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
 	LerpTools.DeltaTime = deltaTime
-	UpdateModifiers(deltaTime)
 	UpdateHUD()
 
 	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
@@ -689,6 +704,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
 
 	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		UpdateModifiers(deltaTime)
 		UpdateHumanoid(deltaTime)
 		local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
 		local HeadPosition = LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET
@@ -771,7 +787,6 @@ RunService.RenderStepped:Connect(function(deltaTime)
 				end
 			end
 		end
-		CurrentViewmodel:Cull(not ActiveTool)
 		UpdateViewmodel(deltaTime)
 	end
 

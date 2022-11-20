@@ -25,7 +25,6 @@ HydrateChangelogs.Event:Connect(function(theString)
 	-- ChangelogsUI.Frame.button.UIListLayout:Clone().Parent = ChangelogsUI.Frame.ScrollingFrame
 	stuff = theString
 	local stuffConvertedToTable = string.split(stuff, "\n")
-	print(stuffConvertedToTable)
 	for _, Text in stuffConvertedToTable do
 		local isHeader1 = string.match(Text, "^# ")
 		local isHeader3 = string.match(Text, "^### ")

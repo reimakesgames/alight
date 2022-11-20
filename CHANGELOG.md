@@ -1,3 +1,22 @@
+# [0.4.0] - 2022-11-19
+### Added
+- Weapon equipping animations
+- Debug gui (FPS, Ping, Version)
+- Build metadata folder
+- Merge PR commenter
+
+### Changed
+- Some accesses are now sanitized
+- Unit Testing is now simplified
+
+### Removed
+- Some print statements
+- Workflow scripts
+
+# [0.3.1.1] - 2022-11-17
+### Changed
+- Management workflow
+
 # [0.3.1] - 2022-11-17
 ### Added
 - New Pull Requests get a comment now
@@ -10,8 +29,9 @@
 ### Added
 - Crosshair Class
 - Character Ragdolling
-- Tool Dropping
-- Tool Pickup
+- Tool Dropping on Death
+- Tool Dropping (Key G)
+- Tool Pickup (Key F)
 - Tool Select Gui
 - Tool GUID
 
@@ -19,6 +39,7 @@
 - View model table references
 - Ejection smoke and bullet is instantaneous now
 - CI manager from Foreman to Aftman
+- Inspect key is now Y
 
 ### Fixed
 - Tool Pickup checks
