@@ -83,7 +83,7 @@ RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
 
 local HeadCameraMagnitude = 0.0
-local CameraCFrame = CFrame.new()
+local OldCameraCFrame = CFrame.new()
 
 local WalkCycleX
 local WalkCycleY
@@ -257,9 +257,8 @@ local function UpdateModifiers(deltaTime)
 end
 
 local function UpdateViewmodel(deltaTime)
-	local CameraLookVectorDifference = CameraCFrame.LookVector - Camera.CFrame.LookVector
+	local CameraLookVectorDifference = OldCameraCFrame.LookVector - Camera.CFrame.LookVector
 	local CameraDelta = Camera.CFrame:VectorToObjectSpace(CameraLookVectorDifference)
-	CameraCFrame = Camera.CFrame
 
 	-- smoothly clamp camera delta with sine
 
@@ -810,6 +809,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 	end
 
 	UserInputService.MouseIconEnabled = not ActiveTool
+	OldCameraCFrame = Camera.CFrame
 end)
 
 -- hello github
