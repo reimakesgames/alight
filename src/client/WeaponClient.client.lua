@@ -83,6 +83,7 @@ RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
 
 local HeadCameraMagnitude = 0.0
+local CameraCFrame = CFrame.new()
 
 local WalkCycleX
 local WalkCycleY
@@ -256,10 +257,20 @@ local function UpdateModifiers(deltaTime)
 end
 
 local function UpdateViewmodel(deltaTime)
-	local MouseDelta = UserInputService:GetMouseDelta()
+	local CameraLookVectorDifference = CameraCFrame.LookVector - Camera.CFrame.LookVector
+	local CameraDelta = Camera.CFrame:VectorToObjectSpace(CameraLookVectorDifference)
+	CameraCFrame = Camera.CFrame
 
-	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
-	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
+	-- smoothly clamp camera delta with sine
+
+	CameraDelta = Vector3.new(
+		math.clamp(CameraDelta.X, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime)),
+		math.clamp(CameraDelta.Y, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime)),
+		math.clamp(CameraDelta.Z, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime))
+	)
+
+	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(-CameraDelta.X, CameraDelta.Y))
+	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(-CameraDelta.X, CameraDelta.Y))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(WalkCycleX) * (deltaTime * 32), math.sin(WalkCycleY) * (deltaTime * 32), 0))
 
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
