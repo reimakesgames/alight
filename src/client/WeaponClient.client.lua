@@ -80,7 +80,7 @@ WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
 local RunningToolAnimation = Instance.new("Animation")
 RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 
-local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
+-- local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
 
 -- local HeadCameraMagnitude = 0.0
 local OldCameraCFrame = CFrame.new()
