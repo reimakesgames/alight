@@ -24,14 +24,18 @@ function SFXHandler:PlaySound(soundObject: Sound, soundSettings: SoundSettings?)
 	if soundSettings.SoundPosition == false or soundSettings.SoundPosition == nil then
 		newSound.Parent = ActiveSoundsFolder()
 	else
-		QuickInstance("Part", {
+		local Area = QuickInstance("Part", {
 			Anchored = true;
 			CanCollide = false;
 			CanQuery = false;
 			CanTouch = false;
 			Size = soundSettings.SoundSize or Vector3.new(1, 1, 1);
+			Position = soundSettings.SoundPosition;
+			Transparency = 1;
 			Parent = ActiveSoundsFolder()
 		})
+		Debris:AddItem(Area, soundObject.TimeLength)
+		newSound.Parent = Area
 	end
 
 	newSound:Play()
