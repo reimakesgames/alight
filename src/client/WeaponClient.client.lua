@@ -482,8 +482,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			local OriginPosition: Vector3 = (LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET).Position
 			local LookVector: Vector3 = Camera.CFrame.LookVector
 
-			workspace.FireSounds.fire:Play()
-			workspace.FireSounds.distant:Play()
+			SFXHandler:PlaySound(workspace.FireSounds.fire)
+			SFXHandler:PlaySound(workspace.FireSounds.distant)
 
 			WeaponFire(OriginPosition, LookVector, random)
 			WeaponFireSignal:FireServer(OriginPosition, LookVector)
