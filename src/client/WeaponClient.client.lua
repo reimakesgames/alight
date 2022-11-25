@@ -80,7 +80,7 @@ WalkingToolAnimation.AnimationId = "rbxassetid://11240352821"
 local RunningToolAnimation = Instance.new("Animation")
 RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 
--- local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
+local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
 
 -- local HeadCameraMagnitude = 0.0
 local OldCameraCFrame = CFrame.new()
@@ -479,7 +479,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		repeat
 			Firing = true
 			local random = RNG:NextNumber()
-			local OriginPosition: Vector3 = Camera.CFrame.Position
+			local OriginPosition: Vector3 = (LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET).Position
 			local LookVector: Vector3 = Camera.CFrame.LookVector
 
 			workspace.FireSounds.fire:Play()
