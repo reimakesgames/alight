@@ -2,6 +2,7 @@
 ### Changed
 - Viewmodel Sway to use camera delta instead of mouse delta
 - Viewmodel Rendering performance improvements
+- Link and Prisma Version
 
 ### Fixed
 - Raycasts starting from the player's camera position instead of the player's position
