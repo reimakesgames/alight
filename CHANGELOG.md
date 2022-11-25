@@ -1,3 +1,14 @@
+# [0.4.1] - 2022-11-25
+### Changed
+- Viewmodel Sway to use camera delta instead of mouse delta
+- Viewmodel Rendering performance improvements
+- Link and Prisma Version
+
+### Fixed
+- Raycasts starting from the player's camera position instead of the player's position
+- SFXHandler not disposing spatial audio sources
+- SFXHandler not disposing finished audio sources
+
 # [0.4.0] - 2022-11-19
 ### Added
 - Weapon equipping animations

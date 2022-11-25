@@ -82,7 +82,8 @@ RunningToolAnimation.AnimationId = "rbxassetid://11240170037"
 
 local HEAD_OFFSET = CFrame.new(0, 1.5, 0)
 
-local HeadCameraMagnitude = 0.0
+-- local HeadCameraMagnitude = 0.0
+local OldCameraCFrame = CFrame.new()
 
 local WalkCycleX
 local WalkCycleY
@@ -256,10 +257,20 @@ local function UpdateModifiers(deltaTime)
 end
 
 local function UpdateViewmodel(deltaTime)
-	local MouseDelta = UserInputService:GetMouseDelta()
+	debug.profilebegin("CreateEquationVariables")
+	local CameraLookVectorDifference = OldCameraCFrame.LookVector - Camera.CFrame.LookVector
+	local CameraDelta = Camera.CFrame:VectorToObjectSpace(CameraLookVectorDifference)
 
-	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
-	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(MouseDelta.X / 256, MouseDelta.Y / 256))
+	-- smoothly clamp camera delta with sine
+
+	CameraDelta = Vector3.new(
+		math.clamp(CameraDelta.X, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime)),
+		math.clamp(CameraDelta.Y, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime)),
+		math.clamp(CameraDelta.Z, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime))
+	)
+
+	CurrentViewmodel.Springs.Sway:ApplyForce(Vector3.new(-CameraDelta.X, CameraDelta.Y))
+	CurrentViewmodel.Springs.SwayPivot:ApplyForce(Vector3.new(-CameraDelta.X, CameraDelta.Y))
 	CurrentViewmodel.Springs.WalkCycle:ApplyForce(Vector3.new(math.sin(WalkCycleX) * (deltaTime * 32), math.sin(WalkCycleY) * (deltaTime * 32), 0))
 
 	local AimCFrame = CurrentViewmodel.Model.HumanoidRootPart.CFrame:ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.AimPoint.WorldCFrame)
@@ -275,7 +286,9 @@ local function UpdateViewmodel(deltaTime)
 	end
 
 	local PivotPointCFrame = (CurrentViewmodel.Model.HumanoidRootPart.CFrame * ViewmodelCFrame:Inverse()):ToObjectSpace(CurrentViewmodel.Model.WeaponModel.Handle.PivotPoint.WorldCFrame)
+	debug.profileend()
 
+	debug.profilebegin("UpdateSprings")
 	for _, spring: Spring.SpringClass in CurrentViewmodel.Springs do
 		spring:Step(deltaTime)
 	end
@@ -287,7 +300,9 @@ local function UpdateViewmodel(deltaTime)
 	local RecoilNoise = CurrentViewmodel.Springs.RecoilNoise.Position
 
 	local PercentageToGoal = ViewmodelCFrame.Position.Magnitude / AimCFrame.Position.Magnitude
+	debug.profileend()
 
+	debug.profilebegin("CreateEquationCFrames")
 	local SwayAngles = CFrame.Angles(
 		-Sway.Y * (0.1 + ((1 - PercentageToGoal) * 0.9)) * (1 - SprintingModifier), -- Up and down
 		-Sway.X * (1 - PercentageToGoal) * (1 - SprintingModifier), -- Left and right
@@ -324,7 +339,9 @@ local function UpdateViewmodel(deltaTime)
 		SwayPivot.X / 16 * PercentageToGoal,
 		RecoilNoise.Z / 256
 	)
+	debug.profileend()
 
+	debug.profilebegin("ApplyEquations")
 	Camera.CFrame = Camera.CFrame * RootCameraAngles
 	local BaseCFrame = RecoilNoiseAngles * SwayAngles * WalkCycleAngles * SprintingShift * ViewmodelCFrame * RecoilOffset
 	local RotatedCFrame = (PivotPointCFrame * PivotPointAngles):ToObjectSpace(BaseCFrame)
@@ -333,6 +350,7 @@ local function UpdateViewmodel(deltaTime)
 		workspace.T.CFrame = Camera.CFrame + (RevertedRotatedCFrame.LookVector * 32)
 	end
 	CurrentViewmodel:SetCFrame(RevertedRotatedCFrame)
+	debug.profileend()
 end
 
 local function UpdateHumanoid(_deltaTime)
@@ -461,11 +479,11 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		repeat
 			Firing = true
 			local random = RNG:NextNumber()
-			local OriginPosition: Vector3 = Camera.CFrame.Position
+			local OriginPosition: Vector3 = (LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET).Position
 			local LookVector: Vector3 = Camera.CFrame.LookVector
 
-			workspace.FireSounds.fire:Play()
-			workspace.FireSounds.distant:Play()
+			SFXHandler:PlaySound(workspace.FireSounds.fire)
+			SFXHandler:PlaySound(workspace.FireSounds.distant)
 
 			WeaponFire(OriginPosition, LookVector, random)
 			WeaponFireSignal:FireServer(OriginPosition, LookVector)
@@ -696,19 +714,29 @@ local moveSwitch = false
 local stoppedSwitch = true
 
 RunService.RenderStepped:Connect(function(deltaTime)
+	debug.profilebegin("WeaponSystem")
 	LerpTools.DeltaTime = deltaTime
+	debug.profilebegin("UpdateHUD")
 	UpdateHUD()
+	debug.profileend()
 
+	debug.profilebegin("UpdatePrisma")
 	local LeftEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	local RightEnabled = Sprinting and MovingModifier >= 0.5 or not ActiveTool
 	Prisma:ToggleArms(not LeftEnabled, not RightEnabled)
+	debug.profileend()
 
 	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		debug.profilebegin("UpdateModifiers")
 		UpdateModifiers(deltaTime)
+		debug.profileend()
+		debug.profilebegin("UpdateHumanoid")
 		UpdateHumanoid(deltaTime)
+		debug.profileend()
+		debug.profilebegin("UpdateAnimator")
 		local CharacterVelocity = LocalPlayer.Character.HumanoidRootPart:GetVelocityAtPosition(LocalPlayer.Character.HumanoidRootPart.Position)
-		local HeadPosition = LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET
-		HeadCameraMagnitude = (HeadPosition.Position - Camera.CFrame.Position).Magnitude
+		-- local HeadPosition = LocalPlayer.Character.HumanoidRootPart.CFrame * HEAD_OFFSET
+		-- HeadCameraMagnitude = (HeadPosition.Position - Camera.CFrame.Position).Magnitude
 		local Speed = Vector2.new(CharacterVelocity.X, CharacterVelocity.Z).Magnitude
 
 		if CurrentAnimator then
@@ -768,37 +796,43 @@ RunService.RenderStepped:Connect(function(deltaTime)
 				CurrentAnimator.Tracks.crouchToolWalk:AdjustSpeed((Speed / 15))
 			end)
 		end
-	else
-		HeadCameraMagnitude = 128
+		debug.profileend()
+	-- else
+		-- HeadCameraMagnitude = 128
 	end
 
 	if CurrentViewmodel then
-		if CurrentViewmodel.Model then
-			for _, child: BasePart in CurrentViewmodel.Model:GetDescendants() do
-				if child:IsA("BasePart") then
-					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
-				end
-			end
-		end
-		if CurrentViewmodel.Decoration then
-			for _, child: BasePart in CurrentViewmodel.Decoration:GetDescendants() do
-				if child:IsA("BasePart") then
-					child.LocalTransparencyModifier = HeadCameraMagnitude - 1
-				end
-			end
-		end
+		debug.profilebegin("UpdateViewmodel")
+		-- if CurrentViewmodel.Model then
+		-- 	for _, child: BasePart in CurrentViewmodel.Model:GetDescendants() do
+		-- 		if child:IsA("BasePart") then
+		-- 			child.LocalTransparencyModifier = HeadCameraMagnitude - 1
+		-- 		end
+		-- 	end
+		-- end
+		-- if CurrentViewmodel.Decoration then
+		-- 	for _, child: BasePart in CurrentViewmodel.Decoration:GetDescendants() do
+		-- 		if child:IsA("BasePart") then
+		-- 			child.LocalTransparencyModifier = HeadCameraMagnitude - 1
+		-- 		end
+		-- 	end
+		-- end
 		UpdateViewmodel(deltaTime)
+		debug.profileend()
 	end
 
-	if CurrentTool then
-		for _, child: BasePart in CurrentTool:GetDescendants() do
-			if child:IsA("BasePart") then
-				child.LocalTransparencyModifier = -HeadCameraMagnitude + 2
-			end
-		end
-	end
+	-- if CurrentTool then
+	-- 	debug.profilebegin("UpdateTool")
+	-- 	for _, child: BasePart in CurrentTool:GetDescendants() do
+	-- 		if child:IsA("BasePart") then
+	-- 			child.LocalTransparencyModifier = -HeadCameraMagnitude + 2
+	-- 		end
+	-- 	end
+	-- 	debug.profileend()
+	-- end
 
 	UserInputService.MouseIconEnabled = not ActiveTool
+	OldCameraCFrame = Camera.CFrame
 end)
 
 -- hello github
