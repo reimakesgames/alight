@@ -5,6 +5,8 @@ local Classes = Shared:WaitForChild("Classes")
 
 local Skill = require(Classes:WaitForChild("Skill"))
 
+local Camera = workspace.CurrentCamera
+
 export type ProjectileSkillClass = Skill.Interface | {
 	new: () -> ProjectileSkillClass;
 	Destroy: (self: ProjectileSkillClass) -> nil;
@@ -95,7 +97,7 @@ function ProjectileSkill:Update(deltaTime: number)
 
 	local moveAmount = self.Speed * (deltaTime / 4)
 	local raycastParams = RaycastParams.new()
-	raycastParams.FilterDescendantsInstances = {projectile}
+	raycastParams.FilterDescendantsInstances = {projectile, Camera}
 	raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
 
 	local position: Vector3 = self.Position
