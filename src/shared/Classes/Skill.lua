@@ -1,25 +1,36 @@
--- Skill is an interface
+export type Interface = {
+	__index: Interface;
+	new: () -> Interface;
+	Destroy: (self: Interface) -> nil;
 
-export type SkillClass = {
-	__index: SkillClass;
-	new: () -> SkillClass;
-	CleanUp: (self: SkillClass) -> nil;
+	Using: boolean;
+	CustomData: { [string]: any };
 
-	Cast: (self: SkillClass) -> nil;
+	Update: (self: Interface, deltaTime: number) -> nil;
+
+	Use: (self: Interface) -> nil;
+	Equip: (self: Interface) -> nil;
 }
 
-local SkillClass = {} :: SkillClass
-SkillClass.__index = SkillClass
+local Skill = {} :: Interface
+Skill.__index = Skill
 
-function SkillClass.new()
-	local self = setmetatable({}, SkillClass)
+function Skill.new()
+	local self = setmetatable({}, Skill)
+	self.CustomData = {}
 	return self
 end
 
-function SkillClass:CleanUp()
+function Skill:Destroy()
 end
 
-function SkillClass:Cast()
+function Skill:Use()
 end
 
-return SkillClass
+function Skill:Equip()
+end
+
+function Skill:Update(deltaTime: number)
+end
+
+return Skill

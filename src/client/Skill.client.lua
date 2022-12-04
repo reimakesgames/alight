@@ -17,14 +17,14 @@ UserInputService.InputBegan:Connect(function(inputObject, gameProcessedEvent)
 		if LocalPlayer.Character then
 			local camera = workspace.CurrentCamera
 			local position = (LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 1.5, 0)).Position
-			FireballSkill:Cast(camera, position)
+			FireballSkill:Use(camera, position)
 		end
 	end
 	if inputObject.KeyCode == Enum.KeyCode.C then
 		if LocalPlayer.Character then
 			local camera = workspace.CurrentCamera
 			local position = (LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 1.5, 0)).Position
-			FireballWallSkill:Cast(camera, position)
+			FireballWallSkill:Use(camera, position)
 		end
 	end
 end)

@@ -1,37 +1,42 @@
-local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Classes = Shared:WaitForChild("Classes")
 
 local Skill = require(Classes:WaitForChild("Skill"))
 
-export type ProjectileSkillClass = Skill.SkillClass | {
+export type ProjectileSkillClass = Skill.Interface | {
+	new: () -> ProjectileSkillClass;
+	Destroy: (self: ProjectileSkillClass) -> nil;
+
 	Projectile: (BasePart | Model)?;
-	ProjectilePosition: Vector3;
-	ProjectileVelocity: Vector3;
+
+	Position: Vector3;
+	Velocity: Vector3;
+
+	__Lifetime: number;
+	__UpdateRBXScriptConnection: RBXScriptConnection?;
 
 	Lifetime: number;
-	UpdateRBXScriptConnection: RBXScriptConnection?;
+	Speed: number;
+	ConstantForce: Vector3;
+	BaseVelocity: Vector3;
 
-	ProjectileLifetime: number;
-	ProjectileSpeed: number;
-	ProjectileConstantForce: Vector3;
-	ProjectileBaseVelocity: Vector3;
+	BounceCount: number;
+	BounceCountMax: number;
+	BounceFriction: number;
+	BounceSlopeAngle: number;
 
-	ProjectileBounceCount: number;
-	ProjectileBounceCountMax: number;
-	ProjectileBounceFriction: number;
-	ProjectileBounceSlopeAngle: number;
-
-	ImpactFunction: (result: RaycastResult) -> nil;
-	EndFunction: () -> nil;
+	__CollisionFunction: (self: ProjectileSkillClass, result: RaycastResult) -> nil;
+	__EndFunction: (self: ProjectileSkillClass) -> nil;
 
 	Update: (self: ProjectileSkillClass, deltaTime: number) -> nil;
 
-	Cast: (self: ProjectileSkillClass, camera: Camera, position: Vector3) -> nil;
+	Use: (self: ProjectileSkillClass, camera: Camera, position: Vector3) -> nil;
 	SetProjectile: (self: ProjectileSkillClass, projectile: BasePart | Model?) -> nil;
-	SetImpactFunction: (self: ProjectileSkillClass, impactFunction: (result: RaycastResult) -> nil) -> nil;
-	SetEndFunction: (self: ProjectileSkillClass, endFunction: () -> nil) -> nil;
+	SetUpdateFunction: (self: ProjectileSkillClass, func: (self: ProjectileSkillClass, deltaTime: number) -> nil) -> nil;
+	SetCollisionFunction: (self: ProjectileSkillClass, impactFunction: (self: ProjectileSkillClass, result: RaycastResult) -> nil) -> nil;
+	SetEndFunction: (self: ProjectileSkillClass, endFunction: (self: ProjectileSkillClass) -> nil) -> nil;
 }
 
 local function FindPrimaryPart(projectile: BasePart | Model): BasePart?
@@ -52,27 +57,33 @@ ProjectileSkill.__index = ProjectileSkill
 
 function ProjectileSkill.new()
 	local self: ProjectileSkillClass = setmetatable(Skill.new(), ProjectileSkill)
-	self:SetImpactFunction(function() end)
+
+	self:SetCollisionFunction(function() end)
 	self:SetEndFunction(function() end)
-	self.ProjectileBaseVelocity = Vector3.new(0, 0, 0)
-	self.ProjectileConstantForce = Vector3.new(0, 0, 0)
-	self.ProjectileLifetime = 0
-	self.ProjectileSpeed = 0
-	self.ProjectileBounceCount = 0
-	self.ProjectileBounceCountMax = 0
-	self.ProjectileBounceFriction = 0
-	self.ProjectileBounceSlopeAngle = 0
+	self:SetUpdateFunction(function() end)
+
+	self.__Lifetime = 0
 	self.Lifetime = 0
+	self.Speed = 0
+
+	self.BaseVelocity = Vector3.new(0, 0, 0)
+	self.ConstantForce = Vector3.new(0, 0, 0)
+
+	self.BounceCount = 0
+	self.BounceCountMax = 0
+	self.BounceFriction = 0
+	self.BounceSlopeAngle = 0
 	return self
 end
 
-function ProjectileSkill:CleanUp()
+function ProjectileSkill:Destroy()
 	if self.Projectile then
 		self.Projectile:Destroy()
 	end
-	if self.UpdateRBXScriptConnection then
-		self.UpdateRBXScriptConnection:Disconnect()
+	if self.__UpdateRBXScriptConnection then
+		self.__UpdateRBXScriptConnection:Disconnect()
 	end
+	self.Using = false
 	self.Projectile = nil
 end
 
@@ -82,60 +93,60 @@ function ProjectileSkill:Update(deltaTime: number)
 	local primaryPart = FindPrimaryPart(projectile)
 	if not primaryPart then return end
 
-	local moveAmount = self.ProjectileSpeed * (deltaTime / 4)
+	local moveAmount = self.Speed * (deltaTime / 4)
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterDescendantsInstances = {projectile}
 	raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
 
-	local position: Vector3 = self.ProjectilePosition
-	local velocity: Vector3 = self.ProjectileVelocity
+	local position: Vector3 = self.Position
+	local velocity: Vector3 = self.Velocity
 	for _ = 1, 4 do
 		local result = workspace:Raycast(position, velocity * (deltaTime / 4), raycastParams)
 		if result then
 			local hitSlopeAngle = math.deg(math.acos(result.Normal:Dot(Vector3.new(0, 1, 0))))
-			if self.ProjectileBounceCount < self.ProjectileBounceCountMax and hitSlopeAngle > self.ProjectileBounceSlopeAngle then
-				self.ProjectileBounceCount += 1
+			if self.BounceCount < self.BounceCountMax and hitSlopeAngle > self.BounceSlopeAngle then
+				self.BounceCount += 1
 				local normal = result.Normal
 				local lookVector = primaryPart.CFrame.LookVector
 				local reflected = lookVector - 2 * normal * lookVector:Dot(normal)
 				local distance = (result.Position - primaryPart.Position).Magnitude
 				position = result.Position + (reflected * (moveAmount - distance))
-				velocity = (reflected * velocity.Magnitude) * self.ProjectileBounceFriction
+				velocity = (reflected * velocity.Magnitude) * self.BounceFriction
 			else
-				self.ImpactFunction(result)
-				self.EndFunction()
-				self:CleanUp()
+				self:__CollisionFunction(result)
+				self:__EndFunction()
+				self:Destroy()
 				return
 			end
 		else
 			position = position + (velocity * (deltaTime / 4))
 		end
-		velocity = velocity + (self.ProjectileConstantForce * (deltaTime / 4))
+		velocity = velocity + (self.ConstantForce * (deltaTime / 4))
 	end
-	self.Lifetime += deltaTime
-	self.ProjectilePosition = position
-	self.ProjectileVelocity = velocity
-	primaryPart:PivotTo(CFrame.new(self.ProjectilePosition, self.ProjectilePosition + self.ProjectileVelocity))
+	self.__Lifetime += deltaTime
+	self.Position = position
+	self.Velocity = velocity
+	primaryPart:PivotTo(CFrame.new(self.Position, self.Position + self.Velocity))
 end
 
-function ProjectileSkill:Cast(camera: Camera, position: Vector3)
-	task.delay(self.ProjectileLifetime, function()
+function ProjectileSkill:Use(camera: Camera, position: Vector3)
+	self.Using = true
+	task.delay(self.Lifetime, function()
 		if self.Projectile then
-			self.EndFunction()
-			self:CleanUp()
+			self:__EndFunction()
+			self:Destroy()
 		end
 	end)
+
 	local projectile = self.Projectile
-	if projectile then
-		local primaryPart = FindPrimaryPart(projectile)
-		if primaryPart then
-			self.ProjectilePosition = position + camera.CFrame.LookVector * 2
-			self.ProjectileVelocity = (camera.CFrame.LookVector * self.ProjectileSpeed) + self.ProjectileBaseVelocity
-			self.ProjectileBounceCount = 0
-			primaryPart:PivotTo(CFrame.new(self.ProjectilePosition, self.ProjectilePosition + self.ProjectileVelocity))
-			primaryPart.Parent = workspace
-		end
-	end
+	if not projectile then return end
+	local primaryPart = FindPrimaryPart(projectile)
+	if not primaryPart then return end
+
+	self.Position = position + camera.CFrame.LookVector * 2
+	self.Velocity = (camera.CFrame.LookVector * self.Speed) + self.BaseVelocity
+	primaryPart:PivotTo(CFrame.new(self.Position, self.Position + self.Velocity))
+	primaryPart.Parent = workspace
 end
 
 function ProjectileSkill:SetProjectile(projectile: BasePart | Model)
@@ -143,15 +154,29 @@ function ProjectileSkill:SetProjectile(projectile: BasePart | Model)
 	local primaryPart = FindPrimaryPart(newProjectile)
 	if primaryPart then
 		self.Projectile = newProjectile
+	else
+		warn("ProjectileSkill: Projectile does not have a PrimaryPart")
 	end
 end
 
-function ProjectileSkill:SetImpactFunction(impactFunction: (result: RaycastResult) -> nil)
-	self.ImpactFunction = impactFunction
+function ProjectileSkill:SetUpdateFunction(updateFunction: (self: ProjectileSkillClass, deltaTime: number) -> nil)
+	if self.__UpdateRBXScriptConnection then
+		self.__UpdateRBXScriptConnection:Disconnect()
+	end
+	self.__UpdateRBXScriptConnection = RunService.Stepped:Connect(function(_, deltaTime)
+		if self.Using then
+			updateFunction(self, deltaTime)
+			self:Update(deltaTime)
+		end
+	end)
 end
 
-function ProjectileSkill:SetEndFunction(endFunction: () -> nil)
-	self.EndFunction = endFunction
+function ProjectileSkill:SetCollisionFunction(collisionFunction: (self: ProjectileSkillClass, result: RaycastResult) -> nil)
+	self.__CollisionFunction = collisionFunction
+end
+
+function ProjectileSkill:SetEndFunction(endFunction: (self: ProjectileSkillClass) -> nil)
+	self.__EndFunction = endFunction
 end
 
 return ProjectileSkill
