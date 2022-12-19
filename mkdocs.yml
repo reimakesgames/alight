@@ -21,10 +21,11 @@ markdown_extensions:
 
 nav:
   - index.md
-  - installation.md
-  - branches.md
-  - pull_requests.md
-  - unit_tests.md
+  - Contribution:
+    - contribution/installation.md
+    - contribution/branches.md
+    - contribution/pull_requests.md
+    - contribution/unit_tests.md
 
 theme:
   name: material
