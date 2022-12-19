@@ -4,6 +4,6 @@
 	"private": true,
 	"scripts": {
 		"dev": "mkdocs serve",
-		"build": "mkdocs build -d site"
+		"build": "mkdocs build -d public"
 	}
 }
