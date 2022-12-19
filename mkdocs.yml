@@ -19,6 +19,12 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
 
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+
 nav:
   - index.md
   - Contribution:
@@ -26,6 +32,11 @@ nav:
     - contribution/branches.md
     - contribution/pull_requests.md
     - contribution/unit_tests.md
+  - Documentation:
+    - Classes:
+      - documentation/classes/SpringClass.md
+      - documentation/classes/ViewmodelClass.md
+      - documentation/classes/AnimatorClass.md
 
 theme:
   name: material
