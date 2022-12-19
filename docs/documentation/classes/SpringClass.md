@@ -47,7 +47,7 @@ The current velocity of the spring
 
 ### Mass
 ```lua
-SpringClass.Mass: number = 4
+SpringClass.Mass: number = 5
 ```
 
 The mass of the spring
