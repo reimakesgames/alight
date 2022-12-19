@@ -1,0 +1,7 @@
+site_name: Documentation
+
+repo_url: https://github.com/reimakesgames/hybrid-conflict
+repo_name: GitHub
+
+
+theme: readthedocs
