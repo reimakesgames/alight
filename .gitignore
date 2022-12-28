@@ -9,5 +9,8 @@
 out.rbxl
 
 # Wally
-wally.lock
+# wally.lock wtf you were never supposed to ignore this file?????
 Packages
+
+# MKDocs
+site/

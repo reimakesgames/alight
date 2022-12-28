@@ -1,0 +1,57 @@
+site_name: Documentation and Contribution Guide
+site_url: https://hybrid-conflict.vercel.app/
+site_description: Documentation and Contribution Guide for Hybrid Conflict
+site_author: reimakesgames
+
+copyright: © 2022 reimakesgames. All rights reserved.
+
+repo_url: https://github.com/reimakesgames/hybrid-conflict
+repo_name: GitHub
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.keys
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+
+nav:
+  - index.md
+  - Contribution:
+    - contribution/installation.md
+    - contribution/branches.md
+    - contribution/pull_requests.md
+    - contribution/unit_tests.md
+  - Documentation:
+    - Classes:
+      - documentation/classes/SpringClass.md
+      - documentation/classes/ViewmodelClass.md
+      - documentation/classes/AnimatorClass.md
+
+theme:
+  name: material
+  palette:
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
