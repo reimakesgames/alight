@@ -21,7 +21,7 @@
 			}
 		},
 		"ServerStorage": {
-			"tests": {
+			"Tests": {
 				"$path": "test"
 			}
 		},
