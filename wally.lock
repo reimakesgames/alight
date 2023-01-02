@@ -13,14 +13,9 @@ version = "4.0.0"
 dependencies = []
 
 [[package]]
-name = "ffrostflame/bridgenet2"
-version = "0.1.0"
-dependencies = [["TableKit", "ffrostflame/tablekit@0.1.1"]]
-
-[[package]]
-name = "ffrostflame/tablekit"
-version = "0.1.1"
-dependencies = []
+name = "ffrostflame/bridgenet"
+version = "1.9.9"
+dependencies = [["GoodSignal", "stravant/goodsignal@0.2.1"], ["Promise", "evaera/promise@4.0.0"]]
 
 [[package]]
 name = "howmanysmall/janitor"
@@ -35,7 +30,7 @@ dependencies = []
 [[package]]
 name = "reimakesgames/hybrid-conflict"
 version = "0.1.0"
-dependencies = [["BridgeNet2", "ffrostflame/bridgenet2@0.1.0"], ["FastCastRedux", "encodedvenom/fastcastredux@0.1.3"], ["FastSignal", "lucasmzreal/fastsignal@10.2.1"], ["Janitor", "howmanysmall/janitor@1.15.1"], ["Promise", "evaera/promise@4.0.0"], ["TestEZ", "roblox/testez@0.4.1"]]
+dependencies = [["BridgeNet", "ffrostflame/bridgenet@1.9.9"], ["FastCastRedux", "encodedvenom/fastcastredux@0.1.3"], ["FastSignal", "lucasmzreal/fastsignal@10.2.1"], ["Janitor", "howmanysmall/janitor@1.15.1"], ["Promise", "evaera/promise@4.0.0"], ["TestEZ", "roblox/testez@0.4.1"]]
 
 [[package]]
 name = "roblox/testez"
@@ -45,4 +40,9 @@ dependencies = []
 [[package]]
 name = "sleitnick/signal"
 version = "1.2.1"
+dependencies = []
+
+[[package]]
+name = "stravant/goodsignal"
+version = "0.2.1"
 dependencies = []
