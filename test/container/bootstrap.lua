@@ -5,7 +5,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage:WaitForChild("Packages")
-local TestEZ = require(Packages.testez)
+local TestEZ = require(Packages.TestEZ)
 
 local TestPlanner = TestEZ.TestPlanner
 local TestRunner = TestEZ.TestRunner
