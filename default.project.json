@@ -2,11 +2,6 @@
 	"name": "hybrid-conflict",
 	"tree": {
 		"$className": "DataModel",
-		"ReplicatedFirst": {
-			"build": {
-				"$path": "build"
-			}
-		},
 		"ReplicatedStorage": {
 			"Shared": {
 				"$path": "src/shared"
