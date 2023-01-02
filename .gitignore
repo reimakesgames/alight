@@ -14,3 +14,6 @@ Packages
 
 # MKDocs
 site/
+
+# Luau LSP sourcemap
+/sourcemap.json

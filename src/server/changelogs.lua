@@ -31,7 +31,9 @@ function changelogs:init()
 		end
 
 		RateLimits[player] = workspace.DistributedGameTime + RATELIMIT_DURATION
-		HydrateChangelogs:FireTo(player, githubRaw:GetFileAsync(File))
+		githubRaw:GetFile(File):andThen(function(contents)
+			HydrateChangelogs:FireTo(player, contents)
+		end)
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)

@@ -1,32 +1,30 @@
-local RECURSION_LIMIT = 5
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Promise = require(ReplicatedStorage.Packages.Promise)
+
 local GITHUB_RAW_URL = "https://raw.githubusercontent.com/"
 
-local HttpService = game:GetService("HttpService")
-
 local githubRaw = {
-	RefreshList = {}
+	RefreshList = {},
 }
 
-function githubRaw:GetFileAsync(link, _depth: number?)
-	_depth = _depth or 1
-	if _depth > RECURSION_LIMIT then
-		return error("Too much calls on :GetFileAsync() while requesting "..link)
-	end
-	local success, file = pcall(function()
+function githubRaw:GetFile(link: string)
+	return Promise.try(function()
 		return HttpService:GetAsync(GITHUB_RAW_URL .. link)
 	end)
+end
 
-	if not success then
-		return githubRaw:GetFileAsync(link, _depth + 1)
-	end
-
-	return file
+function githubRaw:GetFileWithRetries(link: string, maxRetries: number?)
+	return Promise.retry(githubRaw.GetFile, maxRetries or 5, githubRaw, link)
 end
 
 task.spawn(function()
 	while task.wait(120) do
 		for _, link in githubRaw.RefreshList do
-			githubRaw:GetFileAsync(link)
+			githubRaw:GetFileWithRetries(link):catch(function(err)
+				warn("Failed to fetch " .. link, err)
+			end)
 		end
 	end
 end)
