@@ -19,7 +19,7 @@ local RateLimits = {}
 
 local changelogs = {}
 
-function changelogs:init()
+function changelogs.init()
 	RequestChangelogs:Connect(function(player)
 		if not RateLimits[player] then
 			RateLimits[player] = -60
