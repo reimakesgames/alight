@@ -28,9 +28,9 @@ local TimeFunction = RunService:IsRunning() and time or os.clock
 local LastIteration, Start
 local FrameUpdateTable: {[number]: number} = {}
 
-local debug = {}
+local performance = {}
 
-function debug.init()
+function performance.init()
 	Start = TimeFunction()
 
 	DebugGui.disclaimer.Text = constants.GAME_DEVELOPMENT_STAGE .. " gameplay"
@@ -57,4 +57,4 @@ function debug.init()
 	end
 end
 
-return debug
+return performance

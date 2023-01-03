@@ -3,12 +3,12 @@ local Packages = ReplicatedStorage.Packages
 local BridgeNet = require(Packages.BridgeNet)
 local GetPing = BridgeNet.CreateBridge("GetPing")
 
-local debug = {}
+local performance = {}
 
-function debug.init()
+function performance.init()
 	GetPing:OnInvoke(function()
 		return
 	end)
 end
 
-return debug
+return performance
