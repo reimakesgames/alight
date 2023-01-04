@@ -1,5 +1,5 @@
 return function (className: string, properties: {[string]: any}): Instance
-	local object = Instance.new(className)
+	local object = Instance.new(className :: any)
 	if properties then
 		for property, value in pairs(properties) do
 			if property == "Parent" then

@@ -2,9 +2,16 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Promise = require(ReplicatedStorage.Packages.Promise)
+local PromiseType = require(script.Parent.PromiseType)
+type Promise<T> = PromiseType.Promise<T>
 
 local GITHUB_RAW_URL = "https://raw.githubusercontent.com/"
 
+export type githubRaw = {
+	RefreshList: {[number]: string},
+	GetFile: (link: string) -> Promise<string>,
+	GetFileWithRetries: (link: string, maxRetries: number?) -> Promise<string>,
+}
 local githubRaw = {
 	RefreshList = {},
 }

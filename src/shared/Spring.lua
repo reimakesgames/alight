@@ -23,10 +23,7 @@ export type Type = {
 }
 
 local CLASS_NAME = "SpringClass"
-local Spring: Type = {
-	className = CLASS_NAME;
-	ClassName = CLASS_NAME;
-} :: Type
+local Spring = {} :: Type
 Spring.__index = Spring
 
 function Spring.new(mass: number?, force: number?, damping: number?, speed: number?): Type

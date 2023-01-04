@@ -1,7 +1,7 @@
 local DEBUG_FORMAT =
-"Version: %s%s-%s\n"..
-"FPS: %s (%sms)\n"..
-"PING: %sms\n"
+	"Version: %s%s-%s\n"..
+	"FPS: %s (%sms)\n"..
+	"PING: %sms\n"
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -37,7 +37,7 @@ function performance.init()
 	RunService.RenderStepped:Connect(function(deltaTime)
 		LastIteration = TimeFunction()
 		for Index = #FrameUpdateTable, 1, -1 do
-			FrameUpdateTable[Index + 1] = FrameUpdateTable[Index] >= LastIteration - 1 and FrameUpdateTable[Index] or nil
+			FrameUpdateTable[Index + 1] = (if FrameUpdateTable[Index] >= LastIteration - 1 then FrameUpdateTable[Index] else nil) :: number
 		end
 		FrameUpdateTable[1] = LastIteration
 		FramesPerSecond = math.floor(TimeFunction() - Start >= 1 and #FrameUpdateTable or #FrameUpdateTable / (TimeFunction() - Start))

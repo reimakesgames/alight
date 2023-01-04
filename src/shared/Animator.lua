@@ -3,7 +3,7 @@ local isRealNumber = require(script.Parent.isRealNumber)
 export type Type = {
 	__index: Type;
 	new: () -> (Type);
-	Destroy: (self: Type) -> nil;
+	Destroy: (self: Type) -> ();
 	IsA: (self: Type, className: string) -> boolean;
 
 	LoadAnimation: (self: Type, trackName: string, animation: Animation, properties: {
@@ -16,17 +16,17 @@ export type Type = {
 		weight: number?,
 		weightFade: number?,
 		playReversed: boolean?,
-	}) -> nil;
-	PauseAnimation: (self: Type, trackName: string) -> nil;
-	ResumeAnimation: (self: Type, trackName: string, newSpeed: number?) -> nil;
+	}) -> ();
+	PauseAnimation: (self: Type, trackName: string) -> ();
+	ResumeAnimation: (self: Type, trackName: string, newSpeed: number?) -> ();
 	StopAnimation: (self: Type, trackName: string, properties: {
 		weightFade: number?,
 		forceStop: boolean?,
-	}) -> nil;
+	}) -> ();
 
-	AdjustWeight: (self: Type, trackName: string, weight: number) -> nil;
-	AdjustSpeed: (self: Type, trackName: string, speed: number) -> nil;
-	AdjustTimePosition: (self: Type, trackName: string, timePosition: number) -> nil;
+	AdjustWeight: (self: Type, trackName: string, weight: number) -> ();
+	AdjustSpeed: (self: Type, trackName: string, speed: number) -> ();
+	AdjustTimePosition: (self: Type, trackName: string, timePosition: number) -> ();
 
 	Tracks: {[string]: AnimationTrack};
 	_PauseList: {[string]: number};
@@ -34,20 +34,17 @@ export type Type = {
 }
 
 local CLASS_NAME = "AnimatorClass"
-local Animator = {
-	className = CLASS_NAME;
-	ClassName = CLASS_NAME;
-} :: Type
+local Animator = {} :: Type
 Animator.__index = Animator
 
-function Animator.new(): Type
+function Animator.new()
 	local self = setmetatable({
 		Tracks = {},
 		_PauseList = {},
 		Animator = nil,
 	}, Animator)
 
-	return self :: Type
+	return self
 end
 
 function Animator:Destroy()
@@ -55,11 +52,11 @@ function Animator:Destroy()
 	table.clear(self)
 end
 
-function Animator:IsA(className: string)
+function Animator:IsA(className)
 	return className == CLASS_NAME
 end
 
-function Animator:LoadAnimation(trackName: string, animation: Animation, properties): AnimationTrack
+function Animator:LoadAnimation(trackName, animation, properties)
 	local track = self.Animator:LoadAnimation(animation)
 	track.Priority = properties.animationPriority or track.Priority
 	track.Looped = properties.looped or track.Looped
@@ -67,7 +64,7 @@ function Animator:LoadAnimation(trackName: string, animation: Animation, propert
 	return track
 end
 
-function Animator:PlayAnimation(trackName: string, properties): nil
+function Animator:PlayAnimation(trackName, properties)
 	local track = self.Tracks[trackName]
 	if self._PauseList[trackName] then
 		self._PauseList[trackName] = nil
@@ -84,7 +81,7 @@ function Animator:PlayAnimation(trackName: string, properties): nil
 	end
 end
 
-function Animator:PauseAnimation(trackName: string): nil
+function Animator:PauseAnimation(trackName)
 	local track = self.Tracks[trackName]
 	if track then
 		self._PauseList[trackName] = track.Speed
@@ -92,7 +89,7 @@ function Animator:PauseAnimation(trackName: string): nil
 	end
 end
 
-function Animator:ResumeAnimation(trackName: string, newSpeed: number?): nil
+function Animator:ResumeAnimation(trackName, newSpeed)
 	local track = self.Tracks[trackName]
 	if track then
 		if newSpeed then
@@ -110,7 +107,7 @@ function Animator:ResumeAnimation(trackName: string, newSpeed: number?): nil
 	end
 end
 
-function Animator:StopAnimation(trackName: string, properties): nil
+function Animator:StopAnimation(trackName, properties)
 	local track = self.Tracks[trackName]
 	if track then
 		local weightFade = properties.weightFade or 0.1
@@ -124,14 +121,14 @@ function Animator:StopAnimation(trackName: string, properties): nil
 	end
 end
 
-function Animator:AdjustWeight(trackName: string, weight: number): nil
+function Animator:AdjustWeight(trackName, weight)
 	local track = self.Tracks[trackName]
 	if track then
 		track:AdjustWeight(weight)
 	end
 end
 
-function Animator:AdjustSpeed(trackName: string, speed: number): nil
+function Animator:AdjustSpeed(trackName, speed)
 	if not isRealNumber(speed) then
 		error("Invalid number for speed.")
 	end
@@ -141,7 +138,7 @@ function Animator:AdjustSpeed(trackName: string, speed: number): nil
 	end
 end
 
-function Animator:AdjustTimePosition(trackName: string, timePosition: number): nil
+function Animator:AdjustTimePosition(trackName, timePosition)
 	if not isRealNumber(timePosition) then
 		error("Invalid number for timePosition.")
 	end
@@ -156,5 +153,5 @@ function Animator:AdjustTimePosition(trackName: string, timePosition: number): n
 end
 
 return Animator :: {
-	new: () -> Type
+	new: () -> (Type);
 }
