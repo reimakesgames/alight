@@ -37,6 +37,10 @@ local CLASS_NAME = "AnimatorClass"
 local Animator = {} :: Type
 Animator.__index = Animator
 
+local function hasAnimator(self: Type)
+	assert(self.Animator, "Animator not set")
+end
+
 function Animator.new()
 	local self = setmetatable({
 		Tracks = {},
@@ -56,7 +60,12 @@ function Animator:IsA(className)
 	return className == CLASS_NAME
 end
 
+function Animator:SetAnimator(animator)
+	self.Animator = animator
+end
+
 function Animator:LoadAnimation(trackName, animation, properties)
+	hasAnimator(self)
 	local track = self.Animator:LoadAnimation(animation)
 	track.Priority = properties.animationPriority or track.Priority
 	track.Looped = properties.looped or track.Looped
@@ -65,6 +74,7 @@ function Animator:LoadAnimation(trackName, animation, properties)
 end
 
 function Animator:PlayAnimation(trackName, properties)
+	hasAnimator(self)
 	local track = self.Tracks[trackName]
 	if self._PauseList[trackName] then
 		self._PauseList[trackName] = nil
@@ -82,6 +92,7 @@ function Animator:PlayAnimation(trackName, properties)
 end
 
 function Animator:PauseAnimation(trackName)
+	hasAnimator(self)
 	local track = self.Tracks[trackName]
 	if track then
 		self._PauseList[trackName] = track.Speed
@@ -90,6 +101,7 @@ function Animator:PauseAnimation(trackName)
 end
 
 function Animator:ResumeAnimation(trackName, newSpeed)
+	hasAnimator(self)
 	local track = self.Tracks[trackName]
 	if track then
 		if newSpeed then
@@ -108,6 +120,7 @@ function Animator:ResumeAnimation(trackName, newSpeed)
 end
 
 function Animator:StopAnimation(trackName, properties)
+	hasAnimator(self)
 	local track = self.Tracks[trackName]
 	if track then
 		local weightFade = properties.weightFade or 0.1
@@ -122,6 +135,7 @@ function Animator:StopAnimation(trackName, properties)
 end
 
 function Animator:AdjustWeight(trackName, weight)
+	hasAnimator(self)
 	local track = self.Tracks[trackName]
 	if track then
 		track:AdjustWeight(weight)
@@ -129,6 +143,7 @@ function Animator:AdjustWeight(trackName, weight)
 end
 
 function Animator:AdjustSpeed(trackName, speed)
+	hasAnimator(self)
 	if not isRealNumber(speed) then
 		error("Invalid number for speed.")
 	end
@@ -139,6 +154,7 @@ function Animator:AdjustSpeed(trackName, speed)
 end
 
 function Animator:AdjustTimePosition(trackName, timePosition)
+	hasAnimator(self)
 	if not isRealNumber(timePosition) then
 		error("Invalid number for timePosition.")
 	end
