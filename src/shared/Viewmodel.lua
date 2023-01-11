@@ -43,8 +43,8 @@ type Rig = Model & {
 			}, -- for shells
 			AimPoint: Attachment, -- for aiming
 			PivotPoint: Attachment, -- for recoil pivoting
-		}
-	}
+		},
+	},
 }
 
 type Arms = Model & {
@@ -83,6 +83,7 @@ export type ViewmodelClass = {
 	Decorate: (self: ViewmodelClass, arms: Arms) -> (),
 	Cull: (self: ViewmodelClass, enabled: boolean) -> (),
 	SetCFrame: (self: ViewmodelClass, cframe: CFrame) -> (),
+	LoadDictAnimations: (dict: { [string]: { Animation: Animation, Properties: { [string]: boolean } } }) -> (),
 
 	Rig: Rig,
 	Arms: Arms,
@@ -169,6 +170,15 @@ function Viewmodel:SetCFrame(cframe: CFrame)
 		return
 	end
 	self.Rig:PivotTo(cframe)
+end
+
+function Viewmodel:LoadDictAnimations(dict: { [string]: { Animation: Animation, Properties: { [string]: boolean } } })
+	assert(self.Rig, "Viewmodel must have a model to load animations")
+	assert(self.Animator, "Viewmodel must have an animator to load animations")
+	assert(typeof(dict) == "table", "LoadDictAnimations must be called with a table")
+	for name, data in pairs(dict) do
+		self.Animator:LoadAnimation(name, data.Animation or data[1], data.Properties or data[2])
+	end
 end
 
 return Viewmodel :: {
