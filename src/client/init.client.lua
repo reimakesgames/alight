@@ -3,5 +3,12 @@ local Packages = ReplicatedStorage.Packages
 local BridgeNet = require(Packages.BridgeNet)
 BridgeNet.Start({})
 
-require(script.performance).init()
-require(script.changelogs).init()
+local function Initialize(module: ModuleScript)
+	task.spawn(function()
+		require(module).init()
+	end)
+end
+
+Initialize(script.performance)
+Initialize(script.changelogs)
+Initialize(script.combatSystem)
