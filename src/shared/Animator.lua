@@ -16,7 +16,7 @@ export type Type = {
 		weight: number?,
 		weightFade: number?,
 		playReversed: boolean?,
-	}) -> ();
+	}?) -> ();
 	PauseAnimation: (self: Type, trackName: string) -> ();
 	ResumeAnimation: (self: Type, trackName: string, newSpeed: number?) -> ();
 	StopAnimation: (self: Type, trackName: string, properties: {
@@ -75,6 +75,7 @@ end
 
 function Animator:PlayAnimation(trackName, properties)
 	hasAnimator(self)
+	properties = properties or {}
 	local track = self.Tracks[trackName]
 	if self._PauseList[trackName] then
 		self._PauseList[trackName] = nil
