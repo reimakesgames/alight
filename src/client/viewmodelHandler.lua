@@ -19,8 +19,8 @@ local InterpolatedWalking = 0.0
 local InterpolatedWalkingVelocityNoY = 0.0
 
 local function UpdateVariables(deltaTime)
-	WalkCycleX = WalkCycleX + (deltaTime * 20)
-	WalkCycleY = WalkCycleY + (deltaTime * 10)
+	WalkCycleX = WalkCycleX + ((deltaTime * 20) * (InterpolatedWalkingVelocityNoY / 16))
+	WalkCycleY = WalkCycleY + ((deltaTime * 10) * (InterpolatedWalkingVelocityNoY / 16))
 
 	if Character then
 		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
