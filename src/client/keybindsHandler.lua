@@ -6,7 +6,6 @@ local getEncryptedKeyCodes = require(Shared.getEncryptedKeyCodes)
 local GetKeybindsFromServer = BridgeNet.CreateBridge("GetKeybindsFromServer")
 
 local function FixKeybinds(keybinds: { [string]: { [string]: number } })
-	print(keybinds)
 	local fixedKeybinds = {}
 	for category, keybind in pairs(keybinds) do
 		-- if the first letter of the category is _ then it's a private category, or a property of the keybinds table
@@ -14,8 +13,6 @@ local function FixKeybinds(keybinds: { [string]: { [string]: number } })
 			continue
 		end
 		for name, key in pairs(keybind) do
-			print(category, name, key)
-			print(getEncryptedKeyCodes(key))
 			if fixedKeybinds[category] == nil then
 				fixedKeybinds[category] = {}
 			end
