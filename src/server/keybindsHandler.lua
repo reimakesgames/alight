@@ -86,10 +86,28 @@ Players.PlayerAdded:Connect(function(player: Player)
 		UpdateMissingKeybinds(value)
 		Server.keybinds[player.UserId] = value
 	else
+		warn(`Failed to load keybinds for {player.Name} ({player.UserId})!`)
+		warn(value)
+		-- ! TODO: add a webhook to send this to discord
+		-- ! Possibly create a ticket system for this or an error code system
+		-- ! so that the user can send the error code to the devs
+		local keybinds = KEYBINDS_DEFAULT
+		keybinds._canSave = false
+		Server.keybinds[player.UserId] = keybinds
 	end
 end)
 
 Players.PlayerRemoving:Connect(function(player: Player)
+	if Server.keybinds[player.UserId] == nil then
+		return
+	end
+	if Server.keybinds[player.UserId]._canSave == false then
+		warn("User had issues loading keybinds, not saving to prevent data loss.")
+		-- ! TODO: add a webhook to send this to discord
+		-- ! Possibly create a ticket system for this or an error code system
+		-- ! so that the user can send the error code to the devs
+		return
+	end
 	KeybindsDataStore:SetAsync(player.UserId, Server.keybinds[player.UserId])
 	Server.keybinds[player.UserId] = nil
 end)
