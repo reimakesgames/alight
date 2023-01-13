@@ -11,6 +11,8 @@ local ActiveViewmodel = nil
 local Character
 
 local WalkCycleSpring = Spring.new(5, 50, 4, 4)
+local SwaySpring = Spring.new(5, 20, 2, 8)
+local SwaySpringAngles = Spring.new(5, 50, 2, 8)
 local WalkCycleX, WalkCycleY = 0.0, 0.0
 local WalkingVelocityNoY = 0.0
 local InterpolatedWalkingVelocityNoY = 0.0
@@ -37,9 +39,24 @@ local InterpolatedMovementInnacuracy = 0.0
 	also screw roblox for making sensitivity values confusing, like is valorant sensitivity in radians? degrees? or what??
 ]]
 
-local function UpdateVariables(deltaTime)
+local OldCameraCFrame = CFrame.new()
+local OffsetCFrame = CFrame.new()
+local CameraDelta = Vector3.new()
+local PivotPointCFrame = CFrame.new()
+
+local function UpdateVariables(deltaTime, camera)
+	local CameraLookVectorDifference = OldCameraCFrame.LookVector - camera.CFrame.LookVector
+	local CameraLookVectorDelta = camera.CFrame:VectorToObjectSpace(CameraLookVectorDifference)
+	OldCameraCFrame = camera.CFrame
+	PivotPointCFrame = (ActiveViewmodel.Rig.HumanoidRootPart.CFrame * OffsetCFrame:Inverse()):ToObjectSpace(ActiveViewmodel.Rig.Model.Handle.Muzzle.WorldCFrame)
 	WalkCycleX = WalkCycleX + ((deltaTime * 20) * (InterpolatedWalkingVelocityNoY / 16))
 	WalkCycleY = WalkCycleY + ((deltaTime * 10) * (InterpolatedWalkingVelocityNoY / 16))
+
+	CameraDelta = Vector3.new(
+		math.clamp(CameraLookVectorDelta.X, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime)),
+		math.clamp(CameraLookVectorDelta.Y, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime)),
+		math.clamp(CameraLookVectorDelta.Z, -((math.pi * 2) * deltaTime), ((math.pi * 2) * deltaTime))
+	)
 
 	if Character then
 		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
@@ -54,9 +71,14 @@ end
 local viewmodelHandler = {}
 
 function viewmodelHandler.Update(deltaTime, camera)
-	UpdateVariables(deltaTime)
+	UpdateVariables(deltaTime, camera)
 	WalkCycleSpring:AddVelocity(Vector3.new(math.sin(WalkCycleX) * (deltaTime * 32), math.sin(WalkCycleY) * (deltaTime * 32), 0))
+	SwaySpring:AddVelocity(Vector3.new(CameraDelta.X, -CameraDelta.Y, 0))
+	SwaySpringAngles:AddVelocity(Vector3.new(CameraDelta.X, -CameraDelta.Y, 0))
+
 	WalkCycleSpring:Step(deltaTime)
+	SwaySpring:Step(deltaTime)
+
 	InterpolatedWalkingVelocityNoY = numberLerp(InterpolatedWalkingVelocityNoY, WalkingVelocityNoY, 0.0001, deltaTime)
 	if WalkingVelocityNoY >= 15 then
 		MovementInnacuracy = 1
@@ -75,13 +97,28 @@ function viewmodelHandler.Update(deltaTime, camera)
 		0
 	)
 
+	local Sway = CFrame.Angles(
+		(SwaySpring.Position.Y / 4),
+		(SwaySpring.Position.X / 4),
+		0
+	)
+
 	local WalkGunDown = CFrame.Angles(
 		-InterpolatedMovementInnacuracy * 0.05,
 		0,
 		0
 	)
 
-	local ViewmodelCFrame = CameraCFrame * WalkGunDown * WalkCycle
+	local PivotPointAngles = CFrame.Angles(
+		(-SwaySpringAngles.Position.Y / 8),
+		(-SwaySpringAngles.Position.X / 8),
+		0
+	)
+
+	local ViewmodelCFrame = OffsetCFrame * Sway * WalkCycle * WalkGunDown
+	ViewmodelCFrame = (PivotPointCFrame * PivotPointAngles):ToObjectSpace(ViewmodelCFrame)
+	ViewmodelCFrame = CameraCFrame * PivotPointCFrame:ToWorldSpace(ViewmodelCFrame)
+
 	if ActiveViewmodel then
 		ActiveViewmodel:SetCFrame(ViewmodelCFrame)
 	end
