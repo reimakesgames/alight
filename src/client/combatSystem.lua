@@ -49,7 +49,7 @@ function combatSystem.init()
 	RunService:BindToRenderStep("__VIEWMODEL__", Enum.RenderPriority.Camera.Value, function(deltaTime)
 		viewmodelHandler.Update(deltaTime, Camera)
 	end)
-	RunService:BindToRenderStep("__AFTER__", Enum.RenderPriority.Input.Value + 1, function(deltaTime)
+	RunService:BindToRenderStep("__AFTER__", Enum.RenderPriority.Input.Value + 1, function(_deltaTime)
 		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
 		Humanoid.WalkSpeed = Walking and 8 or 16
 	end)

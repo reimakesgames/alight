@@ -4,8 +4,6 @@ local Players = game:GetService("Players")
 local Packages = ReplicatedStorage.Packages
 local Shared = ReplicatedStorage.Shared
 local BridgeNet = require(Packages.BridgeNet)
-local Promise = require(Packages.Promise)
-local PromiseType = require(Shared.PromiseType)
 local GetKeybindsFromServer = BridgeNet.CreateBridge("GetKeybindsFromServer")
 
 local KeyCode = Enum.KeyCode
@@ -45,9 +43,9 @@ local KEYBINDS_DEFAULT = {
 
 local function UpdateMissingKeybinds(keybinds: { _exists: boolean, [string]: { [string]: number } })
 	local function UpdateMissingKeybindsInCategory(name, category: { [string]: number })
-		for name, key in pairs(KEYBINDS_DEFAULT[name]) do
-			if category[name] == nil then
-				category[name] = key
+		for keyName, key in pairs(KEYBINDS_DEFAULT[name]) do
+			if category[keyName] == nil then
+				category[keyName] = key
 			end
 		end
 	end

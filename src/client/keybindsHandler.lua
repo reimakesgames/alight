@@ -2,8 +2,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 local Shared = ReplicatedStorage.Shared
 local BridgeNet = require(Packages.BridgeNet)
-local Promise = require(Packages.Promise)
-local PromiseType = require(Shared.PromiseType)
 local getEncryptedKeyCodes = require(Shared.getEncryptedKeyCodes)
 local GetKeybindsFromServer = BridgeNet.CreateBridge("GetKeybindsFromServer")
 
