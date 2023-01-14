@@ -2,7 +2,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local Packages = ReplicatedStorage.Packages
-local Shared = ReplicatedStorage.Shared
 local BridgeNet = require(Packages.BridgeNet)
 local GetKeybindsFromServer = BridgeNet.CreateBridge("GetKeybindsFromServer")
 
@@ -51,6 +50,10 @@ local function UpdateMissingKeybinds(keybinds: { _exists: boolean, [string]: { [
 	end
 	for category, _ in pairs(KEYBINDS_DEFAULT) do
 		if category:sub(1, 1) == "_" then
+			-- i forgot to add new _prop categories
+			if keybinds[category] == nil then
+				keybinds[category] = KEYBINDS_DEFAULT[category]
+			end
 			continue
 		end
 		if keybinds[category] == nil then
@@ -61,11 +64,58 @@ local function UpdateMissingKeybinds(keybinds: { _exists: boolean, [string]: { [
 	end
 end
 
+-- this is a function that checks if the keybinds are malformed
+-- you shouldn't be able to save malformed categories
+-- this is just a safety measure to prevent illegal access to the data store
+-- it's not a security measure, it's just a way to prevent the data store from being filled with garbage
+-- there's nothing you can do with datastore access as an exploiter anyway
+local function CheckKeybindsForMalformations(keybinds: { _exists: boolean, [string]: { [string]: number } })
+	if keybinds._exists ~= true then
+		return false
+	end
+	-- check if there's a new category in our keybinds, if there is then it's malformed
+	for category, _ in pairs(keybinds) do
+		if category:sub(1, 1) == "_" then
+			-- check if there are things in the category that shouldn't be there
+			-- especially because _prop is a valid category name, and will be saved to the datastore
+			if KEYBINDS_DEFAULT[category] == nil then
+				return false
+			end
+			continue
+		end
+		if KEYBINDS_DEFAULT[category] == nil then
+			return false
+		end
+	end
+	-- check if there's a new keybind in our keybinds, if there is then it's malformed
+	for category, _ in pairs(KEYBINDS_DEFAULT) do
+		if category:sub(1, 1) == "_" then
+			continue
+		end
+		for keyName, _ in pairs(KEYBINDS_DEFAULT[category]) do
+			if keybinds[category][keyName] == nil then
+				return false
+			end
+		end
+	end
+	return true
+end
+
 local Server = {
 	keybinds = {},
 }
 
-GetKeybindsFromServer:OnInvoke(function(player: Player)
+-- newKeybinds is optional, if it's nil then it will return the keybinds for the player
+-- it's also a diff, so it only needs to contain the keybinds that need to be changed
+GetKeybindsFromServer:OnInvoke(function(player: Player, newKeybinds: { _exists: boolean, [string]: { [string]: number } }?)
+	if newKeybinds ~= nil then
+		if not CheckKeybindsForMalformations(newKeybinds) then
+			warn("Malformed keybinds!")
+			return nil
+		end
+		Server.keybinds[player.UserId] = newKeybinds
+		return true
+	end
 	while Server.keybinds[player.UserId] == nil do
 		task.wait(0.5)
 	end
