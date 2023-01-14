@@ -60,13 +60,13 @@ function combatSystem.init()
 	viewmodelHandler.SetViewmodel(viewmodel)
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
-		if input.KeyCode == keybindsHandler.keybinds.Gameplay.Walk then
+		if input.KeyCode == keybindsHandler.Keybinds.Gameplay.Walk then
 			Walking = true
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
-		if input.KeyCode == keybindsHandler.keybinds.Gameplay.Walk then
+		if input.KeyCode == keybindsHandler.Keybinds.Gameplay.Walk then
 			Walking = false
 		end
 	end)
