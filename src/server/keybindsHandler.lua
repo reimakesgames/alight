@@ -62,6 +62,7 @@ local function UpdateMissingKeybinds(keybinds: { _exists: boolean, [string]: { [
 			UpdateMissingKeybindsInCategory(category, keybinds[category])
 		end
 	end
+	return keybinds
 end
 
 -- this is a function that checks if the keybinds are malformed
@@ -131,8 +132,7 @@ Players.PlayerAdded:Connect(function(player: Player)
 			KeybindsDataStore:SetAsync(player.UserId, KEYBINDS_DEFAULT)
 			value = KEYBINDS_DEFAULT
 		end
-		UpdateMissingKeybinds(value)
-		Server.keybinds[player.UserId] = value
+		Server.keybinds[player.UserId] = UpdateMissingKeybinds(value)
 	else
 		warn(`Failed to load keybinds for {player.Name} ({player.UserId})!`)
 		warn(value)
