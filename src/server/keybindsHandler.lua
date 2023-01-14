@@ -29,6 +29,7 @@ local KEYBINDS_DEFAULT = {
 		Crouch = KCode(KeyCode.LeftControl),
 
 		Fire = IType(UserInputType.MouseButton1),
+		AltFire = IType(UserInputType.MouseButton2),
 		Reload = KCode(KeyCode.R),
 		Inspect = KCode(KeyCode.Y),
 		Interact = KCode(KeyCode.F),

@@ -80,6 +80,7 @@ function Client:LoadKeybindsFromServer()
 	GetKeybindsFromServer:InvokeServer():andThen(function(value)
 		Client.numberedKeybinds = value
 		Client.keybindsYouLoadedWith = value
+		print(value)
 		RefreshKeybinds()
 	end):catch(function(err)
 		warn("Failed to load keybinds from server")

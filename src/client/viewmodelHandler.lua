@@ -10,6 +10,8 @@ local ActiveViewmodel = nil
 
 local Character
 
+local AltFireDown = false
+
 local WalkCycleSpring = Spring.new(5, 50, 4, 4)
 local SwaySpring = Spring.new(5, 20, 2, 8)
 local SwaySpringAngles = Spring.new(5, 50, 2, 8)
@@ -41,6 +43,7 @@ local InterpolatedMovementInnacuracy = 0.0
 
 local OldCameraCFrame = CFrame.new()
 local OffsetCFrame = CFrame.new()
+local TargetOffsetCFrame = CFrame.new()
 local CameraDelta = Vector3.new()
 local PivotPointCFrame = CFrame.new()
 
@@ -48,6 +51,13 @@ local function UpdateVariables(deltaTime, camera)
 	local CameraLookVectorDifference = OldCameraCFrame.LookVector - camera.CFrame.LookVector
 	local CameraLookVectorDelta = camera.CFrame:VectorToObjectSpace(CameraLookVectorDifference)
 	OldCameraCFrame = camera.CFrame
+	local AimpointCFrame = ActiveViewmodel.Rig.HumanoidRootPart.CFrame:ToObjectSpace(ActiveViewmodel.Rig.Model.Handle.AimPoint.WorldCFrame)
+	if AltFireDown then
+		TargetOffsetCFrame = AimpointCFrame:Inverse()
+	else
+		TargetOffsetCFrame = CFrame.new(0, 0, 0)
+	end
+
 	PivotPointCFrame = (ActiveViewmodel.Rig.HumanoidRootPart.CFrame * OffsetCFrame:Inverse()):ToObjectSpace(ActiveViewmodel.Rig.Model.Handle.Muzzle.WorldCFrame)
 	WalkCycleX = WalkCycleX + ((deltaTime * 20) * (InterpolatedWalkingVelocityNoY / 16))
 	WalkCycleY = WalkCycleY + ((deltaTime * 10) * (InterpolatedWalkingVelocityNoY / 16))
@@ -79,6 +89,7 @@ function viewmodelHandler.Update(deltaTime, camera)
 	WalkCycleSpring:Step(deltaTime)
 	SwaySpring:Step(deltaTime)
 
+	OffsetCFrame = OffsetCFrame:Lerp(TargetOffsetCFrame, deltaTime * 16)
 	InterpolatedWalkingVelocityNoY = numberLerp(InterpolatedWalkingVelocityNoY, WalkingVelocityNoY, 0.0001, deltaTime)
 	if WalkingVelocityNoY >= 15 then
 		MovementInnacuracy = 1
@@ -115,7 +126,7 @@ function viewmodelHandler.Update(deltaTime, camera)
 		0
 	)
 
-	local ViewmodelCFrame = OffsetCFrame * Sway * WalkCycle * WalkGunDown
+	local ViewmodelCFrame = Sway * OffsetCFrame * WalkCycle * WalkGunDown
 	ViewmodelCFrame = (PivotPointCFrame * PivotPointAngles):ToObjectSpace(ViewmodelCFrame)
 	ViewmodelCFrame = CameraCFrame * PivotPointCFrame:ToWorldSpace(ViewmodelCFrame)
 
@@ -151,6 +162,10 @@ end
 
 function viewmodelHandler.SetCharacter(character)
 	Character = character
+end
+
+function viewmodelHandler.SetAltFireDown(enabled)
+	AltFireDown = enabled
 end
 
 return viewmodelHandler

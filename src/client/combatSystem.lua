@@ -20,6 +20,7 @@ local Rig = Assets.v_UMP45
 local Arms = Assets.Arms
 
 local Walking = false
+local Aiming = false
 
 local function OnCharacterAdded(character)
 	Character = character
@@ -62,6 +63,13 @@ function combatSystem.init()
 		if gameProcessed then return end
 		if input.KeyCode == keybindsHandler.Keybinds.Gameplay.Walk then
 			Walking = true
+		end
+		-- if input.UserInputType == keybindsHandler.Keybinds.Gameplay.Fire then
+
+		-- end
+		if input.UserInputType == keybindsHandler.Keybinds.Gameplay.AltFire then
+			Aiming = not Aiming
+			viewmodelHandler.SetAltFireDown(Aiming)
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input, gameProcessed)
