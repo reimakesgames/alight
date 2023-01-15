@@ -3,11 +3,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
+local Mouse = Players.LocalPlayer:GetMouse()
+
 local Shared = ReplicatedStorage.Shared
 local Assets = ReplicatedStorage.Assets
 
 local Viewmodel = require(Shared.Viewmodel)
 local fastInstance = require(Shared.fastInstance)
+local mapPing = require(Shared.mapPing)
 
 local viewmodelHandler = require(script.Parent.viewmodelHandler)
 local keybindsHandler = require(script.Parent.keybindsHandler)
@@ -70,6 +73,10 @@ function combatSystem.init()
 		if input.UserInputType == keybindsHandler.Keybinds.Gameplay.AltFire then
 			Aiming = not Aiming
 			viewmodelHandler.SetAltFireDown(Aiming)
+		end
+
+		if input.KeyCode == keybindsHandler.Keybinds.Gameplay.Ping then
+			mapPing.new(Mouse.Hit.Position) -- ! THIS IS A TEMPORARY SOLUTION, REPLACE AS RAYCAST FILTERS ARE IMPLEMENTED
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input, gameProcessed)

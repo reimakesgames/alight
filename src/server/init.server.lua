@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
+local Shared = ReplicatedStorage.Shared
 local BridgeNet = require(Packages.BridgeNet)
 BridgeNet.Start({})
 
@@ -12,3 +13,4 @@ end
 Initialize(script.performance)
 Initialize(script.changelogs)
 require(script.keybindsHandler)
+require(Shared.mapPing)
