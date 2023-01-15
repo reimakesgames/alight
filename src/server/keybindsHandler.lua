@@ -38,6 +38,8 @@ local KEYBINDS_DEFAULT = {
 		Secondary = KCode(KeyCode.Two),
 		Melee = KCode(KeyCode.Three),
 		Spike = KCode(KeyCode.Four),
+
+		Ping = KCode(KeyCode.Z),
 	}
 }
 
