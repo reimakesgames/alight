@@ -12,5 +12,6 @@ end
 
 Initialize(script.performance)
 Initialize(script.changelogs)
+Initialize(script.activity)
 require(script.keybindsHandler)
 require(Shared.mapPing)
