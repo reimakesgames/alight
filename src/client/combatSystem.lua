@@ -24,6 +24,8 @@ local Arms = Assets.Arms
 
 local Walking = false
 local Aiming = false
+local Firing = false
+local Shooting = false
 
 local function OnCharacterAdded(character)
 	Character = character
@@ -67,9 +69,19 @@ function combatSystem.init()
 		if input.KeyCode == keybindsHandler.Keybinds.Gameplay.Walk then
 			Walking = true
 		end
-		-- if input.UserInputType == keybindsHandler.Keybinds.Gameplay.Fire then
-
-		-- end
+		if input.UserInputType == keybindsHandler.Keybinds.Gameplay.Fire then
+			if Firing then return end
+			if Shooting then return end
+			Firing = true
+			task.spawn(function()
+				repeat
+					Shooting = true
+					viewmodelHandler.Fire()
+					task.wait(0.1)
+					Shooting = false
+				until not Firing
+			end)
+		end
 		if input.UserInputType == keybindsHandler.Keybinds.Gameplay.AltFire then
 			Aiming = not Aiming
 			viewmodelHandler.SetAltFireDown(Aiming)
@@ -81,6 +93,9 @@ function combatSystem.init()
 	end)
 	UserInputService.InputEnded:Connect(function(input, gameProcessed)
 		if gameProcessed then return end
+		if input.UserInputType == keybindsHandler.Keybinds.Gameplay.Fire then
+			Firing = false
+		end
 		if input.KeyCode == keybindsHandler.Keybinds.Gameplay.Walk then
 			Walking = false
 		end
