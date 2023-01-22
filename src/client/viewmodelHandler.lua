@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Shared
 
 local Viewmodel = require(Shared.Viewmodel)
+local gunVfx = require(Shared.gunVfx)
 local Spring = require(Shared.Spring)
 local numberLerp = require(Shared.numberLerp)
 
@@ -29,6 +30,8 @@ local InterpolatedWalkingVelocityNoY = 0.0
 ]]
 local MovementInnacuracy = 0.0
 local InterpolatedMovementInnacuracy = 0.0
+-- ! TODO: Outsource this to the main combat file
+
 
 --[[
 	VALORANT's sensitivity translation from VALORANT to Roblox is as follows:
@@ -166,6 +169,10 @@ end
 
 function viewmodelHandler.SetAltFireDown(enabled)
 	AltFireDown = enabled
+end
+
+function viewmodelHandler.Fire()
+	gunVfx:EmitMuzzleParticles(ActiveViewmodel.Rig.Model.Handle.Muzzle)
 end
 
 return viewmodelHandler
