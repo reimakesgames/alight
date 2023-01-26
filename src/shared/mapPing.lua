@@ -47,6 +47,7 @@ end
 
 local function CreatePing(player: Player, worldPosition: Vector3)
 	-- before anything else, check if there is a nearby ping
+	print(`{player.Name} has pinged at {worldPosition.X}, {worldPosition.Y}, {worldPosition.Z}`)
 	local nearbyPing = nil
 	for _, ping in pairs(activePings) do
 		if (ping.Position - worldPosition).Magnitude < 1 then

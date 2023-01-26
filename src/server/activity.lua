@@ -10,6 +10,7 @@ local Joins = 0
 local UniquePlayers = 0
 
 local SERVER_START_TIME = tick()
+local GAME_JOB_ID: string = game.JobId
 
 local Discord = require(Shared.Discord)
 local PlayerActivityWebhook = Discord.new("Player Activity")
@@ -41,7 +42,7 @@ function Activity.init()
 			{
 				title = "Server Initialized",
 				url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-				description = `JobId: \`{if game.JobId:len() == 0 then "None" else game.JobId}\`\nPlaceId: \`{game.PlaceId or "None"}\`\nPlace Version: \`{game.PlaceVersion or "None"}\``,
+				description = `JobId: \`{if GAME_JOB_ID:len() == 0 then "None" else GAME_JOB_ID}\`\nPlaceId: \`{game.PlaceId or "None"}\`\nPlace Version: \`{game.PlaceVersion or "None"}\``,
 			}
 		}
 	})
@@ -53,7 +54,7 @@ function Activity.init()
 					title = "Server Closed",
 					url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 					description =
-					`JobId: \`{if game.JobId:len() == 0 then "None" else game.JobId}\`\nPlaceId: \`{game.PlaceId or "None"}\`\nPlace Version: \`{game.PlaceVersion or "None"}\`\n\n` ..
+					`JobId: \`{if GAME_JOB_ID:len() == 0 then "None" else GAME_JOB_ID}\`\nPlaceId: \`{game.PlaceId or "None"}\`\nPlace Version: \`{game.PlaceVersion or "None"}\`\n\n` ..
 					`Server Lifetime: \`{dateFormat:secondsToCleanHMS(tick() - SERVER_START_TIME)}\`\nJoins: \`{Joins}\`\nUnique Joins: \`{UniquePlayers}\`\n\n` ..
 					`**Players That joined:**\n` .. ListPlayersPlayDuration(),
 				}
@@ -69,7 +70,7 @@ function Activity.init()
 				title = `{player.Name} ({player.DisplayName}) has joined a server.`,
 				link = `https://www.roblox.com/users/{player.UserId}/profile`,
 				description =
-				`JobId: \`{if game.JobId:len() == 0 then "None" else game.JobId}\`\nPlaceId: \`{game.PlaceId}\`\nPlace Version: \`{game.PlaceVersion}\`\n\n` ..
+				`JobId: \`{if GAME_JOB_ID:len() == 0 then "None" else GAME_JOB_ID}\`\nPlaceId: \`{game.PlaceId}\`\nPlace Version: \`{game.PlaceVersion}\`\n\n` ..
 				`UserId: \`{player.UserId}\`\nFollowUserId\`{player.FollowUserId}\`\nPremiumUser: \`{if player.MembershipType.Value == 5 then "true" else "false"}\`\n\n` ..
 				`AccountAge: \`{dateFormat:accountAgeToDMY(player.AccountAge)}\`\nVerified: \`{if player.HasVerifiedBadge then "true" else "false"}\`\nLocale: \`{player.LocaleId}\``
 			}}
@@ -90,7 +91,7 @@ function Activity.init()
 				title = `{player.Name} ({player.DisplayName}) has left a server.`,
 				link = `https://www.roblox.com/users/{player.UserId}/profile`,
 				description =
-				`JobId: \`{if game.JobId:len() == 0 then "None" else game.JobId}\`\nPlaceId: \`{game.PlaceId}\`\nPlace Version: \`{game.PlaceVersion}\`\n\n` ..
+				`JobId: \`{if GAME_JOB_ID:len() == 0 then "None" else GAME_JOB_ID}\`\nPlaceId: \`{game.PlaceId}\`\nPlace Version: \`{game.PlaceVersion}\`\n\n` ..
 				Previous
 			}}
 		})

@@ -48,7 +48,7 @@ function Webhook:PUSH(data: any)
 		end
 	end
 
-	return Promise.new(function(resolve, reject, onCancel)
+	return Promise.new(function(resolve, _, _)
 		local success, result = pcall(function()
 			HttpService:PostAsync(self.webhookLink, data)
 		end)
