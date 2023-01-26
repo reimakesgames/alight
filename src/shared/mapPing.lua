@@ -1,5 +1,6 @@
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local Debris = game:GetService("Debris")
 
@@ -11,15 +12,38 @@ local Shared = ReplicatedStorage.Shared
 
 local BridgeNet = require(Packages.BridgeNet)
 local fastInstance = require(Shared.fastInstance)
+local fonts = require(Shared.fonts)
 
 local LOCAL_ENVIRONMENT = RunService:IsClient()
 local PING_FOLDER = if LOCAL_ENVIRONMENT then fastInstance("Folder", {Name = "__PINGS__",Parent = workspace,}) else nil
+local PING_VISIBILITY_SCALAR_NUMBER = 0.99
 
 local ReplicatePing = BridgeNet.CreateBridge("ReplicatePing")
 
 local mapPing = {}
 
 local activePings = {}
+
+local function GetObjectUnitVectorFromCamera(object: BasePart)
+	return (object.Position - Camera.CFrame.Position).Unit
+end
+
+local function FindMapRegion(part)
+	local Map = workspace:FindFirstChild("MAP")
+	if not Map then return end
+	local Region = Map:FindFirstChild("REGION")
+	if not Region then return end
+
+	local OvPar = OverlapParams.new()
+	OvPar.FilterDescendantsInstances = { Map }
+	OvPar.FilterType = Enum.RaycastFilterType.Whitelist
+	OvPar.CollisionGroup = "REGION"
+	local Parts = workspace:GetPartsInPart(part, OvPar)
+	for _, region in Parts do
+		return region.Name
+	end
+	return
+end
 
 local function CreatePing(player: Player, worldPosition: Vector3)
 	-- before anything else, check if there is a nearby ping
@@ -36,8 +60,8 @@ local function CreatePing(player: Player, worldPosition: Vector3)
 		Anchored = true,
 		Transparency = 1,
 		CanCollide = false,
-		CanTouch = false,
 		CanQuery = false,
+		CanTouch = true,
 		Archivable = false,
 		Size = Vector3.new(1, 1, 1),
 		Position = worldPosition,
@@ -57,7 +81,7 @@ local function CreatePing(player: Player, worldPosition: Vector3)
 		LightInfluence = 0,
 		MaxDistance = math.huge,
 		ResetOnSpawn = false,
-		Size = UDim2.new(0, 32, 0, 32),
+		Size = UDim2.new(0, 64, 0, 64),
 		StudsOffset = Vector3.new(0, 0, 0),
 		Parent = pingPart,
 	})
@@ -69,25 +93,46 @@ local function CreatePing(player: Player, worldPosition: Vector3)
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Rotation = 45,
-		Size = UDim2.new(0, 8, 0, 8),
+		Size = UDim2.new(0, 9, 0, 9),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		Parent = pingBillboardGui,
 	})
 
 	fastInstance("TextLabel", {
-		Name = "PingTextLabel",
+		Name = "PingDistance",
 		Archivable = false,
 		BackgroundTransparency = 1,
-		Font = Enum.Font.SourceSans,
+		FontFace = fonts.Poppins.Normal.Bold,
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 16),
 		Size = UDim2.new(1, 0, 1, 0),
 		Text = `{math.floor(distance) * 2} m`,
 		TextSize = 16,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextStrokeTransparency = 0.5,
+		TextStrokeColor3 = Color3.new(0, 0, 0),
 		Parent = pingBillboardGui,
 	})
+
+	local Region = FindMapRegion(pingPart)
+	if Region then
+		fastInstance("TextLabel", {
+			Name = "PingRegion",
+			Archivable = false,
+			BackgroundTransparency = 1,
+			FontFace = fonts.Poppins.Normal.Regular,
+			AnchorPoint = Vector2.new(0.5, 0),
+			Position = UDim2.new(0.5, 0, 0, 32),
+			Size = UDim2.new(1, 0, 1, 0),
+			Text = Region,
+			TextSize = 16,
+			TextColor3 = Color3.fromRGB(255, 255, 255),
+			TextStrokeTransparency = 0.5,
+			TextStrokeColor3 = Color3.new(0, 0, 0),
+			Parent = pingBillboardGui,
+		})
+	end
 
 	table.insert(activePings, pingPart)
 	if nearbyPing then
@@ -116,8 +161,36 @@ if LOCAL_ENVIRONMENT then
 					continue
 				end
 				local distance = (Camera.CFrame.Position - pingPart.Position).Magnitude / 4
-				local pingTextLabel = pingPart.PingBillboardGui.PingTextLabel
-				pingTextLabel.Text = `{math.floor(distance) * 2} m`
+				local pingFrame = pingPart.PingBillboardGui.PingFrame
+				local pingDistance = pingPart.PingBillboardGui.PingDistance
+				local pingRegion = pingPart.PingBillboardGui:FindFirstChild("PingRegion")
+				pingDistance.Text = `{math.floor(distance) * 2} m`
+
+				local difference = Camera.CFrame.LookVector:Dot(GetObjectUnitVectorFromCamera(pingPart))
+				if difference > PING_VISIBILITY_SCALAR_NUMBER then
+					if pingPart:FindFirstChild("NotFocused") then
+						pingPart.NotFocused:Destroy()
+					end
+					pingDistance.TextTransparency = 0
+					pingDistance.TextStrokeTransparency = 0
+					if pingRegion then
+						pingRegion.TextTransparency = 0
+						pingRegion.TextStrokeTransparency = 0
+					end
+				else
+					if not pingPart:FindFirstChild("NotFocused") then
+						fastInstance("BoolValue", {
+							Name = "NotFocused",
+							Parent = pingPart
+						})
+						local FadeOutTween = TweenInfo.new(1)
+						TweenService:Create(pingDistance, FadeOutTween, { TextTransparency = 0.5, TextStrokeTransparency = 0.5 }):Play()
+						if pingRegion then
+							TweenService:Create(pingRegion, FadeOutTween, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+						end
+					end
+				end
+				pingFrame.BackgroundTransparency = math.clamp(-0.1 + ((1 - difference) * 2), 0, 0.5)
 			end
 		end
 	end)
