@@ -17,6 +17,7 @@ local fonts = require(Shared.fonts)
 local LOCAL_ENVIRONMENT = RunService:IsClient()
 local PING_FOLDER = if LOCAL_ENVIRONMENT then fastInstance("Folder", {Name = "__PINGS__",Parent = workspace,}) else nil
 local PING_VISIBILITY_SCALAR_NUMBER = 0.99
+local FADE_OUT_TWEEN = TweenInfo.new(1)
 
 local ReplicatePing = BridgeNet.CreateBridge("ReplicatePing")
 
@@ -153,24 +154,28 @@ end
 
 if LOCAL_ENVIRONMENT then
 	ReplicatePing:Connect(PingClientReciever)
-	task.spawn(function()
-		while true do
-			task.wait(0.25)
-			for index, pingPart in ipairs(activePings) do
-				if not pingPart.Parent then
-					table.remove(activePings, index)
-					continue
-				end
-				local distance = (Camera.CFrame.Position - pingPart.Position).Magnitude / 4
-				local pingFrame = pingPart.PingBillboardGui.PingFrame
-				local pingDistance = pingPart.PingBillboardGui.PingDistance
-				local pingRegion = pingPart.PingBillboardGui:FindFirstChild("PingRegion")
-				pingDistance.Text = `{math.floor(distance) * 2} m`
+	local iteration = 1
+	RunService:BindToRenderStep("__MAP_PING_UPDATE__", Enum.RenderPriority.First.Value, function()
+		debug.profilebegin("Proc Map Pings")
+		for index, pingPart in ipairs(activePings) do
+			debug.profilebegin(`Ping {index}`)
+			if not pingPart.Parent then
+				table.remove(activePings, index)
+				continue
+			end
 
+			local distance = (Camera.CFrame.Position - pingPart.Position).Magnitude / 4
+			local pingFrame = pingPart.PingBillboardGui.PingFrame
+			local pingDistance = pingPart.PingBillboardGui.PingDistance
+			local pingRegion = pingPart.PingBillboardGui:FindFirstChild("PingRegion")
+			local notFocused = pingPart:FindFirstChild("NotFocused")
+			pingDistance.Text = `{math.floor(distance) * 2} m`
+
+			if iteration >= 4 then
 				local difference = Camera.CFrame.LookVector:Dot(GetObjectUnitVectorFromCamera(pingPart))
 				if difference > PING_VISIBILITY_SCALAR_NUMBER then
-					if pingPart:FindFirstChild("NotFocused") then
-						pingPart.NotFocused:Destroy()
+					if notFocused then
+						notFocused:Destroy()
 					end
 					pingDistance.TextTransparency = 0
 					pingDistance.TextStrokeTransparency = 0
@@ -179,21 +184,26 @@ if LOCAL_ENVIRONMENT then
 						pingRegion.TextStrokeTransparency = 0
 					end
 				else
-					if not pingPart:FindFirstChild("NotFocused") then
+					if not notFocused then
 						fastInstance("BoolValue", {
 							Name = "NotFocused",
 							Parent = pingPart
 						})
-						local FadeOutTween = TweenInfo.new(1)
-						TweenService:Create(pingDistance, FadeOutTween, { TextTransparency = 0.5, TextStrokeTransparency = 0.5 }):Play()
+						TweenService:Create(pingDistance, FADE_OUT_TWEEN, { TextTransparency = 0.5, TextStrokeTransparency = 0.5 }):Play()
 						if pingRegion then
-							TweenService:Create(pingRegion, FadeOutTween, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+							TweenService:Create(pingRegion, FADE_OUT_TWEEN, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
 						end
 					end
 				end
 				pingFrame.BackgroundTransparency = math.clamp(-0.1 + ((1 - difference) * 2), 0, 0.5)
 			end
+			debug.profileend()
 		end
+		if iteration >= 4 then
+			iteration = 0
+		end
+		iteration = iteration + 1
+		debug.profileend()
 	end)
 else
 	ReplicatePing:Connect(function(player: Player, worldPosition: Vector3)
