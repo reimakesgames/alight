@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage.Shared
 local Assets = ReplicatedStorage.Assets
 
 local Viewmodel = require(Shared.Viewmodel)
+local Crosshair = require(Shared.Crosshair)
 local fastInstance = require(Shared.fastInstance)
 local mapPing = require(Shared.mapPing)
 
@@ -100,6 +101,10 @@ function combatSystem.init()
 			Walking = false
 		end
 	end)
+
+	Crosshair.new(4)
 end
+
+UserInputService.MouseIconEnabled = false
 
 return combatSystem
