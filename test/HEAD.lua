@@ -7,9 +7,10 @@ local ServerStorage = game:GetService("ServerStorage")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 local Tests = ServerStorage:WaitForChild("Tests")
 
-local TestEZ = require(Packages.testez)
+local TestEZ = require(Packages.TestEZ)
 local Bootstrapper = require(Tests.container.bootstrap)
 
 Bootstrapper:run({
-	Tests["test.spec"]
+	Tests["test.spec"],
+	Tests["Spring.spec"]
 })

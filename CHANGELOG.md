@@ -1,3 +1,27 @@
+# [0.5.0] - 2023-02-02
+### Changed
+- Core Functionality utilizes a better programming style
+- Link for BridgeNet
+
+### Added
+- KeybindHandler with Save/Load
+- Basic Map Ping
+- MovementHandler
+- Basic Implementation of Crosshair but OOPized
+- Webhook Class
+- Discord Webhook
+- Player Joins/Leaves Webhook
+- GitHub Community Files
+- GitHub Issue Templates
+- GitHub Pull Request Template
+- GitHub Code of Conduct
+- GitHub Contributing Guidelines
+- GitHub Security Policy
+- Basic Documentation
+
+### Deprecated
+- Nearly all of the old code
+
 # [0.4.1] - 2022-11-25
 ### Changed
 - Viewmodel Sway to use camera delta instead of mouse delta

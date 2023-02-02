@@ -1,47 +1,31 @@
 {
-  "name": "hybrid-conflict",
-  "tree": {
-    "$className": "DataModel",
-
-    "ReplicatedFirst": {
-      "build": {
-        "$path": "build"
-      },
-      "First": {
-        "$path": "src/first"
-      },
-      "Utility": {
-        "$path": "src/utility"
-      }
-    },
-
-    "ReplicatedStorage": {
-      "Shared": {
-        "$path": "src/shared"
-      },
-      "Packages": {
-        "$path": "Packages"
-      }
-    },
-
-    "ServerScriptService": {
-      "Server": {
-        "$path": "src/server"
-      }
-    },
-
-    "ServerStorage": {
-      "Tests": {
-        "$path": "test"
-      }
-    },
-
-    "StarterPlayer": {
-      "StarterPlayerScripts": {
-        "Client": {
-          "$path": "src/client"
-        }
-      }
-    }
-  }
+	"name": "hybrid-conflict",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"Shared": {
+				"$path": "src/shared"
+			},
+			"Packages": {
+				"$path": "Packages"
+			}
+		},
+		"ServerScriptService": {
+			"Server": {
+				"$path": "src/server"
+			}
+		},
+		"ServerStorage": {
+			"Tests": {
+				"$path": "test"
+			}
+		},
+		"StarterPlayer": {
+			"StarterPlayerScripts": {
+				"Client": {
+					"$path": "src/client"
+				}
+			}
+		}
+	}
 }
