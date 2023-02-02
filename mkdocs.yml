@@ -3,7 +3,7 @@ site_url: https://hybrid-conflict.vercel.app/
 site_description: Documentation and Contribution Guide for Hybrid Conflict
 site_author: reimakesgames
 
-copyright: © 2022 reimakesgames. All rights reserved.
+copyright: © 2022-2023 reimakesgames. All rights reserved.
 
 repo_url: https://github.com/reimakesgames/hybrid-conflict
 repo_name: GitHub
@@ -25,6 +25,9 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.tilde
 
+  - markdown_include.include:
+      base_path: docs
+
 nav:
   - index.md
   - Contribution:
@@ -34,17 +37,20 @@ nav:
     - contribution/unit_tests.md
   - Documentation:
     - Classes:
-      - documentation/classes/SpringClass.md
-      - documentation/classes/ViewmodelClass.md
-      - documentation/classes/AnimatorClass.md
+      - documentation/classes/Animator.md
 
 theme:
   name: material
+  font:
+    text: Poppins
+    code: Ubuntu Mono
   palette:
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
+      primary: deep purple
+      accent: blue
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -52,6 +58,20 @@ theme:
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
+      primary: deep purple
+      accent: amber
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/reimakesgames/hybrid-conflict
+      name: Game Repository
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/Shiroi7264
+      name: reimakesgames' Twitter Page
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/CjUWSVKhP3
+      name: reimakesgames Community Server
