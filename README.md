@@ -8,4 +8,4 @@ Hybrid Conflict Source Files
 * IAmLoviatar - Music Assistant
 
 ### Contributors
-* [Synthranger_](https://github.com/synthranger) - Technical Support
+* [LukaDev](https://github.com/lukadev-0) - Technical Support and Development Assistant
