@@ -57,7 +57,9 @@ function Crosshair.new(width: number)
 	assert(isRealNumber(width), "provided variable isn't a number")
 
 	-- this is a tiny dumb function that shouldn't be in prod to help refresh the crosshair by calling crosshair.new() multiple times
-	if __active then __active:Destroy() end
+	if __active then
+		__active:Destroy()
+	end
 
 	local ScreenGui = fastInstance("ScreenGui", {
 		IgnoreGuiInset = true,

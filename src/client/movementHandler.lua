@@ -138,7 +138,7 @@ local function PhysicsUpdate(deltaTime: number): ()
 	PreviousDeltaTime = deltaTime
 end
 
-local function UpdatePlayerMovementRequest(deltaTime: number): ()
+local function UpdatePlayerMovementRequest(_deltaTime: number): ()
 	-- Don't delete this, this is an 'uncompressed' version of the code below
 	-- local Forward = Vector3.new(0, 0, if W then -1 else 0)
 	-- local Backward = Vector3.new(0, 0, if S then 1 else 0)
