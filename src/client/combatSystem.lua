@@ -15,6 +15,7 @@ local mapPing = require(Shared.mapPing)
 
 local viewmodelHandler = require(script.Parent.viewmodelHandler)
 local keybindsHandler = require(script.Parent.keybindsHandler)
+local movementHandler = require(script.Parent.movementHandler)
 
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
@@ -57,8 +58,7 @@ function combatSystem.init()
 		viewmodelHandler.Update(deltaTime, Camera)
 	end)
 	RunService:BindToRenderStep("__AFTER__", Enum.RenderPriority.Input.Value + 1, function(_deltaTime)
-		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-		Humanoid.WalkSpeed = Walking and 8 or 16
+		movementHandler:AdjustVelocityMultiplier(if Walking then 0.5 else 1.0)
 	end)
 	LocalPlayer.CharacterAdded:Connect(OnCharacterAdded)
 	viewmodelHandler.SetCharacter(Character)
