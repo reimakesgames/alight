@@ -12,12 +12,13 @@ export type Type = {
 	-- Properties
 	__SceneID: string,
 	Looped: boolean,
+	Stopped: boolean,
 
 	-- Methods
 	AddClip: (clip: Clip.Type) -> (),
-	CreateClip: (data: Clip.Segment) -> (Clip.Type),
-	Play: () -> (),
-	Stop: () -> (),
+	CreateClip: (data: Clip.Segment) -> (),
+	Play: (self: Type) -> (),
+	Stop: (self: Type) -> (),
 
 	-- Variables
 	LowDetailMode: boolean,
@@ -44,6 +45,7 @@ function Scene.new(looped: boolean?)
 	local self = setmetatable({
 		__SceneID = `Scene_{MySceneID}`,
 		Looped = looped or false,
+		Stopped = false,
 
 		Timeline = {},
 	}, Scene)
@@ -64,17 +66,29 @@ function Scene:CreateClip(metadata, data)
 	local clip = Clip.new()
 	clip:CreateSegment(metadata, data)
 
-	self:AddClip(clip)
-
-	return clip
+	if #self.Timeline == 0 then
+		self:AddClip(clip)
+	else
+		self.Timeline[#self.Timeline]:AppendClip(clip)
+	end
 end
 
 function Scene:Play()
 	repeat
 		for index, clip in pairs(self.Timeline) do
+			if self.Stopped then
+				break
+			end
 			clip:Play(index)
 		end
-	until not self.Looped
+	until self.Stopped or not self.Looped
+end
+
+function Scene:Stop()
+	self.Stopped = true
+	for _, clip in pairs(self.Timeline) do
+		clip:Stop()
+	end
 end
 
 return Scene

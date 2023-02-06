@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SceneV2 = require(ReplicatedStorage.Shared.SceneV2)
-local NewScene = SceneV2.new(true)
+local Scene = SceneV2.new(true)
 
 local World = workspace.World
 local CameraPositions = World.CameraPositions
@@ -21,7 +21,7 @@ local CameraPositions = World.CameraPositions
 
 -- NewScene:AddClip(NewClip)
 
-NewScene:CreateClip({
+Scene:CreateClip({
 	Duration = 6,
 }, {
 	CameraStart = CameraPositions[1].CFrame,
@@ -35,7 +35,7 @@ NewScene:CreateClip({
 	}
 })
 
-NewScene:CreateClip({
+Scene:CreateClip({
 	Duration = 6,
 }, {
 	CameraStart = CameraPositions[3].CFrame,
@@ -48,7 +48,7 @@ NewScene:CreateClip({
 	}
 })
 
-NewScene:CreateClip({
+Scene:CreateClip({
 	Duration = 6,
 }, {
 	CameraStart = CameraPositions[5].CFrame,
@@ -57,7 +57,7 @@ NewScene:CreateClip({
 	CameraFOVStart = 50,
 })
 
-NewScene:CreateClip({
+Scene:CreateClip({
 	Duration = 6,
 }, {
 	CameraStart = CameraPositions[7].CFrame,
@@ -70,4 +70,4 @@ NewScene:CreateClip({
 	}
 })
 
-return NewScene
+return Scene

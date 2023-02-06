@@ -1,5 +1,7 @@
 local TweenService = game:GetService("TweenService")
 
+local tableOperations = require(script.Parent.Parent.tableOperations)
+
 export type Segment = {
 	Metadata: {
 		Duration: number,
@@ -16,7 +18,7 @@ export type Segment = {
 		CameraFOVDirection: Enum.EasingDirection,
 
 		Animatables: {
-			[number]: Light | ParticleEmitter | Sound | Model | ModuleScript,
+			[number]: ModuleScript,
 		}
 	},
 }
@@ -28,24 +30,26 @@ export type Timeline = {
 export type Type = {
 	-- Class Defaults
 	new: () -> Type,
-	Destroy: () -> (),
+	Destroy: (self: Type) -> (),
 
 	-- Properties
 	__ClipID: string,
+	Stopped: boolean,
 
 	Timeline: {[number]: {[string]: any}},
 
-	Length: number,
-
 	-- Methods
-	Play: () -> (),
-	Stop: () -> (),
+	Play: (self: Type) -> (),
+	Stop: (self: Type) -> (),
 
-	CreateSegment: (Metadata: {[string]: any}, Data: {[string]: any}) -> (),
+	CreateSegment: (self: Type, Metadata: {[string]: any}, Data: {[string]: any}) -> (),
+	AppendClip: (self: Type, clip: Type) -> (),
 }
 
 local MaxClips = 0xFF
 local CurrentClips = 0
+
+local ActiveTweens = {}
 
 local Clip = {}
 Clip.__index = Clip
@@ -64,6 +68,7 @@ function Clip.new()
 
 	local self = setmetatable({
 		Timeline = {},
+		Stopped = false,
 
 		__ClipID = `Clip_{MyClipID}`,
 	}, Clip)
@@ -72,16 +77,27 @@ function Clip.new()
 end
 
 function Clip:Destroy()
+	for _, segment in self.Timeline do
+		if segment.Data.Animatables then
+			table.clear(segment.Data.Animatables)
+		end
+		table.clear(segment.Data)
+		table.clear(segment.Metadata)
+	end
+	table.clear(self.Timeline)
+	table.clear(self)
 end
 
-function Clip:Play(myIndex)
-	for index, segment: Segment in self.Timeline do
+function Clip:Play(clipIndex)
+	for segmentIndex, segment: Segment in self.Timeline do
+		if self.Stopped then
+			break
+		end
+		print(segment)
 		if segment.Data.Animatables then
 			for _, animatable in segment.Data.Animatables do
 				task.spawn(function()
-					if animatable:IsA("ModuleScript") then
-						require(animatable)(myIndex)
-					end
+					require(animatable)(clipIndex, segmentIndex, segment.Metadata, segment.Data)
 				end)
 			end
 		end
@@ -114,14 +130,23 @@ function Clip:Play(myIndex)
 
 		cameraTween:Play()
 		cameraFOVTween:Play()
+		table.insert(ActiveTweens, cameraTween)
+		table.insert(ActiveTweens, cameraFOVTween)
 
 		cameraTween.Completed:Wait()
 		cameraFOVTween:Cancel()
+		table.remove(ActiveTweens, table.find(ActiveTweens, cameraTween))
+		table.remove(ActiveTweens, table.find(ActiveTweens, cameraFOVTween))
 		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 	end
 end
 
 function Clip:Stop()
+	self.Stopped = true
+	for _, tween in ActiveTweens do
+		tween:Cancel()
+	end
+	table.clear(ActiveTweens)
 end
 
 function Clip:CreateSegment(Metadata: {[string]: any}, Data: {[string]: any})
@@ -131,6 +156,15 @@ function Clip:CreateSegment(Metadata: {[string]: any}, Data: {[string]: any})
 	}
 
 	table.insert(self.Timeline, segment)
+end
+
+function Clip:AppendClip(clip: Type)
+	-- hard copy the timeline
+	-- thanks roblox for not saying that table.insert gives the pointer to the table
+	for _, segment in clip.Timeline do
+		table.insert(self.Timeline, tableOperations:DeepCopy(segment))
+	end
+	clip:Destroy()
 end
 
 return Clip
