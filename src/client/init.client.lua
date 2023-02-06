@@ -18,7 +18,4 @@ UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 -- Initialize(script.movementHandler)
 -- Initialize(script.combatSystem)
 
-local Scene = require(ReplicatedStorage.Shared.Scene)
-local NewScene = Scene.new(workspace.World)
-
-NewScene:RunScene(true)
+require(ReplicatedStorage.Shared.menu):Play()
