@@ -223,6 +223,10 @@ function movementHandler:AdjustVelocityMultiplier(multiplier: number): ()
 end
 
 function movementHandler.init()
+	if LocalPlayer.Character then
+		CharacterAdded(LocalPlayer.Character)
+	end
+
 	LocalPlayer.CharacterAdded:Connect(CharacterAdded)
 	LocalPlayer.CharacterRemoving:Connect(CharacterRemoving)
 	RunService.Stepped:Connect(UpdateThread)

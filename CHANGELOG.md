@@ -1,3 +1,20 @@
+# [0.5.1] - 2023-02-08
+### Added
+- Scene Player
+- Main Menu UI (WIP)
+- Main Menu Scene (WIP)
+- TestEZ Companion Extension
+- Unit Tests for Symbol, isRealNumber, tableOperations
+- TestEZ Definition File
+
+### Changed
+- Unit Testing is now more robust and better Developer Experience (DX)
+- Initialization of scripts is now ran by a script in the main menu script handler
+
+### Fixed
+- Symbol returning nothing despite being a valid symbol
+- MovementHandler being blocked because of the new temporary initialization process
+
 # [0.5.0] - 2023-02-02
 ### Changed
 - Core Functionality utilizes a better programming style
