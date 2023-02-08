@@ -10,7 +10,7 @@ local function Symbol(name)
 		return "Symbol(" .. name .. ")"
 	end
 	mt.__metatable = "The metatable is locked"
-	symbols[symbol] = name
+	symbols[name] = symbol
 	return symbol
 end
 
