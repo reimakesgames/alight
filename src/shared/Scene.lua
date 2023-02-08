@@ -1,7 +1,4 @@
-local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-
-local LocalPlayer = Players.LocalPlayer
 
 local EASING_STYLES = {
 	linear = Enum.EasingStyle.Linear,
@@ -118,7 +115,7 @@ local function LoadAnimationsInCharacters(model: SceneModel)
 	return animations
 end
 
-local function ChainAnimations(humanoid: Humanoid & any, animations: { [number]: AnimationTrack })
+local function ChainAnimations(animations: { [number]: AnimationTrack })
 	task.spawn(function()
 		local lastAnimation = animations[#animations]
 		lastAnimation.Looped = true
@@ -173,8 +170,8 @@ function Scene:RunScene(loop: boolean)
 	self.Camera.CFrame = self.SceneModel.CameraPosition[1].CFrame
 
 	local Animations = LoadAnimationsInCharacters(self.SceneModel)
-	for character, animations in Animations do
-		ChainAnimations(character.Humanoid, animations)
+	for _, animations in Animations do
+		ChainAnimations(animations)
 	end
 	local function iterate()
 		for index, path in pairs(self.CameraTimeline) do
