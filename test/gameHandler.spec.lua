@@ -3,7 +3,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local gameHandler = require(Shared.gameHandler)
 
 return function()
-	describeFOCUS("gameHandler", function()
+	describe("gameHandler", function()
 		it("should create a new game", function()
 			gameHandler:NewGame(true, 8, 9)
 			expect(gameHandler).to.be.ok()
