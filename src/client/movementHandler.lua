@@ -32,11 +32,13 @@ local VelocityMultiplier = 1.0
 local Acceleration = 128 -- how much the velocity changes per second
 local Deceleration = 0.5 -- a percentage value
 local WallFriction = 0.2 -- a percentage value
+local LandingMinimumFriction = 0.4 -- a percentage value
 
 local Velocity = Vector3.new(0, 0, 0)
 local Position = Vector3.new(0, 0, 0)
 local PreviousPosition = Vector3.new(0, 0, 0)
 local PreviousDeltaTime = 0
+local LastLandedTime = 0
 local Input = Vector3.new(0, 0, 0)
 local W, A, S, D = false, false, false, false
 
@@ -71,17 +73,50 @@ local movementHandler = {
 	ShiftLockChanged = FastSignal.new(),
 }
 
+local function HumanoidLanded()
+	if not CallSecure() then return end
+
+	LastLandedTime = tick()
+end
+
+local function HumanoidJumped()
+	if not CallSecure() then return end
+
+	LastLandedTime = 0
+end
+
+local function velModifTimer()
+	local value = 1
+	-- if the last landed time is from 0 - 0.1 seconds ago, then the value is 1
+	-- if the last landed time is from 0.1 - 0.3 seconds ago, then the value slopes from 1 to 0
+	-- if the last landed time is from 0.3 - 1.3 seconds ago, then the value slopes from 0 to 1
+
+	local timeSinceLanded = tick() - LastLandedTime
+	if timeSinceLanded < 0.1 then
+		value = 1
+	elseif timeSinceLanded < 0.2 then
+		value = 1 - (timeSinceLanded / 0.2)
+	elseif timeSinceLanded < 1 then
+		value = (timeSinceLanded - 0.2) / 0.8
+	else
+		value = 1
+	end
+
+	return value
+end
+
 local function PhysicsUpdate(deltaTime: number): ()
 	if not CallSecure() then return end
 
 	-- force the player to have 0 walkspeed
 	Humanoid.WalkSpeed = 0
 
+	local VelocityModifier = LandingMinimumFriction + (velModifTimer() * (1 - LandingMinimumFriction))
 	local IsGrounded = Humanoid.FloorMaterial ~= Enum.Material.Air
 
 	local CameraLookVector = Camera.CFrame.LookVector
 	local CharacterCFrame = Character.PrimaryPart.CFrame
-	local MovementRequest = Input * (BaseVelocity * VelocityMultiplier)
+	local MovementRequest = Input * (BaseVelocity * VelocityMultiplier) * VelocityModifier
 	local VelocityDifference = (MovementRequest - Velocity).Unit
 
 	--[[
@@ -170,6 +205,15 @@ local function CharacterAdded(character: Model & any): ()
 	-- this WaitForChild call is unsafe, as we can't be sure that there's nothing else named Humanoid
 	Humanoid = Character:WaitForChild("Humanoid")
 	Character.PrimaryPart = Character:WaitForChild("HumanoidRootPart")
+	Humanoid.StateChanged:Connect(function(oldState: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
+		if newState == Enum.HumanoidStateType.Landed then
+			HumanoidLanded()
+			print("Landed")
+		elseif newState == Enum.HumanoidStateType.Jumping then
+			HumanoidJumped()
+			print("Jumping")
+		end
+	end)
 	print(`Found Humanoid at {Humanoid:GetFullName()}`)
 end
 
