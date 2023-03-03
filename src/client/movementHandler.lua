@@ -77,6 +77,8 @@ local function PhysicsUpdate(deltaTime: number): ()
 	-- force the player to have 0 walkspeed
 	Humanoid.WalkSpeed = 0
 
+	local IsGrounded = Humanoid.FloorMaterial ~= Enum.Material.Air
+
 	local CameraLookVector = Camera.CFrame.LookVector
 	local CharacterCFrame = Character.PrimaryPart.CFrame
 	local MovementRequest = Input * (BaseVelocity * VelocityMultiplier)
@@ -103,6 +105,10 @@ local function PhysicsUpdate(deltaTime: number): ()
 		Velocity = Velocity * WallFriction
 	end
 
+	if not IsGrounded then
+		Modifier = Modifier * 0.1
+		print("air")
+	end
 	Velocity = Velocity + ((VelocityDifference * Modifier) * deltaTime)
 
 	-- this conditional makes sure that if Velocity is close to zero, then it is set to zero
