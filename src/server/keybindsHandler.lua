@@ -131,7 +131,7 @@ Players.PlayerAdded:Connect(function(player: Player)
 		return KeybindsDataStore:GetAsync(player.UserId)
 	end)
 	if success then
-		if (not value.exists) or value == nil then
+		if value == nil or (not value.exists) then
 			KeybindsDataStore:SetAsync(player.UserId, KEYBINDS_DEFAULT)
 			value = KEYBINDS_DEFAULT
 		end
