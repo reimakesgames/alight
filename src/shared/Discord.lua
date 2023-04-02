@@ -32,6 +32,14 @@ export type Type = {
 	Post: (data: {[string]: any}) -> (PromiseType.Promise<string>)
 }
 
+--[=[
+	@class Discord
+	@server
+
+	An API for posting messages to Discord webhooks proxied through a server.
+
+	Uses [Webhook] as a base.
+]=]--
 local Discord = {
 	identifiers = {}
 } :: Type
@@ -39,6 +47,11 @@ Discord.__index = Discord
 
 local WebhookPipe = Webhook.new(WebhookURL)
 
+--[=[
+	@param identifier string
+	@param ratelimit number
+	@return Discord
+]=]--
 function Discord.new(identifier: string, ratelimit: number?)
 	-- this function lets you create an identifier for your webhook ids
 	-- if the identifier exists, it returns the already existing identifier
@@ -58,6 +71,10 @@ function Discord.new(identifier: string, ratelimit: number?)
 	return self
 end
 
+--[=[
+	@param data {[string]: any}
+	@return Promise<string>
+]=]--
 function Discord:Post(data: {[string]: any})
 	local footer = {text = `{WEBHOOK_FOOTER_TEXT} [{self.identifier}]`}
 	for _, embed in data["embeds"] do

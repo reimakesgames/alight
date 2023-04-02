@@ -61,7 +61,7 @@ local function UpdateVariables(deltaTime, camera)
 		TargetOffsetCFrame = CFrame.new(0, 0, 0)
 	end
 
-	PivotPointCFrame = (ActiveViewmodel.Rig.HumanoidRootPart.CFrame * OffsetCFrame:Inverse()):ToObjectSpace(ActiveViewmodel.Rig.Model.Handle.Muzzle.WorldCFrame)
+	PivotPointCFrame = (ActiveViewmodel.Rig.HumanoidRootPart.CFrame * OffsetCFrame:Inverse()):ToObjectSpace(ActiveViewmodel.Rig.Model.Handle.MuzzlePoint.WorldCFrame)
 	WalkCycleX = WalkCycleX + ((deltaTime * 20) * (InterpolatedWalkingVelocityNoY / 16))
 	WalkCycleY = WalkCycleY + ((deltaTime * 10) * (InterpolatedWalkingVelocityNoY / 16))
 
@@ -172,7 +172,7 @@ function viewmodelHandler.SetAltFireDown(enabled)
 end
 
 function viewmodelHandler.Fire()
-	gunVfx:EmitMuzzleParticles(ActiveViewmodel.Rig.Model.Handle.Muzzle)
+	-- gunVfx:EmitMuzzleParticles(ActiveViewmodel.Rig.Model.Handle.MuzzlePoint)
 end
 
 return viewmodelHandler

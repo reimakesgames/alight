@@ -12,6 +12,7 @@ local Viewmodel = require(Shared.Viewmodel)
 local Crosshair = require(Shared.Crosshair)
 local fastInstance = require(Shared.fastInstance)
 local mapPing = require(Shared.mapPing)
+local vtracers = require(Shared.vtracers)
 
 local viewmodelHandler = require(script.Parent.viewmodelHandler)
 local keybindsHandler = require(script.Parent.keybindsHandler)
@@ -78,6 +79,7 @@ function combatSystem.init()
 				repeat
 					Shooting = true
 					viewmodelHandler.Fire()
+					vtracers.new(viewmodel.Rig.Model.Handle.MuzzlePoint.WorldCFrame.Position, Mouse.Hit.Position)
 					task.wait(0.1)
 					Shooting = false
 				until not Firing

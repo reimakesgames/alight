@@ -1,3 +1,8 @@
+--[=[
+	@class diffTool
+
+	A tool for diffing tables
+]=]
 local diffTool = {}
 
 --[[
@@ -13,6 +18,19 @@ local diffTool = {}
 	depth of 2:
 	if prop3 changes, it will only replace the prop3 value
 ]]--
+
+--[=[
+	Compares two tables and returns a table with the differences, if any
+
+	Depth is optional, defaults to 1. It's used to know how much depth in tables that gets diffed.
+	This prevents replacing the entire table if only one value changes. Good for networked tables.
+
+	@param t1 table
+	@param t2 table
+	@param depth number?
+
+	@return table
+]=]
 function diffTool:tableDiff(t1, t2, depth: number?)
 	local diff = {}
 	assert(type(t1) == "table" and type(t2) == "table", "t1 and t2 must be tables")

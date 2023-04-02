@@ -30,9 +30,21 @@ local function CheckIfWebhooksAreMuted()
 	return true
 end
 
+--[=[
+	@class Webhook
+	@server
+
+	An API for webhooks.
+
+	Useful as a base for other webhook APIs.
+]=]--
 local Webhook = {} :: Type
 Webhook.__index = Webhook
 
+--[=[
+	@param webhook string
+	@return Webhook
+]=]--
 function Webhook.new(webhook: string)
 	local self = setmetatable({
 		webhookLink = webhook
@@ -41,6 +53,10 @@ function Webhook.new(webhook: string)
 	return self
 end
 
+--[=[
+	@param data any
+	@return Promise<string>
+]=]--
 function Webhook:PUSH(data: any)
 	if RunService:IsStudio() then
 		if CheckIfWebhooksAreMuted() then
