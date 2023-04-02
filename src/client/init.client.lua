@@ -29,3 +29,7 @@ clickedPlay.Event:Connect(function()
 	Initialize(script.combatSystem)
 	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 end)
+
+RunService.Stepped:Connect(function(totalTime: number)
+	frame.BackgroundColor3 = Color3.new(0, math.floor((totalTime * 2) % 2), 0)
+end)
