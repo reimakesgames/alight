@@ -1,0 +1,10 @@
+{
+	"luau-lsp.types.definitionFiles": [
+        "test\\TestEZ.d.lua",
+        ".lune\\luneTypes.d.luau"
+    ],
+    "luau-lsp.types.documentationFiles": [
+        ".lune\\luneDocs.json"
+    ],
+    "luau-lsp.require.mode": "relativeToFile"
+}
