@@ -1,6 +1,0 @@
-mkdocs
-mkdocs-material
-markdown-include
-#Add pip package if needed
-#mkdocs-bootswatch
-#mkdocs-minify-plugin
