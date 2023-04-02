@@ -1,3 +1,11 @@
+# [0.6.0] - 2023-04-02 (WIP)
+
+### Added
+- Spring Class
+- isRealNumber function (with test)
+
+# Revision 3
+
 # [0.5.1] - 2023-02-08
 ### Added
 - Scene Player
