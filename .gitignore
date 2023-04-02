@@ -17,3 +17,7 @@ site/
 
 # Luau LSP sourcemap
 /sourcemap.json
+
+# Moonwave Build Bullshittery
+# god bless america (NOT)
+.vercel
