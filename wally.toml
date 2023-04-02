@@ -1,13 +1,7 @@
 [package]
-name = "reimakesgames/hybrid-conflict"
+name = "reimakesgames/alight"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 [dependencies]
-FastSignal = "lucasmzreal/fastsignal@10.2.1"
-BridgeNet = "ffrostflame/bridgenet@1.9.9"
-Janitor = "howmanysmall/janitor@1.15.1"
-Promise = "evaera/promise@4.0.0"
-FastCastRedux = "encodedvenom/fastcastredux@0.1.3"
-TestEZ = "roblox/testez@0.4.1"
