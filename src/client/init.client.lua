@@ -1,5 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local debug = PlayerGui:WaitForChild("debug")
+local frame = debug:WaitForChild("Frame")
 
 local Packages = ReplicatedStorage.Packages
 local Shared = ReplicatedStorage.Shared
