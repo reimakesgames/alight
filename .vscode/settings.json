@@ -6,5 +6,9 @@
     "luau-lsp.types.documentationFiles": [
         ".lune\\luneDocs.json"
     ],
-    "luau-lsp.require.mode": "relativeToFile"
+    "luau-lsp.require.mode": "relativeToFile",
+
+    "liveServer.settings.mount": [
+        ["/alight", "./public"]
+    ]
 }

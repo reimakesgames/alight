@@ -1,0 +1,152 @@
+:root {
+	--color-primary: #082032; /* generic color */
+	--color-secondary: #2C394B;
+	--color-tertiary: #334756;
+	--color-main: #FF4C29; /* for buttons, links, etc. */
+}
+
+body {
+	padding: 0;
+	margin: 0;
+
+	font-family: "Source Sans Pro", 'Roboto', sans-serif;
+
+	background-color: var(--color-primary);
+	color: white;
+
+	max-width: 100%;
+	overflow-x: hidden;
+	scroll-behavior: smooth;
+}
+
+a {
+	text-decoration: none;
+}
+
+.out-link {
+	--hover-duration: 0.2s;
+
+	background-color: var(--color-secondary);
+	color: white;
+
+	display: inline-block;
+	position: relative;
+	overflow: hidden;
+
+	align-items: center;
+	justify-content: center;
+
+	padding-left: 1vw;
+	padding-right: 1vw;
+	padding-top: 0.5vw;
+	padding-bottom: 0.5vw;
+
+	font-size: 1.5vw;
+	font-weight: 400;
+
+	transition: all var(--hover-duration) ease-in-out;
+}
+.clipper {
+	position: absolute;
+	background: var(--color-main);
+
+	top: 0;
+	left: -20%;
+	right: -20%;
+	bottom: 0;
+
+	clip-path: polygon(0% 0%, 0% 100%, 90% 100%, 100% 0%);
+
+	transform: translateX(-100%);
+	transition: transform var(--hover-duration) ease-in-out;
+}
+.clipped-text {
+	position: absolute;
+	color: var(--color-primary);
+	display: flex;
+	z-index: 100;
+
+	align-items: center;
+	justify-content: center;
+
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+
+	transform: translateX(100%);
+	transition: transform var(--hover-duration) ease-in-out;
+}
+.out-link:hover {
+	background-color: var(--color-primary);
+	color: var(--color-main);
+}
+.out-link:hover .clipper {
+	transform: translateX(0%);
+}
+.out-link:hover .clipped-text {
+	transform: translateX(0%);
+}
+
+.top-bar {
+	display: flex;
+	align-items: center;
+
+	width: 100vw;
+	height: 3vw;
+
+	position: sticky;
+	top: 0;
+
+	background-color: var(--color-secondary);
+}
+
+.top-bar-button {
+	display: inline-block;
+	width: auto;
+	height: 100%;
+	padding-left: 2vw;
+	padding-right: 2vw;
+	line-height: 3vw;
+	vertical-align: middle;
+
+	border-left: 1px solid var(--color-tertiary);
+
+	color: white;
+	font-size: 1vw;
+	font-weight: 400;
+
+	transition: all 0.1s ease-in-out;
+}
+.top-bar-button:first-child {
+	--hover-duration: 0.2s;
+	border-left: none;
+	font-style: italic;
+	font-weight: 800;
+	font-size: 1.5vw;
+	overflow: hidden;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+.top-bar-button:first-child:hover {
+	background-color: var(--color-primary);
+	color: white;
+}
+.top-bar-button:first-child:hover .clipper {
+	transform: translateX(0%);
+}
+.top-bar-button:first-child:hover .clipped-text {
+	transform: translateX(0%);
+}
+.top-bar-button:hover {
+	background-color: var(--color-tertiary);
+	color: var(--color-main);
+}
+
+main {
+	padding-left: 4vw;
+	padding-right: 4vw;
+	padding-top: 2vw;
+	padding-bottom: 2vw;
+}
