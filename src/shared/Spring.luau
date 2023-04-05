@@ -33,21 +33,75 @@ local isRealNumber = require(script.Parent.isRealNumber)
 	animate towards that value, taking into account the mass, force, damping, and
 	speed of the spring.
 ]=]
+--[=[
+	@prop target Vector3
+	@within Spring
+	@since 0.6.0
+	@readonly
+
+	The target of the spring. This is the value that the spring will animate towards.
+]=]
 
 --[=[
-	@param mass number? -- The mass of the spring. Higher mass means the spring will be more sluggish. Defaults to 5.
-	@param force number? -- The force of the spring. Higher force means the spring will be more responsive. Defaults to 50.
-	@param damping number? -- The damping of the spring. Higher damping means the spring will be more sluggish. Defaults to 4.
-	@param speed number? -- The speed of the spring. Higher speed means the spring will be more responsive. Defaults to 4.
+	@prop position Vector3
+	@within Spring
+	@since 0.6.0
+	@readonly
 
+	The current position of the spring. This is the value that the spring is currently at.
+]=]
+--[=[
+	@prop velocity Vector3
+	@within Spring
+	@since 0.6.0
+	@readonly
+
+	The current velocity of the spring. This is the speed at which the spring is currently moving.
+]=]
+--[=[
+	@prop mass number
+	@within Spring
+	@since 0.6.0
+	@readonly
+
+	The mass of the spring. Higher mass means the spring will be more sluggish.
+]=]
+--[=[
+	@prop force number
+	@within Spring
+	@since 0.6.0
+	@readonly
+
+	The force of the spring. Higher force means the spring will be more responsive.
+]=]
+--[=[
+	@prop damping number
+	@within Spring
+	@since 0.6.0
+	@readonly
+
+	The damping of the spring. Higher damping means the spring will be more sluggish.
+]=]
+--[=[
+	@prop speed number
+	@within Spring
+	@since 0.6.0
+	@readonly
+
+	The speed of the spring. Higher speed means the spring will be more responsive.
+]=]
+
+--[=[
+	@param mass number? -- 5
+	@param force number? -- 50
+	@param damping number? -- 4
+	@param speed number? -- 4
 	@return Spring -- A new spring object.
+	@since 0.6.0
 
 	A function that creates a new spring object.
 
 	:::caution
-	When creating a spring, you MUST keep a reference to it.
-	If you do not, the spring might be lost forever.
-	It will also not be garbage collected, so you will be leaking memory.
 	If you do not need the spring anymore, you should call the `Destroy` method on it.
 	:::
 ]=]
@@ -68,6 +122,7 @@ end
 
 --[=[
 	@return nil
+	@since 0.6.0
 
 	A method that destroys the spring.
 	You should call this method when you no longer need the spring.
@@ -79,6 +134,7 @@ end
 
 --[=[
 	@param force Vector3 -- The force to add to the spring.
+	@since 0.6.0
 
 	A method that adds a provided `force` to the spring's velocity.
 ]=]
@@ -92,6 +148,7 @@ end
 
 --[=[
 	@param target Vector3 -- The target to set the spring to.
+	@since 0.6.0
 
 	A method that sets the target of the spring.
 
@@ -105,6 +162,7 @@ end
 
 --[=[
 	@param deltaTime number -- The delta time since the last frame.
+	@since 0.6.0
 
 	A method that updates the spring.
 	This method should be called once every frame.
