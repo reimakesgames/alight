@@ -150,3 +150,7 @@ main {
 	padding-top: 2vw;
 	padding-bottom: 2vw;
 }
+
+header {
+	z-index: 999999999;
+}
