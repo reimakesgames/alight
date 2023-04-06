@@ -12,7 +12,11 @@ body {
 
 	font-family: "Source Sans Pro", 'Roboto', sans-serif;
 
-	background-color: rgb(20, 20, 20);
+	/* background-color: rgb(20, 20, 20); */
+	background-color: black;
+
+	animation-fill-mode: forwards;
+	transition: all 0.75s ease-in;
 }
 
 img {
@@ -57,19 +61,36 @@ img {
 	}
 }
 
+@keyframes enterChorus {
+	0% {
+		transform: scale(1.5);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
 .imagemax {
 	background-image: url("tetra_clap_slower.gif");
 	background-position: center;
 	background-size: cover;
 	background-repeat: no-repeat;
 
-	backdrop-filter: blur(4px);
-	-webkit-filter: blur(4px);
-	-moz-filter: blur(4px);
-	-o-filter: blur(4px);
-	-ms-filter: blur(4px);
-	filter: blur(4px);
+	backdrop-filter: blur(4px) brightness(0.4);
+	-webkit-filter: blur(4px) brightness(0.4);
+	-moz-filter: blur(4px) brightness(0.4);
+	-o-filter: blur(4px) brightness(0.4);
+	-ms-filter: blur(4px) brightness(0.4);
+	filter: blur(4px) brightness(0.4);
 
+	max-width: 100%;
+	max-height: 100%;
+
+	height: 100vh;
+	width: 100vw;
+}
+
+.filler {
 	max-width: 100%;
 	max-height: 100%;
 

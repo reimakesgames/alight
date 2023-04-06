@@ -21,18 +21,21 @@
 
     <link rel="stylesheet" href="./style.css" />
   </head>
-  <body>
-    <audio id="clap" src="yjlpmjingle.mp3" preload="auto"></audio>
-    <audio id="intro" src="yjlpmjingle_intro.mp3" preload="auto"></audio>
-    <div class="lyrics" id="lyrics"></div>
+  <body id="body">
+    <div class="all" id="root">
+      <audio id="clap" src="yjlpmjingle.mp3" preload="auto"></audio>
+      <audio id="intro" src="yjlpmjingle_intro.mp3" preload="auto"></audio>
+      <div class="lyrics" id="lyrics"></div>
+      <div class="filler" id="filler"></div>
 
-    <div class="infotext" id="thetext">
-      <p>Look at this, it's a yonkagor.</p>
+      <div class="infotext" id="thetext">
+        <p>Look at this, it's a yonkagor.</p>
 
-      <button id="trigger">
-        <img src="image.jpg" />
-      </button>
+        <button id="trigger">
+          <img src="image.jpg" />
+        </button>
+      </div>
+      <script src="./app.js"></script>
     </div>
-    <script src="./app.js"></script>
   </body>
 </html>

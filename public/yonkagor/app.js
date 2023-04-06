@@ -183,7 +183,7 @@ function createRandomPopEffect() {
     "vw, " +
     (Math.random() * 100 - 50) +
     "vh)";
-  document.body.appendChild(pop);
+	document.getElementById("root").appendChild(pop);
 
   // wait for the animation to finish
   setTimeout(function () {
@@ -199,7 +199,7 @@ function createCenterPopEffect(scaleOverride, timeOverride) {
   pop.style.animation = "pop " + (timeOverride || "0.3") + "s";
   pop.style.scale = scaleOverride || "3";
   pop.style.borderColor = TetraPurple;
-  document.body.appendChild(pop);
+  document.getElementById("root").appendChild(pop);
 
   // wait for the animation to finish
   setTimeout(function () {
@@ -241,17 +241,25 @@ function start() {
       } else if (i == 13 || i == 14 || i == 15) {
         createCenterPopEffect("2", "0.2");
       }
+	  if (i == 11) {
+		document.getElementById("body").style.transform = "rotate(90deg) scale(3)";
+		// document.getElementById("body").style.animation = "beforeChorus 2s"
+	  }
       document.getElementById("lyrics").textContent = introLyrics[i];
     }, interval * i);
   }
 
   setTimeout(function () {
+	document.getElementById("filler").remove();
+	document.getElementById("body").style.transform = ""
+	document.getElementById("body").style.animation = "enterChorus 0.5s"
+
     document.title = "yon dancing no way";
 
     var tetra = document.createElement("div");
     tetra.className = "imagemax";
     tetra.id = "TETRAAAAA";
-    document.body.appendChild(tetra);
+    document.getElementById("root").appendChild(tetra);
 
     setInterval(function () {
       if (i == 0) {
