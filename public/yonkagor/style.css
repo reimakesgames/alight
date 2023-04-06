@@ -140,3 +140,18 @@ img {
 	font-size: 24px;
 	font-weight: 400;
 }
+
+#trigger {
+	padding: 0;
+	border: none;
+	outline: none;
+	background: none;
+	font: inherit;
+	cursor: pointer;
+	position: relative;
+	z-index: 200;
+}
+
+#trigger img {
+	width: 200px;
+}
