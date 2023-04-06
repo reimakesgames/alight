@@ -35,13 +35,16 @@ a {
 
 	align-items: center;
 	justify-content: center;
+	text-align: center;
 
-	padding-left: 1vw;
-	padding-right: 1vw;
-	padding-top: 0.5vw;
-	padding-bottom: 0.5vw;
+	padding-left: 32px;
+	padding-right: 32px;
+	padding-top: 8px;
+	padding-bottom: 8px;
 
-	font-size: 1.5vw;
+	width: 320px;
+
+	font-size: 32px;
 	font-weight: 400;
 
 	transition: all var(--hover-duration) ease-in-out;
@@ -92,8 +95,8 @@ a {
 	display: flex;
 	align-items: center;
 
-	width: 100vw;
-	height: 3vw;
+	width: 100%;
+	height: 64px;
 
 	position: sticky;
 	top: 0;
@@ -103,27 +106,27 @@ a {
 
 .top-bar-button {
 	display: inline-block;
-	width: auto;
+	width: 200px;
 	height: 100%;
-	padding-left: 2vw;
-	padding-right: 2vw;
-	line-height: 3vw;
+	line-height: 64px;
 	vertical-align: middle;
+	text-align: center;
 
 	border-left: 1px solid var(--color-tertiary);
 
 	color: white;
-	font-size: 1vw;
+	font-size: 24px;
 	font-weight: 400;
 
 	transition: all 0.1s ease-in-out;
 }
 .top-bar-button:first-child {
 	--hover-duration: 0.2s;
+	width: 240px;
 	border-left: none;
 	font-style: italic;
 	font-weight: 800;
-	font-size: 1.5vw;
+	font-size: 32px;
 	overflow: hidden;
 	align-items: center;
 	justify-content: center;
@@ -143,14 +146,46 @@ a {
 	background-color: var(--color-tertiary);
 	color: var(--color-main);
 }
+.top-bar-button:active {
+	background-color: var(--color-primary);
+	color: var(--color-tertiary);
+	box-shadow: inset 0 0 32px 2px rgba(0, 0, 0, 0.2);
+}
+.top-bar-button::after {
+	content: "";
+	display: block;
+	width: 0;
+	height: 2px;
+	transform: translate(-50%, -18px);
+	/* move 50% to the right */
+	position: relative;
+	left: 50%;
+
+	background-color: var(--color-main);
+	transition: width 0.1s ease-in-out;
+}
+.top-bar-button:hover::after {
+	width: 32px;
+}
+.top-bar-button:active::after {
+	width: 24px;
+	background-color: white;
+	box-shadow: 0 0 16px 2px rgba(255, 255, 255, 0.5);
+}
+.top-bar-button:first-child::after {
+	width: 0;
+}
+.top-bar-button:first-child:active::after {
+	width: 0;
+}
 
 main {
-	padding-left: 4vw;
-	padding-right: 4vw;
-	padding-top: 2vw;
-	padding-bottom: 2vw;
+	padding-left: 128px;
+	padding-right: 128px;
+	padding-top: 64px;
+	padding-bottom: 64px;
 
-	font-size: 1vw;
+	font-size: 16px;
 }
 
 header {
