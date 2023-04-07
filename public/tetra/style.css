@@ -1,0 +1,205 @@
+body {
+	background-color: #000;
+	color: #ddd;
+	font-family: Source Sans Pro, sans-serif;
+	font-size: 0.8em;
+	margin: 0;
+	padding: 0;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	overflow: hidden;
+}
+
+.container {
+	position: absolute;
+	display: flex;
+
+	height: 100%;
+	width: 100%;
+
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.title {
+	font-size: 64px;
+	font-weight: bold;
+	color: #fff0;
+	transition: 1s;
+	transition-delay: 0.5s;
+}
+.warning {
+	font-size: 32px;
+	font-weight: 200;
+	transition: 1s;
+	transition-delay: 1s;
+	color: #fff0;
+	translate: translate(0, -16px);
+	text-shadow: 0 0 0 #0000;
+}
+.warning::before {
+	content: "⚠ ";
+}
+
+.runAnimationButton {
+	width: 256px;
+	height: 256px;
+	margin: 16px;
+	padding: 0;
+	border: 0;
+	transition: all 1s ease-in;
+	opacity: 0;
+	overflow: hidden;
+
+	box-shadow: 0 0 192px #fff8;
+}
+.runAnimationButton:hover {
+	cursor: pointer;
+	box-shadow: 0 0 256px #fffa;
+}
+.buttonImage {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	transition: 0.5s
+}
+.buttonImage:hover {
+	scale: 1.2;
+	filter: brightness(1.2);
+}
+
+
+
+.disable-css-transitions {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+}
+
+
+
+@keyframes pop {
+	0% {
+		border-width: 0;
+		width: 0;
+		height: 0;
+	}
+	50% {
+		border-width: 16vh;
+		width: 0;
+		height: 0;
+	}
+	100% {
+		border-width: 0px;
+		width: 32vh;
+		height: 32vh;
+	}
+}
+@keyframes beat {
+	0% {
+		transform: scale(1.05)
+	}
+	100% {
+		transform: scale(1)
+	}
+}
+.pop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	margin: auto;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	text-align: center;
+
+	border-radius: 50%;
+	border: 0px solid white;
+
+	width: 0;
+	height: 0;
+}
+
+
+.animation {
+	position: absolute;
+	display: flex-box;
+
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+
+	width: 100%;
+	height: 100%;
+}
+.subtitles {
+	/* from the mv */
+	/* yellow subtitles from old things */
+	color: #ff0;
+	font-size: 6vh;
+	font-weight: 800;
+	-webkit-text-stroke: 4px #000;
+
+	/* position center bottom */
+	width: 100%;
+	position: absolute;
+	bottom: 12vh;
+	text-align: center;
+
+	font-style:italic;
+}
+.yonTemp {
+	width: 512px;
+	height: 512px;
+
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	margin: auto;
+
+	background-image: url("./keychain_yon.jpg");
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+.lyrics {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	margin: auto;
+
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	z-index: 1;
+	pointer-events: none;
+	font-size: 6vh;
+	font-weight: 800;
+	font-family: Source Sans Pro, sans-serif;
+}
