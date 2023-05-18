@@ -1,0 +1,73 @@
+body {
+	background-color: #334756;
+	color: #DFDFDF;
+	padding-left: 20vw;
+	padding-right: 20vw;
+	padding-top: 10vh;
+}
+
+div.title {
+	font-size: 40px;
+	font-weight: bold;
+	user-select: none;
+	pointer-events: none;
+}
+
+div.subtitle {
+	font-size: 20px;
+	font-weight: 400;
+	/* italics */
+	font-style: italic;
+	user-select: none;
+	pointer-events: none;
+}
+
+button#bt {
+	font-size: 20px;
+	font-weight: 400;
+	/* italics */
+	font-style: italic;
+
+	/* change button style */
+	background-color: #FF4C29;
+	border: 2px solid #FF4C29;
+	color: #FFFFFF;
+	border-radius: 0px;
+	padding: 10px 20px;
+	transition: all 0.2s ease-in-out;
+}
+button#bt:hover {
+	background-color: #FFFFFF;
+	color: #FF4C29;
+
+	cursor: pointer;
+}
+
+form.fake {
+	width: fit-content;
+}
+
+div.inner {
+	filter: blur(1px) brightness(0.8);
+	pointer-events: none;
+	user-select: none;
+	background-color: #0000002F;
+}
+
+div.status {
+	pointer-events: none;
+	user-select: none;
+
+	/* center inside the form */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transform: translate(0%, -100px);
+	text-shadow: 0px 0px 16px #0000008F;
+
+	font-size: 16px;
+	font-weight: 400;
+	font-style: italic;
+
+	z-index: 10;
+}
