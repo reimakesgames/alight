@@ -3,9 +3,9 @@
 registry = "test"
 
 [[package]]
-name = "encodedvenom/fastcastredux"
-version = "0.1.3"
-dependencies = [["Signal", "sleitnick/signal@1.2.1"]]
+name = "elttob/fusion"
+version = "0.2.0"
+dependencies = []
 
 [[package]]
 name = "evaera/promise"
@@ -18,29 +18,9 @@ version = "1.9.9"
 dependencies = [["GoodSignal", "stravant/goodsignal@0.2.1"], ["Promise", "evaera/promise@4.0.0"]]
 
 [[package]]
-name = "howmanysmall/janitor"
-version = "1.15.1"
-dependencies = []
-
-[[package]]
-name = "lucasmzreal/fastsignal"
-version = "10.2.1"
-dependencies = []
-
-[[package]]
-name = "reimakesgames/hybrid-conflict"
+name = "reimakesgames/alight"
 version = "0.1.0"
-dependencies = [["BridgeNet", "ffrostflame/bridgenet@1.9.9"], ["FastCastRedux", "encodedvenom/fastcastredux@0.1.3"], ["FastSignal", "lucasmzreal/fastsignal@10.2.1"], ["Janitor", "howmanysmall/janitor@1.15.1"], ["Promise", "evaera/promise@4.0.0"], ["TestEZ", "roblox/testez@0.4.1"]]
-
-[[package]]
-name = "roblox/testez"
-version = "0.4.1"
-dependencies = []
-
-[[package]]
-name = "sleitnick/signal"
-version = "1.2.1"
-dependencies = []
+dependencies = [["bridgenet", "ffrostflame/bridgenet@1.9.9"], ["fusion", "elttob/fusion@0.2.0"]]
 
 [[package]]
 name = "stravant/goodsignal"
