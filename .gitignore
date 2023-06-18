@@ -21,3 +21,6 @@ site/
 # Moonwave Build Bullshittery
 # god bless america (NOT)
 .vercel
+
+node_modules
+build
