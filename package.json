@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "moonwave build"
+  },
+  "dependencies": {
+    "moonwave": "^1.0.2"
+  }
+}
