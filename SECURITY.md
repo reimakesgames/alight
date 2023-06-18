@@ -16,9 +16,9 @@ currently being supported with security updates.
 The latest version of the project is always supported.
 This project can only have one live version at a time.
 
-| Version | Supported          |
+<!-- | Version | Supported          |
 | ------- | ------------------ |
-| 0.x.x   | :white_check_mark: |
+| 0.x.x   | :white_check_mark: | -->
 
 ## Reporting a Vulnerability
 
@@ -31,4 +31,4 @@ declined, etc. -->
 If you find a vulnerability, please report it to the following contacts:
 - reimakesgames.dev@gmail.com
 - reimakesgames#3672 on Discord
-- @reimakesgames, @lukadev-0, and @TotallyNotInUse
+- @reimakesgames

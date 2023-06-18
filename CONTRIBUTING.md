@@ -14,9 +14,9 @@
 1. Make sure to include information on how contributors can contact you or the project maintainers with any questions or concerns they may have.
 -->
 
-# Contributing to [hybrid-conflict]
+# Contributing to [Alight]
 
-Thank you for your interest in contributing to [hybrid-conflict]! This document outlines the steps and guidelines for contributing to the project.
+Thank you for your interest in contributing to [Alight]! This document outlines the steps and guidelines for contributing to the project.
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ Thank you for your interest in contributing to [hybrid-conflict]! This document 
 
 ## Introduction
 
-This guide serves as a starting point for contributing to [hybrid-conflict]. It outlines the steps and requirements for submitting a contribution, as well as the review process for contributions.
+This guide serves as a starting point for contributing to [Alight]. It outlines the steps and requirements for submitting a contribution, as well as the review process for contributions.
 
 ## Submitting a Contribution
 
@@ -48,12 +48,12 @@ After your pull request is created, it will be reviewed by a member of the proje
 
 <!-- beam users to https://roblox.github.io/lua-style-guide/ -->
 
-For consistency, please follow the following code style and formatting guidelines when contributing to [hybrid-conflict]:
+For consistency, please follow the following code style and formatting guidelines when contributing to [Alight]:
 - [Lua Style Guide](https://roblox.github.io/lua-style-guide/)
 
 ## Resources
 
-The following resources may be helpful when contributing to [hybrid-conflict]:
+The following resources may be helpful when contributing to [Alight]:
 
 - [GitHub Flow](https://guides.github.com/introduction/flow/)
 - [GitHub Docs](https://docs.github.com/en)
@@ -61,7 +61,7 @@ The following resources may be helpful when contributing to [hybrid-conflict]:
 
 ## Contact
 
-If you have any questions or concerns about contributing to [hybrid-conflict], please contact the project maintainers at our [Discord Server](https://discord.gg/nYudC4Mfru).
+If you have any questions or concerns about contributing to [Alight], please contact the project maintainers at our [Discord Server](https://discord.gg/CjUWSVKhP3).
 <!--
 ## License
 
