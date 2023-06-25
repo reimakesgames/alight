@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "customInstall": "npm install -g n && n latest && npm install",
     "build": "moonwave build"
   },
   "dependencies": {
