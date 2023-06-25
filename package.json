@@ -3,6 +3,6 @@
     "build": "moonwave build"
   },
   "dependencies": {
-    "moonwave": "^1.0.2"
+    "moonwave": "^1.1.1"
   }
 }
